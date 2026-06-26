@@ -187,34 +187,34 @@ class Camera {
     }
   }
 
-  /** Compute rotation values (by updating the quaternion) */
-  rotate(mouseX, mouseY) {
+  rotate(mouseX, mouseY, speedRotate) {
+    if (speedRotate === undefined) speedRotate = 0.25;
     var axisRot = _TMP_VEC3;
     var diff = _TMP_VEC2;
 
     var normalizedMouseXY = Geometry.normalizedMouse(mouseX, mouseY, this._width, this._height);
     if (this._mode === Enums.CameraMode.ORBIT) {
       vec2.sub(diff, normalizedMouseXY, this._lastNormalizedMouseXY);
-      this.setOrbit(this._rotX - diff[1] * 2, this._rotY + diff[0] * 2);
+      this.setOrbit(this._rotX - diff[1] * 2 * (speedRotate / 0.25), this._rotY + diff[0] * 2 * (speedRotate / 0.25));
 
-      this.rotateDelay([-diff[1] * 6, diff[0] * 6], DELAY_ROTATE);
+      this.rotateDelay([-diff[1] * 6 * (speedRotate / 0.25), diff[0] * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
 
     } else if (this._mode === Enums.CameraMode.PLANE) {
       var length = vec2.dist(this._lastNormalizedMouseXY, normalizedMouseXY);
       vec2.sub(diff, normalizedMouseXY, this._lastNormalizedMouseXY);
       vec3.normalize(axisRot, vec3.set(axisRot, -diff[1], diff[0], 0.0));
-      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, length * 2.0), this._quatRot);
+      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, length * 2.0 * (speedRotate / 0.25)), this._quatRot);
 
-      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], length * 6], DELAY_ROTATE);
+      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], length * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
 
     } else if (this._mode === Enums.CameraMode.SPHERICAL) {
       var mouseOnSphereBefore = Geometry.mouseOnUnitSphere(this._lastNormalizedMouseXY);
       var mouseOnSphereAfter = Geometry.mouseOnUnitSphere(normalizedMouseXY);
       var angle = Math.acos(Math.min(1.0, vec3.dot(mouseOnSphereBefore, mouseOnSphereAfter)));
       vec3.normalize(axisRot, vec3.cross(axisRot, mouseOnSphereBefore, mouseOnSphereAfter));
-      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0), this._quatRot);
+      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0 * (speedRotate / 0.25)), this._quatRot);
 
-      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], angle * 6], DELAY_ROTATE);
+      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], angle * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
     }
 
     this._lastNormalizedMouseXY = normalizedMouseXY;
@@ -278,8 +278,8 @@ class Camera {
 
   updateTranslation() {
     var trans = this._trans;
-    trans[0] += this._moveX * this._speed * trans[2] / 50 / 400.0;
-    trans[2] = Math.max(0.00001, trans[2] + this._moveZ * this._speed / 400.0);
+    trans[0] += this._moveX * this._speed * trans[2] / 50 / 400.0 * (this._main._cameraSpeedTranslate / 0.25);
+    trans[2] = Math.max(0.00001, trans[2] + this._moveZ * this._speed / 400.0 * (this._main._cameraSpeedZoom / 0.25));
     if (this._projectionType === Enums.Projection.ORTHOGRAPHIC)
       this.updateOrtho();
     this.updateView();

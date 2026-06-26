@@ -480,4 +480,38 @@ Remesh.mergeMeshes = function (meshes, baseMesh) {
   return createMesh(baseMesh, arr.faces, arr.vertices, arr.colors, arr.materials);
 };
 
+Remesh.computeVoxelStep = function (meshes) {
+  if (!meshes || meshes.length === 0) return 0;
+  var box = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+  var tmp = [0.0, 0.0, 0.0];
+  for (var i = 0, nbm = meshes.length; i < nbm; ++i) {
+    var mesh = meshes[i];
+    var matrix = mesh.getMatrix();
+    var localb;
+    try { localb = mesh.getLocalBound(); } catch (e) { localb = null; }
+    if (!localb) continue;
+    var corners = [
+      [localb[0], localb[1], localb[2]],
+      [localb[0], localb[1], localb[5]],
+      [localb[0], localb[4], localb[2]],
+      [localb[0], localb[4], localb[5]],
+      [localb[3], localb[1], localb[2]],
+      [localb[3], localb[1], localb[5]],
+      [localb[3], localb[4], localb[2]],
+      [localb[3], localb[4], localb[5]]
+    ];
+    for (var c = 0; c < 8; ++c) {
+      vec3.transformMat4(tmp, corners[c], matrix);
+      if (tmp[0] < box[0]) box[0] = tmp[0];
+      if (tmp[1] < box[1]) box[1] = tmp[1];
+      if (tmp[2] < box[2]) box[2] = tmp[2];
+      if (tmp[0] > box[3]) box[3] = tmp[0];
+      if (tmp[1] > box[4]) box[4] = tmp[1];
+      if (tmp[2] > box[5]) box[5] = tmp[2];
+    }
+  }
+  var maxDim = Math.max((box[3] - box[0]), (box[4] - box[1]), (box[5] - box[2]));
+  return maxDim / Remesh.RESOLUTION;
+};
+
 export default Remesh;

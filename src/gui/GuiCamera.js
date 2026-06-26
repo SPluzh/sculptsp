@@ -43,9 +43,13 @@ class GuiCamera {
     optionsMode[Enums.CameraMode.PLANE] = TR('cameraPlane');
     menu.addCombobox('', camera.getMode(), this.onCameraModeChange.bind(this), optionsMode);
     this._ctrlPivot = menu.addCheckbox(TR('cameraPivot'), camera.getUsePivot(), this.onPivotChange.bind(this));
+    this._ctrlRmbOnly = menu.addCheckbox(TR('cameraRmbOnly'), this._main, '_cameraRmbOnly');
 
-    // TR('CameraSpeed') ...
-    menu.addSlider('speed', this._main, '_cameraSpeed', 0.05, 1.0, 0.001);
+    // speed settings
+    menu.addTitle(TR('cameraSpeedTitle'));
+    menu.addSlider(TR('cameraSpeedTranslate'), this._main, '_cameraSpeedTranslate', 0.05, 5.0, 0.001);
+    menu.addSlider(TR('cameraSpeedZoom'), this._main, '_cameraSpeedZoom', 0.05, 5.0, 0.001);
+    menu.addSlider(TR('cameraSpeedRotate'), this._main, '_cameraSpeedRotate', 0.05, 5.0, 0.001);
   }
 
   onCameraModeChange(value) {

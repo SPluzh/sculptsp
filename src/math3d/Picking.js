@@ -57,7 +57,7 @@ class Picking {
     this._alpha = Picking.ALPHAS[id];
   }
 
-  getAlpha(x, y, z) {
+  getAlpha(x, y, z, focalShift) {
     var alpha = this._alpha;
     if (!alpha || !alpha._texture) return 1.0;
 
@@ -65,15 +65,33 @@ class Picking {
     var rs = this._alphaSide;
 
     var xn = alpha._ratioY * (m[0] * x + m[4] * y + m[8] * z + m[12]) / (this._xSym ? -rs : rs);
-    if (Math.abs(xn) > 1.0) return 0.0;
-
     var yn = alpha._ratioX * (m[1] * x + m[5] * y + m[9] * z + m[13]) / rs;
-    if (Math.abs(yn) > 1.0) return 0.0;
+
+    var edgeDist = Math.sqrt(xn * xn + yn * yn);
+    if (edgeDist > 1.0) return 0.0;
 
     var aw = alpha._width;
-    xn = (0.5 - xn * 0.5) * aw;
-    yn = (0.5 - yn * 0.5) * alpha._height;
-    return alpha._texture[(xn | 0) + aw * (yn | 0)] / 255.0;
+    var txn = Math.max(0, Math.min(aw - 1, ((0.5 - xn * 0.5) * aw) | 0));
+    var tyn = Math.max(0, Math.min(alpha._height - 1, ((0.5 - yn * 0.5) * alpha._height) | 0));
+    var rawAlpha = alpha._texture[txn + aw * tyn] / 255.0;
+
+    if (focalShift !== undefined && focalShift !== 0.0) {
+      if (focalShift > 0.0) {
+        // Blur/feather edges (soft brush) matching inner ratio (1.0 - focalShift) / 2.0
+        var softRadius = (1.0 - focalShift) / 2.0;
+        if (edgeDist > softRadius) {
+          var edgeFade = 1.0 - (edgeDist - softRadius) / (1.0 - softRadius);
+          edgeFade = Math.max(0.0, Math.min(1.0, edgeFade));
+          var smooth = edgeFade * edgeFade * (3.0 - 2.0 * edgeFade); // smoothstep
+          rawAlpha *= Math.pow(smooth, 1.0 + focalShift * 5.0);
+        }
+      } else if (focalShift < 0.0) {
+        // Sharpen alpha / expand plateau (hard brush)
+        rawAlpha = Math.pow(rawAlpha, 1.0 / (1.0 - focalShift * 3.0));
+      }
+    }
+
+    return rawAlpha;
   }
 
   updateAlpha(keepOrigin) {

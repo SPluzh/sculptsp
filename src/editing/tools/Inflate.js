@@ -56,8 +56,7 @@ class Inflate extends SculptBase {
       var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
       if (dist >= 1.0)
         continue;
-      var fallOff = dist * dist;
-      fallOff = 3.0 * fallOff * fallOff - 4.0 * fallOff * dist + 1.0;
+      var fallOff = this.getFallOff(dist);
       fallOff = deformIntensity * fallOff;
       var vx = vAr[ind];
       var vy = vAr[ind + 1];
@@ -66,7 +65,7 @@ class Inflate extends SculptBase {
       var ny = nAr[ind + 1];
       var nz = nAr[ind + 2];
       fallOff /= Math.sqrt(nx * nx + ny * ny + nz * nz);
-      fallOff *= mAr[ind + 2] * picking.getAlpha(vx, vy, vz);
+      fallOff *= mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] = vx + nx * fallOff;
       vAr[ind + 1] = vy + ny * fallOff;
       vAr[ind + 2] = vz + nz * fallOff;

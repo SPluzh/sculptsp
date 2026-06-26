@@ -16,15 +16,18 @@ import StateManager from 'states/StateManager';
 import RenderData from 'mesh/RenderData';
 import Rtt from 'drawables/Rtt';
 import ShaderLib from 'render/ShaderLib';
-import MeshStatic from 'mesh/meshStatic/MeshStatic';
 import WebGLCaps from 'render/WebGLCaps';
+import ShaderVoxelChecker from 'render/shaders/ShaderVoxelChecker';
 
 class Scene {
 
   constructor() {
     this._gl = null; // webgl context
 
-    this._cameraSpeed = 0.25;
+    this._cameraSpeedTranslate = 0.4;
+    this._cameraSpeedZoom = 2.0;
+    this._cameraSpeedRotate = 0.5;
+    this._cameraRmbOnly = true;
 
     // cache canvas stuffs
     this._pixelRatio = 1.0;
@@ -55,6 +58,7 @@ class Scene {
     this._showContour = opts.outline;
     this._showGrid = opts.grid;
     this._grid = null;
+    this._voxelPreview = null; // {buf, program, count}
     this._background = null;
     this._meshes = []; // the meshes
     this._selectMeshes = []; // multi selection
@@ -302,6 +306,11 @@ class Scene {
 
     // background
     this._background.render();
+
+    // voxel preview
+    if (this._voxelPreview) {
+      this._renderVoxelPreview();
+    }
 
     ///////////////
     // TRANSPARENT PASS
@@ -593,6 +602,41 @@ class Scene {
     this.getCamera().resetView();
     this.setMesh(null);
     this._action = Enums.Action.NOTHING;
+    this._voxelPreview = null;
+  }
+
+  updateVoxelPreview(step, meshes) {
+    if (!step || !meshes || meshes.length === 0) {
+      this._voxelPreview = null;
+      return;
+    }
+
+    this._voxelPreview = {
+      step: step,
+      meshes: meshes
+    };
+  }
+
+  _renderVoxelPreview() {
+    var vp = this._voxelPreview;
+    if (!vp) return;
+    var gl = this._gl;
+
+    var shader = ShaderVoxelChecker.getOrCreate(gl);
+
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+
+    gl.enable(gl.POLYGON_OFFSET_FILL);
+    gl.polygonOffset(-1.0, -1.0);
+
+    for (var i = 0, l = vp.meshes.length; i < l; ++i) {
+      shader.draw(vp.meshes[i], vp.step);
+    }
+
+    gl.disable(gl.POLYGON_OFFSET_FILL);
+    gl.disable(gl.BLEND);
+    gl.blendFunc(gl.ONE, gl.ONE_MINUS_SRC_ALPHA);
   }
 
   deleteCurrentSelection() {

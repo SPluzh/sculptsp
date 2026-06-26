@@ -28,7 +28,8 @@ Enums.Tools = {
   MOVE: 9,
   MASKING: 10,
   LOCALSCALE: 11,
-  TRANSFORM: 12
+  TRANSFORM: 12,
+  CLAYBUILDUP: 13
 };
 
 // display shader type
@@ -75,6 +76,7 @@ var acc = Object.keys(Enums.Tools).length;
 Enums.KeyAction = Utils.extend({
   INTENSITY: acc++,
   RADIUS: acc++,
+  FOCAL_SHIFT: acc++,
   NEGATIVE: acc++,
   PICKER: acc++,
   DELETE: acc++,

@@ -113,9 +113,8 @@ class Twist extends SculptBase {
       var dy = vy - cy;
       var dz = vz - cz;
       var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) * invRadius;
-      var fallOff = dist * dist;
-      fallOff = 3.0 * fallOff * fallOff - 4.0 * fallOff * dist + 1.0;
-      fallOff *= angle * mAr[ind + 2] * picking.getAlpha(vx, vy, vz);
+      var fallOff = this.getFallOff(dist);
+      fallOff *= angle * mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       quat.setAxisAngle(rot, nPlane, fallOff);
       vec3.set(coord, vx, vy, vz);
       vec3.sub(coord, coord, center);

@@ -132,9 +132,8 @@ class Move extends SculptBase {
       var dy = vy - cy;
       var dz = vz - cz;
       var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
-      var fallOff = dist * dist;
-      fallOff = 3.0 * fallOff * fallOff - 4.0 * fallOff * dist + 1.0;
-      fallOff *= mAr[ind + 2] * picking.getAlpha(vx, vy, vz);
+      var fallOff = this.getFallOff(dist);
+      fallOff *= mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] += dirx * fallOff;
       vAr[ind + 1] += diry * fallOff;
       vAr[ind + 2] += dirz * fallOff;

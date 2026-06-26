@@ -7,9 +7,12 @@ cache/*
 node_modules
 *~
 .idea/*
+.serena
 *.sublime-workspace
 *.log
 *.map
 *.hdr
 tools/*.png
 tools/dist
+gemini.md
+.cursorrules

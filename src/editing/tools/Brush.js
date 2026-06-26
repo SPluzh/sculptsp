@@ -79,9 +79,8 @@ class Brush extends SculptBase {
       var vx = vAr[ind];
       var vy = vAr[ind + 1];
       var vz = vAr[ind + 2];
-      var fallOff = dist * dist;
-      fallOff = 3.0 * fallOff * fallOff - 4.0 * fallOff * dist + 1.0;
-      fallOff *= mAr[ind + 2] * deformIntensityBrush * picking.getAlpha(vx, vy, vz);
+      var fallOff = this.getFallOff(dist);
+      fallOff *= mAr[ind + 2] * deformIntensityBrush * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] = vx + anx * fallOff;
       vAr[ind + 1] = vy + any * fallOff;
       vAr[ind + 2] = vz + anz * fallOff;

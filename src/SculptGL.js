@@ -396,7 +396,7 @@ class SculptGL extends Scene {
       this._isWheelingIn = true;
       this._camera.start(this._mouseX, this._mouseY);
     }
-    this._camera.zoom(dir * 0.02);
+    this._camera.zoom(dir * 0.02 * (this._cameraSpeedZoom / 0.25));
     Multimesh.RENDER_HINT = Multimesh.CAMERA;
     this.render();
     // workaround for "end mouse wheel" event
@@ -433,20 +433,39 @@ class SculptGL extends Scene {
     if (button === MOUSE_LEFT && canEdit)
       this.setCanvasCursor('none');
 
-    if (button === MOUSE_RIGHT && event.ctrlKey)
-      this._action = Enums.Action.CAMERA_ZOOM;
-    else if (button === MOUSE_MIDDLE)
-      this._action = Enums.Action.CAMERA_PAN;
-    else if (!canEdit && event.ctrlKey) {
-      this._maskX = mouseX;
-      this._maskY = mouseY;
-      this._action = Enums.Action.MASK_EDIT;
-    } else if ((!canEdit || button === MOUSE_RIGHT) && event.altKey)
-      this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
-    else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit))
-      this._action = Enums.Action.CAMERA_ROTATE;
-    else
-      this._action = Enums.Action.SCULPT_EDIT;
+    if (this._cameraRmbOnly) {
+      if (button === MOUSE_RIGHT) {
+        if (event.ctrlKey)
+          this._action = Enums.Action.CAMERA_ZOOM;
+        else if (event.altKey)
+          this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
+        else
+          this._action = Enums.Action.CAMERA_ROTATE;
+      } else if (button === MOUSE_LEFT && !canEdit && event.ctrlKey) {
+        this._maskX = mouseX;
+        this._maskY = mouseY;
+        this._action = Enums.Action.MASK_EDIT;
+      } else if (button === MOUSE_LEFT && canEdit) {
+        this._action = Enums.Action.SCULPT_EDIT;
+      } else {
+        this._action = Enums.Action.NOTHING;
+      }
+    } else {
+      if (button === MOUSE_RIGHT && event.ctrlKey)
+        this._action = Enums.Action.CAMERA_ZOOM;
+      else if (button === MOUSE_MIDDLE)
+        this._action = Enums.Action.CAMERA_PAN;
+      else if (!canEdit && event.ctrlKey) {
+        this._maskX = mouseX;
+        this._maskY = mouseY;
+        this._action = Enums.Action.MASK_EDIT;
+      } else if ((!canEdit || button === MOUSE_RIGHT) && event.altKey)
+        this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
+      else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit && !this._cameraRmbOnly))
+        this._action = Enums.Action.CAMERA_ROTATE;
+      else
+        this._action = Enums.Action.SCULPT_EDIT;
+    }
 
     if (this._action === Enums.Action.CAMERA_ROTATE || this._action === Enums.Action.CAMERA_ZOOM)
       this._camera.start(mouseX, mouseY);
@@ -455,8 +474,12 @@ class SculptGL extends Scene {
     this._lastMouseY = mouseY;
   }
 
-  getSpeedFactor() {
-    return this._cameraSpeed / (this._canvasHeight * this.getPixelRatio());
+  getSpeedTranslateFactor() {
+    return this._cameraSpeedTranslate / (this._canvasHeight * this.getPixelRatio());
+  }
+
+  getSpeedZoomFactor() {
+    return this._cameraSpeedZoom / (this._canvasHeight * this.getPixelRatio());
   }
 
   onDeviceMove(event) {
@@ -467,25 +490,24 @@ class SculptGL extends Scene {
     var mouseX = this._mouseX;
     var mouseY = this._mouseY;
     var action = this._action;
-    var speedFactor = this.getSpeedFactor();
 
-    if (action === Enums.Action.CAMERA_ZOOM || (action === Enums.Action.CAMERA_PAN_ZOOM_ALT && !event.altKey)) {
+    if (action === Enums.Action.CAMERA_ZOOM) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      this._camera.zoom((mouseX - this._lastMouseX + mouseY - this._lastMouseY) * speedFactor);
+      this._camera.zoom((mouseX - this._lastMouseX + mouseY - this._lastMouseY) * this.getSpeedZoomFactor());
       this.render();
 
     } else if (action === Enums.Action.CAMERA_PAN_ZOOM_ALT || action === Enums.Action.CAMERA_PAN) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      this._camera.translate((mouseX - this._lastMouseX) * speedFactor, (mouseY - this._lastMouseY) * speedFactor);
+      this._camera.translate((mouseX - this._lastMouseX) * this.getSpeedTranslateFactor(), (mouseY - this._lastMouseY) * this.getSpeedTranslateFactor());
       this.render();
 
     } else if (action === Enums.Action.CAMERA_ROTATE) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
       if (!event.shiftKey)
-        this._camera.rotate(mouseX, mouseY);
+        this._camera.rotate(mouseX, mouseY, this._cameraSpeedRotate);
       this.render();
 
     } else {

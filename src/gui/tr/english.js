@@ -21,6 +21,11 @@ var TR = {
   cameraOrthographic: 'Orthographic',
   cameraFov: 'Fov',
   cameraPivot: 'Picking pivot',
+  cameraRmbOnly: 'RMB only navigation',
+  cameraSpeedTitle: 'Speed settings',
+  cameraSpeedTranslate: 'Translation speed',
+  cameraSpeedZoom: 'Zoom speed',
+  cameraSpeedRotate: 'Rotation speed',
 
   // file
   fileTitle: 'Files (import/export)',
@@ -107,14 +112,16 @@ var TR = {
   sculptMasking: 'Masking (-Ctrl)',
   sculptMove: 'Move',
   sculptLocalScale: 'Local scale',
-  sculptTransform: 'Transform (E)',
+  sculptTransform: 'Transform',
+  sculptClayBuildup: 'Clay Buildup',
 
   sculptCommon: 'Common',
   sculptTool: 'Tool',
   sculptSymmetry: 'Symmetry',
   sculptContinuous: 'Continuous',
-  sculptRadius: 'Radius (-X)',
-  sculptIntensity: 'Intensity (-C)',
+  sculptRadius: 'Radius (-S)',
+  sculptIntensity: 'Intensity (-A)',
+  sculptFocalShift: 'Focal Shift',
   sculptHardness: 'Hardness',
   sculptCulling: 'Thin surface (front vertex only)',
   sculptAlphaTitle: 'Alpha',
@@ -127,8 +134,9 @@ var TR = {
   sculptMetallic: 'Metallic',
   sculptClay: 'Clay',
   sculptAccumulate: 'Accumulate (no limit per stroke)',
+  sculptSpacing: 'Spacing',
   sculptColorGlobal: 'Global',
-  sculptPickColor: 'Material / Color picker (-S)',
+  sculptPickColor: 'Material / Color picker (-C)',
   sculptTangentialSmoothing: 'Relax only',
   sculptTopologicalCheck: 'Topological check',
   sculptMoveAlongNormal: 'Move along normal (N or -Alt)',
@@ -169,7 +177,7 @@ var TR = {
   renderingImportMatcap: 'Import (jpg, png...)',
   renderingExtra: 'Extra',
   renderingFlat: 'Flat shading',
-  renderingWireframe: 'Wireframe (W)',
+  renderingWireframe: 'Wireframe',
   renderingExposure: 'Exposure',
   renderingEnvironment: 'Environment',
   renderingIsolate: 'Isolate/Show (I)',
@@ -212,7 +220,10 @@ var TR = {
 
   remeshTitleMC: 'Voxel remeshing (manifold tris)',
   remeshRemeshMC: 'Remesh',
-  remeshSmoothingMC: 'Relax topology'
+  remeshSmoothingMC: 'Relax topology',
+  remeshVoxelSize: function (val) {
+    return 'Voxel size ≈ ' + val;
+  }
 };
 
 export default TR;

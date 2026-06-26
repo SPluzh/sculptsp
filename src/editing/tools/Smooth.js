@@ -44,6 +44,16 @@ class Smooth extends SculptBase {
     var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
 
+    var useFalloff = picking && (this._focalShift !== undefined);
+    var cx, cy, cz, radius;
+    if (useFalloff) {
+      var center = picking.getIntersectionPoint();
+      cx = center[0];
+      cy = center[1];
+      cz = center[2];
+      radius = picking.getLocalRadius();
+    }
+
     for (var i = 0; i < nbVerts; ++i) {
       var ind = iVerts[i] * 3;
       var vx = vAr[ind];
@@ -51,8 +61,15 @@ class Smooth extends SculptBase {
       var vz = vAr[ind + 2];
       var i3 = i * 3;
       var mIntensity = intensity * mAr[ind + 2];
+      if (useFalloff && radius > 0.0) {
+        var dx = vx - cx;
+        var dy = vy - cy;
+        var dz = vz - cz;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+        mIntensity *= this.getFallOff(dist);
+      }
       if (picking)
-        mIntensity *= picking.getAlpha(vx, vy, vz);
+        mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       var intComp = 1.0 - mIntensity;
       vAr[ind] = vx * intComp + smoothVerts[i3] * mIntensity;
       vAr[ind + 1] = vy * intComp + smoothVerts[i3 + 1] * mIntensity;
@@ -70,6 +87,16 @@ class Smooth extends SculptBase {
 
     var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
+
+    var useFalloff = picking && (this._focalShift !== undefined);
+    var cx, cy, cz, radius;
+    if (useFalloff) {
+      var center = picking.getIntersectionPoint();
+      cx = center[0];
+      cy = center[1];
+      cz = center[2];
+      radius = picking.getLocalRadius();
+    }
 
     for (var i = 0; i < nbVerts; ++i) {
       var ind = iVerts[i] * 3;
@@ -92,8 +119,15 @@ class Smooth extends SculptBase {
       var smz = smoothVerts[i3 + 2];
       var dot = nx * (smx - vx) + ny * (smy - vy) + nz * (smz - vz);
       var mIntensity = intensity * mAr[ind + 2];
+      if (useFalloff && radius > 0.0) {
+        var dx = vx - cx;
+        var dy = vy - cy;
+        var dz = vz - cz;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+        mIntensity *= this.getFallOff(dist);
+      }
       if (picking)
-        mIntensity *= picking.getAlpha(vx, vy, vz);
+        mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] = vx + (smx - nx * dot - vx) * mIntensity;
       vAr[ind + 1] = vy + (smy - ny * dot - vy) * mIntensity;
       vAr[ind + 2] = vz + (smz - nz * dot - vz) * mIntensity;
@@ -111,6 +145,16 @@ class Smooth extends SculptBase {
     var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
 
+    var useFalloff = picking && (this._focalShift !== undefined);
+    var cx, cy, cz, radius;
+    if (useFalloff) {
+      var center = picking.getIntersectionPoint();
+      cx = center[0];
+      cy = center[1];
+      cz = center[2];
+      radius = picking.getLocalRadius();
+    }
+
     for (var i = 0; i < nbVerts; ++i) {
       var ind = iVerts[i] * 3;
       var vx = vAr[ind];
@@ -122,9 +166,17 @@ class Smooth extends SculptBase {
       var i3 = i * 3;
       var len = 1.0 / ((nx * nx + ny * ny + nz * nz));
       var dot = nx * (smoothVerts[i3] - vx) + ny * (smoothVerts[i3 + 1] - vy) + nz * (smoothVerts[i3 + 2] - vz);
-      dot *= len * intensity * mAr[ind + 2];
+      var mIntensity = intensity * mAr[ind + 2];
+      if (useFalloff && radius > 0.0) {
+        var dx = vx - cx;
+        var dy = vy - cy;
+        var dz = vz - cz;
+        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+        mIntensity *= this.getFallOff(dist);
+      }
       if (picking)
-        dot *= picking.getAlpha(vx, vy, vz);
+        mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
+      dot *= len * mIntensity;
       vAr[ind] = vx + nx * dot;
       vAr[ind + 1] = vy + ny * dot;
       vAr[ind + 2] = vz + nz * dot;

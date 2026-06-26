@@ -234,6 +234,7 @@ body {
   overflow: hidden;
   border-radius: 4px;
   background: rgba(0, 0, 0, 0.3);
+  touch-action: none;
 }
 
 .gui-slider > div {

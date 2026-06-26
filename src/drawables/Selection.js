@@ -22,6 +22,7 @@ class Selection {
     this._cacheDotMVP = mat4.create();
     this._cacheDotSymMVP = mat4.create();
     this._cacheCircleMVP = mat4.create();
+    this._cacheInnerCircleMVP = mat4.create();
     this._color = new Float32Array([0.8, 0.0, 0.0]);
 
     this._offsetX = 0.0; // horizontal offset (when editing the radius)
@@ -44,6 +45,10 @@ class Selection {
 
   getCircleMVP() {
     return this._cacheCircleMVP;
+  }
+
+  getInnerCircleMVP() {
+    return this._cacheInnerCircleMVP;
   }
 
   getDotMVP() {
@@ -105,7 +110,11 @@ class Selection {
 
   _updateMatricesBackground(camera, main) {
 
-    var screenRadius = main.getSculptManager().getCurrentTool().getScreenRadius();
+    var tool = main.getSculptManager().getCurrentTool();
+    var screenRadius = tool.getScreenRadius();
+    var focalShift = tool._focalShift !== undefined ? tool._focalShift : 0.0;
+    var innerRatio = (1.0 - focalShift) / 2.0;
+    var innerScreenRadius = screenRadius * innerRatio;
 
     var w = camera._width * 0.5;
     var h = camera._height * 0.5;
@@ -117,6 +126,9 @@ class Selection {
     // circle mvp
     mat4.scale(this._cacheCircleMVP, _TMP_MAT, vec3.set(_TMP_VEC, screenRadius, screenRadius, screenRadius));
     mat4.mul(this._cacheCircleMVP, _TMP_MATPV, this._cacheCircleMVP);
+    // inner circle mvp
+    mat4.scale(this._cacheInnerCircleMVP, _TMP_MAT, vec3.set(_TMP_VEC, innerScreenRadius, innerScreenRadius, innerScreenRadius));
+    mat4.mul(this._cacheInnerCircleMVP, _TMP_MATPV, this._cacheInnerCircleMVP);
     // dot mvp
     mat4.scale(this._cacheDotMVP, _TMP_MAT, vec3.set(_TMP_VEC, DOT_RADIUS, DOT_RADIUS, DOT_RADIUS));
     mat4.mul(this._cacheDotMVP, _TMP_MATPV, this._cacheDotMVP);
@@ -129,6 +141,11 @@ class Selection {
     var pickingSym = main.getPickingSymmetry();
     var worldRadius = Math.sqrt(picking.computeWorldRadius2(true));
     var screenRadius = main.getSculptManager().getCurrentTool().getScreenRadius();
+
+    var tool = main.getSculptManager().getCurrentTool();
+    var focalShift = tool._focalShift !== undefined ? tool._focalShift : 0.0;
+    var innerRatio = (1.0 - focalShift) / 2.0;
+    var innerWorldRadius = worldRadius * innerRatio;
 
     var mesh = picking.getMesh();
     var constRadius = DOT_RADIUS * (worldRadius / screenRadius);
@@ -148,6 +165,9 @@ class Selection {
     // circle mvp
     mat4.scale(this._cacheCircleMVP, _TMP_MAT, vec3.set(_TMP_VEC, worldRadius, worldRadius, worldRadius));
     mat4.mul(this._cacheCircleMVP, _TMP_MATPV, this._cacheCircleMVP);
+    // inner circle mvp
+    mat4.scale(this._cacheInnerCircleMVP, _TMP_MAT, vec3.set(_TMP_VEC, innerWorldRadius, innerWorldRadius, innerWorldRadius));
+    mat4.mul(this._cacheInnerCircleMVP, _TMP_MATPV, this._cacheInnerCircleMVP);
     // dot mvp
     mat4.scale(this._cacheDotMVP, _TMP_MAT, vec3.set(_TMP_VEC, constRadius, constRadius, constRadius));
     mat4.mul(this._cacheDotMVP, _TMP_MATPV, this._cacheDotMVP);

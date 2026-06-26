@@ -66,7 +66,7 @@ class Masking extends SculptBase {
       if (dist > 1) dist = 1.0;
 
       var fallOff = Math.pow(1.0 - dist, softness);
-      fallOff *= maskIntensity * picking.getAlpha(vx, vy, vz);
+      fallOff *= maskIntensity * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       mAr[ind + 2] = Math.min(Math.max(mAr[ind + 2] + fallOff, 0.0), 1.0);
     }
   }

@@ -130,7 +130,7 @@ class Paint extends SculptBase {
       if (dist > 1) dist = 1.0;
 
       var fallOff = Math.pow(1 - dist, softness);
-      fallOff *= intensity * mAr[ind + 2] * picking.getAlpha(vx, vy, vz);
+      fallOff *= intensity * mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       var fallOffCompl = 1.0 - fallOff;
 
       if (this._writeAlbedo) {

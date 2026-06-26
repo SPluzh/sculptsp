@@ -17,6 +17,7 @@ class GuiSculpting {
 
     this._modalBrushRadius = false; // modal brush radius change
     this._modalBrushIntensity = false; // modal brush intensity change
+    this._modalBrushFocalShift = false; // modal brush focal shift change
 
     // modal stuffs (not canvas based, because no 3D picking involved)
     this._lastPageX = 0;
@@ -24,12 +25,20 @@ class GuiSculpting {
     // for modal radius
     this._refX = 0;
     this._refY = 0;
+    // for modal intensity
+    this._intensityRefX = 0;
+    this._intensityRefY = 0;
+    // for modal focal shift
+    this._focalShiftRefX = 0;
+    this._focalShiftRefY = 0;
 
     this._menu = null;
     this._ctrlSculpt = null;
     this._ctrlSymmetry = null;
     this._ctrlContinuous = null;
     this._ctrlTitleCommon = null;
+    this._initIntensityIndicator();
+    this._initFocalShiftIndicator();
     this.init(guiParent);
   }
 
@@ -74,6 +83,154 @@ class GuiSculpting {
 
   removeEvents() {
     if (this.removeCallback) this.removeCallback();
+    if (this._intensityIndicator && this._intensityIndicator.parentNode) {
+      this._intensityIndicator.parentNode.removeChild(this._intensityIndicator);
+    }
+    if (this._focalShiftIndicator && this._focalShiftIndicator.parentNode) {
+      this._focalShiftIndicator.parentNode.removeChild(this._focalShiftIndicator);
+    }
+  }
+
+  _initIntensityIndicator() {
+    var indicator = this._intensityIndicator = document.createElement('div');
+    indicator.style.position = 'absolute';
+    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
+    indicator.style.backdropFilter = 'blur(6px)';
+    indicator.style.webkitBackdropFilter = 'blur(6px)';
+    indicator.style.color = '#ffffff';
+    indicator.style.padding = '8px 12px';
+    indicator.style.borderRadius = '6px';
+    indicator.style.fontFamily = "'Open Sans', sans-serif";
+    indicator.style.fontSize = '12px';
+    indicator.style.fontWeight = '600';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.display = 'none';
+    indicator.style.zIndex = '99999';
+    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+    indicator.style.minWidth = '110px';
+    indicator.style.flexDirection = 'column';
+    indicator.style.gap = '6px';
+    indicator.style.transform = 'translate(-50%, -100%)';
+    indicator.style.webkitTransform = 'translate(-50%, -100%)';
+
+    var label = this._intensityIndicatorLabel = document.createElement('div');
+    label.style.display = 'flex';
+    label.style.justifyContent = 'space-between';
+    indicator.appendChild(label);
+
+    var labelText = this._intensityIndicatorLabelText = document.createElement('span');
+    var labelValue = this._intensityIndicatorLabelValue = document.createElement('span');
+    labelValue.style.color = '#3b97e3';
+    label.appendChild(labelText);
+    label.appendChild(labelValue);
+
+    var track = document.createElement('div');
+    track.style.width = '100%';
+    track.style.height = '5px';
+    track.style.background = 'rgba(255, 255, 255, 0.2)';
+    track.style.borderRadius = '3px';
+    track.style.overflow = 'hidden';
+
+    var fill = this._intensityIndicatorFill = document.createElement('div');
+    fill.style.width = '0%';
+    fill.style.height = '100%';
+    fill.style.background = '#3b97e3';
+    fill.style.borderRadius = '3px';
+    fill.style.transition = 'width 0.05s ease-out';
+
+    track.appendChild(fill);
+    indicator.appendChild(track);
+
+    document.body.appendChild(indicator);
+  }
+
+  _updateIntensityIndicator(x, y) {
+    var wid = GuiTools[this.getSelectedTool()];
+    if (this._modalBrushIntensity && wid && wid._ctrlIntensity) {
+      var val = Math.round(wid._ctrlIntensity.getValue());
+      var name = TR('sculptIntensity').split(' (')[0];
+      this._intensityIndicatorLabelText.textContent = name;
+      this._intensityIndicatorLabelValue.textContent = val + '%';
+      this._intensityIndicatorFill.style.width = val + '%';
+      this._intensityIndicator.style.left = x + 'px';
+      this._intensityIndicator.style.top = (y - 25) + 'px';
+      this._intensityIndicator.style.display = 'flex';
+    } else {
+      this._intensityIndicator.style.display = 'none';
+    }
+  }
+
+  _initFocalShiftIndicator() {
+    var indicator = this._focalShiftIndicator = document.createElement('div');
+    indicator.style.position = 'absolute';
+    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
+    indicator.style.backdropFilter = 'blur(6px)';
+    indicator.style.webkitBackdropFilter = 'blur(6px)';
+    indicator.style.color = '#ffffff';
+    indicator.style.padding = '8px 12px';
+    indicator.style.borderRadius = '6px';
+    indicator.style.fontFamily = "'Open Sans', sans-serif";
+    indicator.style.fontSize = '12px';
+    indicator.style.fontWeight = '600';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.display = 'none';
+    indicator.style.zIndex = '99999';
+    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+    indicator.style.minWidth = '110px';
+    indicator.style.flexDirection = 'column';
+    indicator.style.gap = '6px';
+    indicator.style.transform = 'translate(-50%, -100%)';
+    indicator.style.webkitTransform = 'translate(-50%, -100%)';
+
+    var label = this._focalShiftIndicatorLabel = document.createElement('div');
+    label.style.display = 'flex';
+    label.style.justifyContent = 'space-between';
+    indicator.appendChild(label);
+
+    var labelText = this._focalShiftIndicatorLabelText = document.createElement('span');
+    var labelValue = this._focalShiftIndicatorLabelValue = document.createElement('span');
+    labelValue.style.color = '#3b97e3';
+    label.appendChild(labelText);
+    label.appendChild(labelValue);
+
+    var track = document.createElement('div');
+    track.style.width = '100%';
+    track.style.height = '5px';
+    track.style.background = 'rgba(255, 255, 255, 0.2)';
+    track.style.borderRadius = '3px';
+    track.style.overflow = 'hidden';
+
+    var fill = this._focalShiftIndicatorFill = document.createElement('div');
+    fill.style.width = '0%';
+    fill.style.height = '100%';
+    fill.style.background = '#3b97e3';
+    fill.style.borderRadius = '3px';
+    fill.style.transition = 'width 0.05s ease-out';
+
+    track.appendChild(fill);
+    indicator.appendChild(track);
+
+    document.body.appendChild(indicator);
+  }
+
+  _updateFocalShiftIndicator(x, y) {
+    var wid = GuiTools[this.getSelectedTool()];
+    if (this._modalBrushFocalShift && wid && wid._ctrlFocalShift) {
+      var val = Math.round(wid._ctrlFocalShift.getValue());
+      var name = TR('sculptFocalShift').split(' (')[0];
+      this._focalShiftIndicatorLabelText.textContent = name;
+      this._focalShiftIndicatorLabelValue.textContent = val + '%';
+      
+      var fillPercent = Math.max(0, Math.min(100, (val + 100) / 2));
+      this._focalShiftIndicatorFill.style.width = fillPercent + '%';
+      this._focalShiftIndicator.style.left = x + 'px';
+      this._focalShiftIndicator.style.top = (y - 25) + 'px';
+      this._focalShiftIndicator.style.display = 'flex';
+    } else {
+      this._focalShiftIndicator.style.display = 'none';
+    }
   }
 
   getSelectedTool() {
@@ -138,14 +295,10 @@ class GuiSculpting {
     this._menu.setVisibility(!!this._main.getMesh());
   }
 
-  _startModalBrushRadius(x, y) {
-    this._refX = x;
-    this._refY = y;
+  _startModalBrushRadius() {
     var cur = GuiTools[this.getSelectedTool()];
     if (cur._ctrlRadius) {
-      var rad = cur._ctrlRadius.getValue();
-      this._refX -= rad;
-      this._main.getSculptManager().getSelection().setOffsetX(-rad * this._main.getPixelRatio());
+      this._main.getSculptManager().getSelection().setOffsetX(0.0);
       this._main.renderSelectOverRtt();
     }
   }
@@ -192,7 +345,7 @@ class GuiSculpting {
     var shk = getOptionsURL.getShortKey(event.which);
     event.stopPropagation();
 
-    if (!main._focusGui || shk === Enums.KeyAction.RADIUS || shk === Enums.KeyAction.INTENSITY)
+    if (!main._focusGui || shk === Enums.KeyAction.RADIUS || shk === Enums.KeyAction.INTENSITY || shk === Enums.KeyAction.FOCAL_SHIFT)
       event.preventDefault();
 
     event.handled = true;
@@ -212,11 +365,24 @@ class GuiSculpting {
       main.deleteCurrentSelection();
       break;
     case Enums.KeyAction.INTENSITY:
+      if (!this._modalBrushIntensity) {
+        this._intensityRefX = this._lastPageX;
+        this._intensityRefY = this._lastPageY;
+      }
       this._modalBrushIntensity = main._focusGui = true;
+      this._updateIntensityIndicator(this._intensityRefX, this._intensityRefY);
       break;
     case Enums.KeyAction.RADIUS:
-      if (!this._modalBrushRadius) this._startModalBrushRadius(this._lastPageX, this._lastPageY);
+      if (!this._modalBrushRadius) this._startModalBrushRadius();
       this._modalBrushRadius = main._focusGui = true;
+      break;
+    case Enums.KeyAction.FOCAL_SHIFT:
+      if (!this._modalBrushFocalShift) {
+        this._focalShiftRefX = this._lastPageX;
+        this._focalShiftRefY = this._lastPageY;
+      }
+      this._modalBrushFocalShift = main._focusGui = true;
+      this._updateFocalShiftIndicator(this._focalShiftRefX, this._focalShiftRefY);
       break;
     case Enums.KeyAction.NEGATIVE:
       if (cur.toggleNegative) cur.toggleNegative();
@@ -259,6 +425,11 @@ class GuiSculpting {
       break;
     case Enums.KeyAction.INTENSITY:
       this._modalBrushIntensity = main._focusGui = false;
+      this._updateIntensityIndicator();
+      break;
+    case Enums.KeyAction.FOCAL_SHIFT:
+      this._modalBrushFocalShift = main._focusGui = false;
+      this._updateFocalShiftIndicator();
       break;
     }
   }
@@ -278,14 +449,18 @@ class GuiSculpting {
     var wid = GuiTools[this.getSelectedTool()];
 
     if (this._modalBrushRadius && wid._ctrlRadius) {
-      var dx = event.pageX - this._refX;
-      var dy = event.pageY - this._refY;
-      wid._ctrlRadius.setValue(Math.sqrt(dx * dx + dy * dy));
+      wid._ctrlRadius.setValue(wid._ctrlRadius.getValue() + event.pageX - this._lastPageX);
       this._main.renderSelectOverRtt();
     }
 
     if (this._modalBrushIntensity && wid._ctrlIntensity) {
       wid._ctrlIntensity.setValue(wid._ctrlIntensity.getValue() + event.pageX - this._lastPageX);
+      this._updateIntensityIndicator(this._intensityRefX, this._intensityRefY);
+    }
+
+    if (this._modalBrushFocalShift && wid._ctrlFocalShift) {
+      wid._ctrlFocalShift.setValue(wid._ctrlFocalShift.getValue() + event.pageX - this._lastPageX);
+      this._updateFocalShiftIndicator(this._focalShiftRefX, this._focalShiftRefY);
     }
 
     this._lastPageX = event.pageX;
@@ -293,8 +468,11 @@ class GuiSculpting {
   }
 
   onMouseOver(event) {
-    if (this._modalBrushRadius)
-      this._startModalBrushRadius(event.pageX, event.pageY);
+    if (this._modalBrushRadius) {
+      this._lastPageX = event.pageX;
+      this._lastPageY = event.pageY;
+      this._startModalBrushRadius();
+    }
   }
 }
 

@@ -21,6 +21,11 @@ var TR = {
   cameraOrthographic: 'Ортогональная',
   cameraFov: 'Угол обзора',
   cameraPivot: 'Выбор вращения',
+  cameraRmbOnly: 'Только ПКМ для камеры',
+  cameraSpeedTitle: 'Настройки скорости',
+  cameraSpeedTranslate: 'Скорость перемещения',
+  cameraSpeedZoom: 'Скорость зума',
+  cameraSpeedRotate: 'Скорость вращения',
 
   // file
   fileTitle: 'Файл',
@@ -108,13 +113,15 @@ var TR = {
   sculptPaint: '2D Кисть',
   sculptMasking: '2D Маска (-Ctrl)',
   sculptTransform: 'Трансформация',
+  sculptClayBuildup: 'Clay Buildup',
 
   sculptCommon: 'Общее',
   sculptTool: 'Инструмент',
   sculptSymmetry: 'Симетрия',
   sculptContinuous: 'Спрей',
-  sculptRadius: 'Размер (-X)',
-  sculptIntensity: 'Сила (-C)',
+  sculptRadius: 'Размер (-S)',
+  sculptIntensity: 'Сила (-A)',
+  sculptFocalShift: 'Фокус (Focal Shift)',
   sculptHardness: 'Жесткость',
   sculptCulling: 'Тонкая поверхность(передние вершины)',
   sculptAlphaTitle: 'Альфа',
@@ -127,8 +134,9 @@ var TR = {
   sculptMetallic: 'Металлический',
   sculptClay: 'Без учета содержимого',
   sculptAccumulate: 'Наращивать без ограничений',
+  sculptSpacing: 'Интервал',
   sculptColorGlobal: 'Глобальный',
-  sculptPickColor: 'Пипетка материал (-S)',
+  sculptPickColor: 'Пипетка материал (-C)',
   sculptTangentialSmoothing: 'Сглаживание по касательной',
   sculptTopologicalCheck: 'Проверка топологии',
   sculptMoveAlongNormal: 'Перемещать вдоль нормали',
@@ -169,7 +177,7 @@ var TR = {
   renderingImportMatcap: 'Импорт (jpg, png...)',
   renderingExtra: 'Дополнительно',
   renderingFlat: 'Плоскости',
-  renderingWireframe: 'Каркас (W)',
+  renderingWireframe: 'Каркас',
   renderingExposure: 'Экспозиция',
   renderingEnvironment: 'Отражение',
   renderingIsolate: 'Изолировать / Показать (I)',
@@ -208,7 +216,10 @@ var TR = {
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',
-  alphaSkin: 'Кожа'
+  alphaSkin: 'Кожа',
+  remeshVoxelSize: function (val) {
+    return 'Размер ячейки ≈ ' + val;
+  }
 };
 
 export default TR;

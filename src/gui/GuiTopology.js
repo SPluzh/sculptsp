@@ -39,12 +39,18 @@ class GuiMultiresolution {
     // surface nets remeshing
     menu.addTitle(TR('remeshTitle'));
     this._ctrlRes1 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 400, 1);
+    this._voxelSizeLabel1 = document.createElement('li');
+    this._voxelSizeLabel1.style.cssText = 'font-size: 11px; color: #aaa; text-align: right; padding: 2px 10px 4px 0; font-style: italic; list-style: none;';
+    this._ctrlRes1.domContainer.parentNode.insertBefore(this._voxelSizeLabel1, this._ctrlRes1.domContainer.nextSibling);
     menu.addCheckbox(TR('remeshBlock'), Remesh, 'BLOCK');
     menu.addButton(TR('remeshRemesh'), this, 'remesh');
 
     // marching cube remeshing
     menu.addTitle(TR('remeshTitleMC'));
     this._ctrlRes2 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 400, 1);
+    this._voxelSizeLabel2 = document.createElement('li');
+    this._voxelSizeLabel2.style.cssText = 'font-size: 11px; color: #aaa; text-align: right; padding: 2px 10px 4px 0; font-style: italic; list-style: none;';
+    this._ctrlRes2.domContainer.parentNode.insertBefore(this._voxelSizeLabel2, this._ctrlRes2.domContainer.nextSibling);
     menu.addCheckbox(TR('remeshSmoothingMC'), Remesh, 'SMOOTHING');
     menu.addButton(TR('remeshRemeshMC'), this, 'remeshMC');
 
@@ -55,6 +61,39 @@ class GuiMultiresolution {
     this._ctrlDynDec = menu.addSlider(TR('dynamicDecimation'), MeshDynamic, 'DECIMATION_FACTOR', 0, 100, 1);
     this._ctrlDynLin = menu.addCheckbox(TR('dynamicLinear'), MeshDynamic, 'LINEAR');
     this.updateDynamicVisibility(false);
+
+    this._showVoxelPreview = false;
+    var self = this;
+    var onShow = function () {
+      self._showVoxelPreview = true;
+      self._updateVoxelSizeLabel();
+    };
+    var onHide = function () {
+      setTimeout(function () {
+        if (!self._ctrlRes1.isDown && !self._ctrlRes2.isDown &&
+            document.activeElement !== self._ctrlRes1.domInputText &&
+            document.activeElement !== self._ctrlRes2.domInputText) {
+          self._showVoxelPreview = false;
+          self._updateVoxelSizeLabel();
+        }
+      }, 100);
+    };
+
+    var domRes1 = this._ctrlRes1.domContainer;
+    domRes1.addEventListener('mouseenter', onShow);
+    domRes1.addEventListener('mouseleave', onHide);
+    this._ctrlRes1.domInputText.addEventListener('focus', onShow);
+    this._ctrlRes1.domInputText.addEventListener('blur', onHide);
+    this._ctrlRes1.domSlider.addEventListener('pointerdown', onShow);
+    this._ctrlRes1.domSlider.addEventListener('pointerup', onHide);
+
+    var domRes2 = this._ctrlRes2.domContainer;
+    domRes2.addEventListener('mouseenter', onShow);
+    domRes2.addEventListener('mouseleave', onHide);
+    this._ctrlRes2.domInputText.addEventListener('focus', onShow);
+    this._ctrlRes2.domInputText.addEventListener('blur', onHide);
+    this._ctrlRes2.domSlider.addEventListener('pointerdown', onShow);
+    this._ctrlRes2.domSlider.addEventListener('pointerup', onHide);
   }
 
   onKeyUp(event) {
@@ -92,6 +131,7 @@ class GuiMultiresolution {
     Remesh.RESOLUTION = val;
     this._ctrlRes1.setValue(val, true);
     this._ctrlRes2.setValue(val, true);
+    this._updateVoxelSizeLabel();
   }
 
   remesh(manifold) {
@@ -292,6 +332,34 @@ class GuiMultiresolution {
     var bool = this._main.getMesh().isDynamic;
     this.updateDynamicVisibility(bool);
     this._ctrlDynamic.setValue(bool, true);
+    this._updateVoxelSizeLabel();
+  }
+
+  _updateVoxelSizeLabel() {
+    var main = this._main;
+    var selMeshes = main.getSelectedMeshes();
+    if (selMeshes.length === 0 && main.getMesh()) {
+      selMeshes = [main.getMesh()];
+    }
+    if (selMeshes.length === 0 || !this._voxelSizeLabel1 || !this._voxelSizeLabel2) {
+      main.updateVoxelPreview(null);
+      main.render();
+      return;
+    }
+
+    var step = Remesh.computeVoxelStep(selMeshes);
+    var valStr = step.toPrecision(3);
+    
+    var text = TR('remeshVoxelSize', valStr);
+    this._voxelSizeLabel1.textContent = text;
+    this._voxelSizeLabel2.textContent = text;
+
+    if (this._showVoxelPreview) {
+      main.updateVoxelPreview(step, selMeshes);
+    } else {
+      main.updateVoxelPreview(null);
+    }
+    main.render();
   }
 }
 

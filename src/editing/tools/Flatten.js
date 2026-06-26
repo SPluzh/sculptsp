@@ -69,9 +69,8 @@ class Flatten extends SculptBase {
       var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
       if (dist >= 1.0)
         continue;
-      var fallOff = dist * dist;
-      fallOff = 3.0 * fallOff * fallOff - 4.0 * fallOff * dist + 1.0;
-      fallOff *= distToPlane * intensity * mAr[ind + 2] * picking.getAlpha(vx, vy, vz);
+      var fallOff = this.getFallOff(dist);
+      fallOff *= distToPlane * intensity * mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] -= anx * fallOff;
       vAr[ind + 1] -= any * fallOff;
       vAr[ind + 2] -= anz * fallOff;

@@ -35,6 +35,11 @@ var readShortcuts = function (str) {
   var shortcuts = {};
 
   // tools
+  shortcuts['Q'.charCodeAt(0)] = keyAction.MOVE;
+  shortcuts['W'.charCodeAt(0)] = keyAction.CLAYBUILDUP;
+  shortcuts['E'.charCodeAt(0)] = keyAction.CREASE;
+  shortcuts['R'.charCodeAt(0)] = keyAction.PINCH;
+
   shortcuts['0'.charCodeAt(0)] = keyAction.MOVE;
   shortcuts['1'.charCodeAt(0)] = keyAction.BRUSH;
   shortcuts['2'.charCodeAt(0)] = keyAction.INFLATE;
@@ -45,15 +50,14 @@ var readShortcuts = function (str) {
   shortcuts['7'.charCodeAt(0)] = keyAction.CREASE;
   shortcuts['8'.charCodeAt(0)] = keyAction.DRAG;
   shortcuts['9'.charCodeAt(0)] = keyAction.PAINT;
-  shortcuts['E'.charCodeAt(0)] = keyAction.TRANSFORM;
 
   // sculpting
-  shortcuts['C'.charCodeAt(0)] = keyAction.INTENSITY;
-  shortcuts['X'.charCodeAt(0)] = keyAction.RADIUS;
+  shortcuts['A'.charCodeAt(0)] = keyAction.INTENSITY;
+  shortcuts['S'.charCodeAt(0)] = keyAction.RADIUS;
+  shortcuts['D'.charCodeAt(0)] = keyAction.FOCAL_SHIFT;
   shortcuts['N'.charCodeAt(0)] = keyAction.NEGATIVE;
-  shortcuts['S'.charCodeAt(0)] = keyAction.PICKER;
+  shortcuts['C'.charCodeAt(0)] = keyAction.PICKER;
   shortcuts[46] = keyAction.DELETE; // DEL
-
   // camera
   shortcuts['F'.charCodeAt(0)] = keyAction.CAMERA_FRONT;
   shortcuts['T'.charCodeAt(0)] = keyAction.CAMERA_TOP;
@@ -65,10 +69,9 @@ var readShortcuts = function (str) {
   shortcuts[40] = keyAction.STRIFE_DOWN;
 
   // rendering
-  shortcuts['W'.charCodeAt(0)] = keyAction.WIREFRAME;
+
 
   // other
-  shortcuts['R'.charCodeAt(0)] = keyAction.REMESH;
 
   if (!str)
     return shortcuts;
@@ -137,12 +140,12 @@ var getOptionsURL = function () {
   options.fov = queryNumber(params.fov, 10, 90, 45); // [10-90]
 
   // rendering
-  options.flatshading = queryBool(params.flatshading, false);
+  options.flatshading = queryBool(params.flatshading, true);
   options.wireframe = queryBool(params.wireframe, false);
   options.curvature = queryNumber(params.curvature, 0, 5, 0); // [0-5]
   options.exposure = queryNumber(params.exposure, 0, 5); // [0-5]
   options.environment = queryInteger(params.environment, 0, Infinity, 0); // [0-inf]
-  options.matcap = queryInteger(params.matcap, 0, Infinity, 3); // [0-inf]
+  options.matcap = queryInteger(params.matcap, 0, Infinity, 0); // [0-inf]
   options.shader = getEnum(Enums.Shader, params.shader, Enums.Shader.MATCAP); // pbr/matcap/normal/uv
   options.filmic = queryBool(params.filmic, false);
 

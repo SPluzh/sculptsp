@@ -36,6 +36,9 @@ ShaderSelection.draw = function (geom, drawCircle, drawSym) {
     gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getCircleMVP());
     ShaderSelection.attributes.aVertex.bindToBuffer(geom.getCircleBuffer());
     gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
+
+    gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getInnerCircleMVP());
+    gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
   }
 
   gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getDotMVP());

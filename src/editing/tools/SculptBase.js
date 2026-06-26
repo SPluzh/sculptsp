@@ -18,6 +18,19 @@ class SculptBase {
     this._cbContinuous = this.updateContinuous.bind(this); // callback continuous
     this._lastMouseX = 0.0;
     this._lastMouseY = 0.0;
+    this._spacing = 0.15; // stroke spacing as fraction of radius (0.0–2.0)
+    this._focalShift = 0.0;
+    this._focalShiftFalloff = true;
+  }
+
+  getFallOff(dist) {
+    var focalShift = this._focalShift;
+    var p = (1.0 - focalShift) / 2.0;
+    if (dist < p) return 1.0;
+    if (p >= 1.0) return 0.0;
+    var d = (dist - p) / (1.0 - p);
+    var fallOff = d * d;
+    return 3.0 * fallOff * fallOff - 4.0 * fallOff * d + 1.0;
   }
 
   setToolMesh(mesh) {
@@ -127,7 +140,17 @@ class SculptBase {
     var dx = main._mouseX - this._lastMouseX;
     var dy = main._mouseY - this._lastMouseY;
     var dist = Math.sqrt(dx * dx + dy * dy);
-    var minSpacing = 0.15 * this._radius * main.getPixelRatio();
+    var minSpacing = this._spacing * this._radius * main.getPixelRatio();
+
+    // spacing = 0 means stamp on every mouse move (no distance threshold)
+    if (minSpacing <= 0.0) {
+      if (dist > 0.0)
+        this.makeStroke(main._mouseX, main._mouseY, picking, pickingSym);
+      this.updateRender();
+      this._lastMouseX = main._mouseX;
+      this._lastMouseY = main._mouseY;
+      return;
+    }
 
     if (dist <= minSpacing)
       return;
