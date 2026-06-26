@@ -169,7 +169,7 @@ ShaderBase.updateUniforms = (function () {
 
     gl.uniform1f(uniforms.uCurvature, mesh.getCurvature());
     var cam = main.getCamera();
-    gl.uniform1f(uniforms.uFov, cam.isOrthographic() ? -Math.abs(cam._trans[2]) * 25.0 : cam.getFov());
+    gl.uniform1f(uniforms.uFov, cam.isOrthographic() ? -Math.abs(cam._trans[2]) * 25.0 : cam.getFovDegrees());
   };
 })();
 

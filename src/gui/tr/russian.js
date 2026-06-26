@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: 'Проекция',
   cameraPerspective: 'Перспективная',
   cameraOrthographic: 'Ортогональная',
-  cameraFov: 'Угол обзора',
+  cameraFov: 'Фокусное расстояние (мм)',
   cameraPivot: 'Выбор вращения',
   cameraRmbOnly: 'Только ПКМ для камеры',
   cameraSpeedTitle: 'Настройки скорости',

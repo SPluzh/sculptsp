@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: 'Projektion',
   cameraPerspective: 'Perspektivisch',
   cameraOrthographic: 'Orthographisch',
-  cameraFov: 'Sichtfeld (fov)',
+  cameraFov: 'Brennweite (mm)',
   cameraPivot: 'Pivot auswählen',
 
   // file

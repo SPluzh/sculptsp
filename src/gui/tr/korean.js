@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: '사영법',
   cameraPerspective: '투시원근법',
   cameraOrthographic: '정사영법',
-  cameraFov: '시야각',
+  cameraFov: '초점 거리 (mm)',
   cameraPivot: '피봇 찍기',
 
   // file

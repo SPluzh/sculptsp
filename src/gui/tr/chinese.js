@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: '投影',
   cameraPerspective: '透視角',
   cameraOrthographic: '等視角',
-  cameraFov: '視野範圍',
+  cameraFov: '焦距 (毫米)',
   cameraPivot: '選擇軸心',
 
   // file

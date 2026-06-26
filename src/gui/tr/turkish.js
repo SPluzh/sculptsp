@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: 'İz Düşüm',
   cameraPerspective: 'Perspektif',
   cameraOrthographic: 'Orthografik',
-  cameraFov: 'Görüş Alanı',
+  cameraFov: 'Odak Uzaklığı (mm)',
   cameraPivot: 'Eksen',
 
   // file

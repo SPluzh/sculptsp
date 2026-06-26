@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: 'Projection',
   cameraPerspective: 'Perspective',
   cameraOrthographic: 'Orthographic',
-  cameraFov: 'Fov',
+  cameraFov: 'Fov (mm)',
   cameraPivot: 'Picking pivot',
   cameraRmbOnly: 'RMB only navigation',
   cameraSpeedTitle: 'Speed settings',

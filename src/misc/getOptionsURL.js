@@ -59,6 +59,7 @@ var readShortcuts = function (str) {
   shortcuts['C'.charCodeAt(0)] = keyAction.PICKER;
   shortcuts[46] = keyAction.DELETE; // DEL
   // camera
+  shortcuts['G'.charCodeAt(0)] = keyAction.CAMERA_FOV;
   shortcuts['F'.charCodeAt(0)] = keyAction.CAMERA_FRONT;
   shortcuts['T'.charCodeAt(0)] = keyAction.CAMERA_TOP;
   shortcuts['L'.charCodeAt(0)] = keyAction.CAMERA_LEFT;
@@ -137,7 +138,7 @@ var getOptionsURL = function () {
   options.projection = getEnum(Enums.Projection, params.projection, Enums.Projection.PERSPECTIVE); // perspective/orthographic
   options.cameramode = getEnum(Enums.CameraMode, params.cameramode, Enums.Projection.ORBIT); // orbit/spherical/plane
   options.pivot = queryBool(params.pivot, true);
-  options.fov = queryNumber(params.fov, 10, 90, 45); // [10-90]
+  options.fov = queryNumber(params.fov, 10, 200, 110); // [10-200]
 
   // rendering
   options.flatshading = queryBool(params.flatshading, true);

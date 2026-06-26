@@ -19,7 +19,7 @@ var TR = {
   cameraProjection: 'Projection',
   cameraPerspective: 'Perspective',
   cameraOrthographic: 'Orthographique',
-  cameraFov: 'Champs de vision',
+  cameraFov: 'Focale (mm)',
   cameraPivot: 'Point de pivot',
 
   // file

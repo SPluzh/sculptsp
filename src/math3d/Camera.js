@@ -69,7 +69,7 @@ class Camera {
     this._height = 0.0; // viewport height
 
     this._speed = 0.0; // solve scale issue
-    this._fov = Math.min(opts.fov, 150); // vertical field of view
+    this._fov = Math.min(opts.fov, 200); // focal length in mm
 
     // translation stuffs
     this._trans = [0.0, 0.0, 30.0];
@@ -144,6 +144,10 @@ class Camera {
     return this._fov;
   }
 
+  getFovDegrees() {
+    return 2.0 * Math.atan(12.0 / this._fov) * 180.0 / Math.PI;
+  }
+
   getUsePivot() {
     return this._usePivot;
   }
@@ -180,7 +184,7 @@ class Camera {
     // adjust zoom
     if (this._projectionType === Enums.Projection.PERSPECTIVE) {
       var oldZoom = this.getTransZ();
-      this._trans[2] = vec3.dist(this.computePosition(), this._center) * this._fov / 45;
+      this._trans[2] = vec3.dist(this.computePosition(), this._center) * this.getFovDegrees() / 45;
       this._offset[2] += this.getTransZ() - oldZoom;
     } else {
       this._offset[2] = 0.0;
@@ -232,7 +236,7 @@ class Camera {
   }
 
   getTransZ() {
-    return this._projectionType === Enums.Projection.PERSPECTIVE ? this._trans[2] * 45 / this._fov : 1000.0;
+    return this._projectionType === Enums.Projection.PERSPECTIVE ? this._trans[2] * 45 / this.getFovDegrees() : 1000.0;
   }
 
   updateView() {
@@ -268,7 +272,7 @@ class Camera {
 
   updateProjection() {
     if (this._projectionType === Enums.Projection.PERSPECTIVE) {
-      mat4.perspective(this._proj, this._fov * Math.PI / 180.0, this._width / this._height, this._near, this._far);
+      mat4.perspective(this._proj, this.getFovDegrees() * Math.PI / 180.0, this._width / this._height, this._near, this._far);
       this._proj[10] = -1.0;
       this._proj[14] = -2 * this._near;
     } else {
@@ -574,7 +578,7 @@ class Camera {
     var horizontal2 = Math.abs(top - bottom);
 
     x = Math.min(horizontal2, vertical2) / near * 0.5;
-    return (this._fov / 45.0) * Math.sqrt(1.0 + x * x) / x;
+    return (this.getFovDegrees() / 45.0) * Math.sqrt(1.0 + x * x) / x;
   }
 }
 
