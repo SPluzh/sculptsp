@@ -122,6 +122,7 @@ var TR = {
   sculptRadius: 'Размер (-S)',
   sculptIntensity: 'Сила (-A)',
   sculptFocalShift: 'Фокус (Focal Shift)',
+  sculptFocalShiftFalloff: 'Спад фокуса (Focal Shift Falloff)',
   sculptHardness: 'Жесткость',
   sculptCulling: 'Тонкая поверхность(передние вершины)',
   sculptAlphaTitle: 'Альфа',

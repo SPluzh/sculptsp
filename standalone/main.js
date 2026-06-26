@@ -32,6 +32,34 @@ function initWintab() {
   }
 }
 
+function destroyWintab() {
+  if (pushTimer) {
+    clearInterval(pushTimer);
+    pushTimer = null;
+  }
+  if (wintab) {
+    try {
+      wintab.stopPolling();
+      wintab.destroy();
+    } catch (e) {
+      console.log('[WinTab] Addon destroy failed:', e.message);
+    }
+    wintab = null;
+  }
+}
+
+ipcMain.handle('wintab:enable', () => {
+  if (!wintab) {
+    initWintab();
+  }
+  return wintab !== null;
+});
+
+ipcMain.handle('wintab:disable', () => {
+  destroyWintab();
+  return true;
+});
+
 ipcMain.handle('wintab:isActive', () => wintab !== null);
 
 let pushTimer = null;
@@ -84,8 +112,6 @@ function createWindow() {
 
   mainWindowState.manage(mainWindow);
 
-  initWintab();
-
   mainWindow.loadURL(`file://${__dirname}/app/index.html`);
 
   // mainWindow.webContents.openDevTools();
@@ -104,10 +130,7 @@ app.on('window-all-closed', function () {
 });
 
 app.on('before-quit', () => {
-  if (wintab) {
-    wintab.stopPolling();
-    wintab.destroy();
-  }
+  destroyWintab();
 });
 
 app.on('activate', function () {

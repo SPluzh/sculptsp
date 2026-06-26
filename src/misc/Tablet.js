@@ -34,23 +34,11 @@ Tablet.initWintab = function () {
   }
 
   var lastPenDown = false;
-
-  function checkWintabActive() {
-    ipcRenderer.invoke('wintab:isActive').then(function (active) {
-      if (active) {
-        Tablet.isWintabActive = true;
-        console.log('[Tablet] WinTab active — using native pressure');
-        startPolling();
-      } else {
-        // Пробуем снова через 100ms
-        setTimeout(checkWintabActive, 100);
-      }
-    }).catch(function (err) {
-      console.error('[Tablet] Failed to check Wintab active status:', err);
-    });
-  }
+  var isListening = false;
 
   function startPolling() {
+    if (isListening) return;
+    isListening = true;
     ipcRenderer.on('wintab:data', function (event, data) {
       if (!Tablet.useWintab) return;
       if (data && data.active) {
@@ -66,7 +54,31 @@ Tablet.initWintab = function () {
     });
   }
 
-  checkWintabActive();
+  Tablet.applyApi = function () {
+    if (Tablet.useWintab) {
+      ipcRenderer.invoke('wintab:enable').then(function (active) {
+        Tablet.isWintabActive = active;
+        if (active) {
+          console.log('[Tablet] WinTab enabled & active');
+          startPolling();
+        } else {
+          console.log('[Tablet] WinTab enabled but inactive (no tablet device / failed context)');
+        }
+      }).catch(function (err) {
+        console.error('[Tablet] Failed to enable Wintab:', err);
+      });
+    } else {
+      ipcRenderer.invoke('wintab:disable').then(function () {
+        Tablet.isWintabActive = false;
+        console.log('[Tablet] WinTab disabled (using Windows Ink)');
+      }).catch(function (err) {
+        console.error('[Tablet] Failed to disable Wintab:', err);
+      });
+    }
+  };
+
+  // Инициализация при старте на основе сохраненного значения
+  Tablet.applyApi();
 };
 
 Tablet.initWintab();

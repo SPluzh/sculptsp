@@ -49,8 +49,10 @@ class SculptGL extends Scene {
     var cbOnPointer = this.onPointer.bind(this);
 
     // pointer
-    canvas.addEventListener('pointerdown', cbOnPointer, false);
-    canvas.addEventListener('pointermove', cbOnPointer, false);
+    window.addEventListener('pointerdown', cbOnPointer, false);
+    window.addEventListener('pointermove', cbOnPointer, false);
+    window.addEventListener('pointerup', cbOnPointer, false);
+    window.addEventListener('pointercancel', cbOnPointer, false);
 
     // mouse
     canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
@@ -78,7 +80,12 @@ class SculptGL extends Scene {
 
   onPointer(event) {
     if (!(Tablet.isWintabActive && Tablet.useWintab)) {
-      Tablet.pressure = event.pressure;
+      if (event.type === 'pointerup' || event.type === 'pointercancel') {
+        Tablet.pressure = 0.0;
+      } else {
+        Tablet.pressure = event.pressure;
+      }
+      console.log('[WinInk] pointer event: pressure = ' + event.pressure.toFixed(3) + ', type = ' + event.type + ', pointerType = ' + event.pointerType);
     }
   }
 

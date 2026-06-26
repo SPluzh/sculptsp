@@ -61,6 +61,9 @@ class GuiTablet {
     if (typeof localStorage !== 'undefined') {
       localStorage.setItem('useWintab', Tablet.useWintab ? 'true' : 'false');
     }
+    if (typeof Tablet.applyApi === 'function') {
+      Tablet.applyApi();
+    }
   }
 }
 

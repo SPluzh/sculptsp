@@ -122,6 +122,7 @@ var TR = {
   sculptRadius: 'Radius (-S)',
   sculptIntensity: 'Intensity (-A)',
   sculptFocalShift: 'Focal Shift',
+  sculptFocalShiftFalloff: 'Focal Shift Falloff',
   sculptHardness: 'Hardness',
   sculptCulling: 'Thin surface (front vertex only)',
   sculptAlphaTitle: 'Alpha',
