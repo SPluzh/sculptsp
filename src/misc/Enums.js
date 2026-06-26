@@ -90,7 +90,8 @@ Enums.KeyAction = Utils.extend({
   STRIFE_UP: acc++,
   STRIFE_DOWN: acc++,
   WIREFRAME: acc++,
-  REMESH: acc++
+  REMESH: acc++,
+  REMESH_RESOLUTION: acc++
 }, Enums.Tools);
 
 export default Enums;

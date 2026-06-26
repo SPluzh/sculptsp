@@ -87,8 +87,8 @@ var TR = {
 
   // remesh
   remeshTitle: 'Перестроить воксели',
-  remeshRemesh: 'Перестроить',
-  remeshResolution: 'Разрешение',
+  remeshRemesh: 'Перестроить (Ctrl+X)',
+  remeshResolution: 'Разрешение (-X)',
   remeshBlock: 'Блоки-кубики',
 
   // dynamic

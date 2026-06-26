@@ -16,6 +16,14 @@ class GuiMultiresolution {
     this._menu = null; // ui menu
     this._ctrlResolution = null; // multiresolution controller
     this._ctrlDynamic = null; // dynamic topology controller
+
+    this._modalRemeshResolution = false;
+    this._remeshRefX = 0;
+    this._remeshRefY = 0;
+    this._lastPageX = 0;
+    this._lastPageY = 0;
+
+    this._initRemeshIndicator();
     this.init(guiParent);
   }
 
@@ -72,7 +80,8 @@ class GuiMultiresolution {
       setTimeout(function () {
         if (!self._ctrlRes1.isDown && !self._ctrlRes2.isDown &&
             document.activeElement !== self._ctrlRes1.domInputText &&
-            document.activeElement !== self._ctrlRes2.domInputText) {
+            document.activeElement !== self._ctrlRes2.domInputText &&
+            !self._modalRemeshResolution) {
           self._showVoxelPreview = false;
           self._updateVoxelSizeLabel();
         }
@@ -105,6 +114,21 @@ class GuiMultiresolution {
 
     if (shk === Enums.KeyAction.REMESH) {
       this.remesh();
+    } else if (shk === Enums.KeyAction.REMESH_RESOLUTION) {
+      event.handled = true;
+      
+      if (this._modalRemeshResolution) {
+        var main = this._main;
+        this._modalRemeshResolution = main._focusGui = false;
+        this._updateRemeshIndicator();
+        
+        if (!this._ctrlRes1.isDown && !this._ctrlRes2.isDown &&
+            document.activeElement !== this._ctrlRes1.domInputText &&
+            document.activeElement !== this._ctrlRes2.domInputText) {
+          this._showVoxelPreview = false;
+        }
+        this._updateVoxelSizeLabel();
+      }
     }
   }
 
@@ -360,6 +384,131 @@ class GuiMultiresolution {
       main.updateVoxelPreview(null);
     }
     main.render();
+  }
+
+  onKeyDown(event) {
+    if (event.handled === true)
+      return;
+
+    var shk = getOptionsURL.getShortKey(event.which);
+    if (shk === Enums.KeyAction.REMESH_RESOLUTION) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.handled = true;
+      
+      if (event.ctrlKey) {
+        this.remesh();
+        return;
+      }
+
+      var main = this._main;
+      if (main._action !== Enums.Action.NOTHING)
+        return;
+
+      if (!this._modalRemeshResolution) {
+        this._remeshRefX = this._lastPageX;
+        this._remeshRefY = this._lastPageY;
+        this._modalRemeshResolution = main._focusGui = true;
+      }
+      this._showVoxelPreview = true;
+      this._updateVoxelSizeLabel();
+      this._updateRemeshIndicator(this._remeshRefX, this._remeshRefY);
+    }
+  }
+
+  onMouseMove(event) {
+    if (this._modalRemeshResolution) {
+      var delta = event.pageX - this._lastPageX;
+      var newVal = Math.max(8, Math.min(2000, Remesh.RESOLUTION + delta * 2));
+      this.remeshResolution(newVal);
+      this._updateRemeshIndicator(this._remeshRefX, this._remeshRefY);
+    }
+    this._lastPageX = event.pageX;
+    this._lastPageY = event.pageY;
+  }
+
+  onMouseDown(event) {
+    this._lastPageX = event.pageX;
+    this._lastPageY = event.pageY;
+  }
+
+  removeEvents() {
+    if (this._remeshIndicator && this._remeshIndicator.parentNode) {
+      this._remeshIndicator.parentNode.removeChild(this._remeshIndicator);
+    }
+  }
+
+  _initRemeshIndicator() {
+    var indicator = this._remeshIndicator = document.createElement('div');
+    indicator.style.position = 'absolute';
+    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
+    indicator.style.backdropFilter = 'blur(6px)';
+    indicator.style.webkitBackdropFilter = 'blur(6px)';
+    indicator.style.color = '#ffffff';
+    indicator.style.padding = '8px 12px';
+    indicator.style.borderRadius = '6px';
+    indicator.style.fontFamily = "'Open Sans', sans-serif";
+    indicator.style.fontSize = '12px';
+    indicator.style.fontWeight = '600';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.display = 'none';
+    indicator.style.zIndex = '99999';
+    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+    indicator.style.minWidth = '110px';
+    indicator.style.flexDirection = 'column';
+    indicator.style.gap = '6px';
+    indicator.style.transform = 'translate(-50%, -100%)';
+    indicator.style.webkitTransform = 'translate(-50%, -100%)';
+
+    var label = this._remeshIndicatorLabel = document.createElement('div');
+    label.style.display = 'flex';
+    label.style.justifyContent = 'space-between';
+    indicator.appendChild(label);
+
+    var labelText = this._remeshIndicatorLabelText = document.createElement('span');
+    var labelValue = this._remeshIndicatorLabelValue = document.createElement('span');
+    labelValue.style.color = '#3b97e3';
+    label.appendChild(labelText);
+    label.appendChild(labelValue);
+
+    var track = document.createElement('div');
+    track.style.width = '100%';
+    track.style.height = '5px';
+    track.style.background = 'rgba(255, 255, 255, 0.2)';
+    track.style.borderRadius = '3px';
+    track.style.overflow = 'hidden';
+
+    var fill = this._remeshIndicatorFill = document.createElement('div');
+    fill.style.width = '0%';
+    fill.style.height = '100%';
+    fill.style.background = '#3b97e3';
+    fill.style.borderRadius = '3px';
+    fill.style.transition = 'width 0.05s ease-out';
+
+    track.appendChild(fill);
+    indicator.appendChild(track);
+
+    document.body.appendChild(indicator);
+  }
+
+  _updateRemeshIndicator(x, y) {
+    if (this._modalRemeshResolution) {
+      var val = Remesh.RESOLUTION;
+      var name = TR('remeshResolution');
+      this._remeshIndicatorLabelText.textContent = name;
+      this._remeshIndicatorLabelValue.textContent = val;
+      
+      var pct = Math.max(0, Math.min(100, ((val - 8) / (2000 - 8)) * 100));
+      this._remeshIndicatorFill.style.width = pct + '%';
+      this._remeshIndicator.style.left = x + 'px';
+      this._remeshIndicator.style.top = (y - 25) + 'px';
+      this._remeshIndicator.style.display = 'flex';
+    } else {
+      if (this._remeshIndicator) {
+        this._remeshIndicator.style.display = 'none';
+      }
+    }
   }
 }
 

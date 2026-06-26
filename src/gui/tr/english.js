@@ -87,8 +87,8 @@ var TR = {
 
   // remesh
   remeshTitle: 'Voxel remeshing (quads)',
-  remeshRemesh: 'Remesh',
-  remeshResolution: 'Resolution',
+  remeshRemesh: 'Remesh (Ctrl+X)',
+  remeshResolution: 'Resolution (-X)',
   remeshBlock: 'Block',
 
   // dynamic
