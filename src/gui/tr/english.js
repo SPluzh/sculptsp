@@ -231,6 +231,9 @@ var TR = {
   remeshSmoothingMC: 'Relax topology',
   remeshVoxelSize: function (val) {
     return 'Voxel size ≈ ' + val;
+  },
+  remeshResolutionTooHigh: function (maxRes) {
+    return 'Resolution is too high (memory limit exceeded).\nMaximum recommended resolution for this model is ~' + maxRes + '.';
   }
 };
 

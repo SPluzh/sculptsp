@@ -14,7 +14,7 @@ class GuiTablet {
   init(guiParent) {
     var menu = this._menu = guiParent.addMenu(TR('stateTitle'));
     menu.addButton(TR('stateUndo'), this, 'onUndo', 'CTRL+Z');
-    menu.addButton(TR('stateRedo'), this, 'onRedo', 'CTRL+Y');
+    menu.addButton(TR('stateRedo'), this, 'onRedo', 'CTRL+SHIFT+Z');
     menu.addTitle(TR('stateMaxStack'));
     var states = this._main.getStateManager();
     menu.addSlider('', StateManager.STACK_LENGTH, states.setNewMaxStack.bind(states), 3, 50, 1);
@@ -46,10 +46,10 @@ class GuiTablet {
       event.preventDefault();
 
     var key = event.which;
-    if (event.ctrlKey && key === 90) { // z key
+    if (event.ctrlKey && !event.shiftKey && key === 90) { // z key
       this.onUndo();
       event.handled = true;
-    } else if (event.ctrlKey && key === 89) { // y key
+    } else if (event.ctrlKey && (key === 89 || (event.shiftKey && key === 90))) { // y or shift + z key
       this.onRedo();
       event.handled = true;
     }

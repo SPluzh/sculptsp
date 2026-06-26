@@ -138,6 +138,6 @@ class StateManager {
   }
 }
 
-StateManager.STACK_LENGTH = 15;
+StateManager.STACK_LENGTH = 50;
 
 export default StateManager;

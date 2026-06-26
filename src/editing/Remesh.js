@@ -4,6 +4,7 @@ import SurfaceNets from 'editing/SurfaceNets';
 import MarchingCubes from 'editing/MarchingCubes';
 import Geometry from 'math3d/Geometry';
 import MeshStatic from 'mesh/meshStatic/MeshStatic';
+import Mesh from 'mesh/Mesh';
 import Utils from 'misc/Utils';
 import Enums from 'misc/Enums';
 import Smooth from 'editing/tools/Smooth';
@@ -177,12 +178,13 @@ var voxelize = function (mesh, voxels) {
           if (newDist < distField[n]) {
             distField[n] = newDist;
             var n3 = n * 3;
-            colors[n3] = c1x;
-            colors[n3 + 1] = c1y;
-            colors[n3 + 2] = c1z;
-            materials[n3] = m1x;
-            materials[n3 + 1] = m1y;
-            materials[n3 + 2] = m1z;
+            // Store as Uint8 (0–255); divide by 255 when reading in SurfaceNets/MarchingCubes
+            colors[n3] = (c1x * 255 + 0.5) | 0;
+            colors[n3 + 1] = (c1y * 255 + 0.5) | 0;
+            colors[n3 + 2] = (c1z * 255 + 0.5) | 0;
+            materials[n3] = (m1x * 255 + 0.5) | 0;
+            materials[n3 + 1] = (m1y * 255 + 0.5) | 0;
+            materials[n3 + 2] = (m1z * 255 + 0.5) | 0;
           }
 
           if (newDist > step)
@@ -223,21 +225,18 @@ var createVoxelData = function (box) {
   var rz = Math.ceil((max[2] - min[2]) / step);
 
   var datalen = rx * ry * rz;
-  var buffer = Utils.getMemory((4 * (1 + 3 + 3) + 3) * datalen);
+  // Compact layout: Float32 distField + Uint8 colors + Uint8 materials + Uint8 crossedEdges
+  // 4 + 3 + 3 + 3 = 13 bytes/voxel (vs 31 bytes previously → ~2.4x memory reduction)
+  var buffer = new ArrayBuffer(13 * datalen);
   var distField = new Float32Array(buffer, 0, datalen);
-  var colors = new Float32Array(buffer, 4 * datalen, datalen * 3);
-  var materials = new Float32Array(buffer, 16 * datalen, datalen * 3);
-  var crossedEdges = new Uint8Array(buffer, 28 * datalen, datalen * 3);
+  // Colors/materials stored as Uint8 (0-255) — sufficient precision for vertex color interpolation
+  var colors = new Uint8Array(buffer, 4 * datalen, datalen * 3);
+  var materials = new Uint8Array(buffer, 7 * datalen, datalen * 3);
+  var crossedEdges = new Uint8Array(buffer, 10 * datalen, datalen * 3);
 
-  // Initialize data
+  // Initialize distField to Infinity; colors/materials default to 0 (fine — only read when distField is finite)
   for (var idf = 0; idf < datalen; ++idf)
     distField[idf] = Infinity;
-
-  for (var ide = 0, datalene = datalen * 3; ide < datalene; ++ide)
-    crossedEdges[ide] = 0;
-
-  for (var idc = 0, datalenc = datalen * 3; idc < datalenc; ++idc)
-    colors[idc] = materials[idc] = -1;
 
   var voxels = {};
   voxels.dims = [rx, ry, rz];
@@ -259,7 +258,11 @@ var createMesh = function (mesh, faces, vertices, colors, materials) {
   if (colors) newMesh.setColors(colors);
   if (materials) newMesh.setMaterials(materials);
   newMesh.setRenderData(mesh.getRenderData());
+  // Skip Tipsy vertex cache optimization for remesh output — it consumes gigabytes
+  // of memory via JS array growth for large meshes and causes OOM at high resolutions.
+  Mesh.OPTIMIZE = false;
   newMesh.init();
+  Mesh.OPTIMIZE = true;
   newMesh.initRender();
   return newMesh;
 };
@@ -478,6 +481,47 @@ Remesh.mergeMeshes = function (meshes, baseMesh) {
   var arr = { vertices: null, colors: null, materials: null, faces: null };
   Remesh.mergeArrays(meshes, arr);
   return createMesh(baseMesh, arr.faces, arr.vertices, arr.colors, arr.materials);
+};
+
+Remesh.estimateVoxelMemory = function (meshes) {
+  if (!meshes || meshes.length === 0) return 0;
+  var box = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
+  var tmp = [0.0, 0.0, 0.0];
+  for (var i = 0, nbm = meshes.length; i < nbm; ++i) {
+    var mesh = meshes[i];
+    var matrix = mesh.getMatrix();
+    var localb;
+    try { localb = mesh.getLocalBound(); } catch (e) { localb = null; }
+    if (!localb) continue;
+    var corners = [
+      [localb[0], localb[1], localb[2]],
+      [localb[0], localb[1], localb[5]],
+      [localb[0], localb[4], localb[2]],
+      [localb[0], localb[4], localb[5]],
+      [localb[3], localb[1], localb[2]],
+      [localb[3], localb[1], localb[5]],
+      [localb[3], localb[4], localb[2]],
+      [localb[3], localb[4], localb[5]]
+    ];
+    for (var c = 0; c < 8; ++c) {
+      vec3.transformMat4(tmp, corners[c], matrix);
+      if (tmp[0] < box[0]) box[0] = tmp[0];
+      if (tmp[1] < box[1]) box[1] = tmp[1];
+      if (tmp[2] < box[2]) box[2] = tmp[2];
+      if (tmp[0] > box[3]) box[3] = tmp[0];
+      if (tmp[1] > box[4]) box[4] = tmp[1];
+      if (tmp[2] > box[5]) box[5] = tmp[2];
+    }
+  }
+  var maxDim = Math.max((box[3] - box[0]), (box[4] - box[1]), (box[5] - box[2]));
+  var step = maxDim / Remesh.RESOLUTION;
+  var stepMin = step * 1.51;
+  var stepMax = step * 1.51;
+  var rx = Math.ceil((box[3] + stepMax - (box[0] - stepMin)) / step);
+  var ry = Math.ceil((box[4] + stepMax - (box[1] - stepMin)) / step);
+  var rz = Math.ceil((box[5] + stepMax - (box[2] - stepMin)) / step);
+  var datalen = rx * ry * rz;
+  return 13 * datalen; // 4 (Float32 dist) + 3 (Uint8 color) + 3 (Uint8 material) + 3 (Uint8 edges)
 };
 
 Remesh.computeVoxelStep = function (meshes) {

@@ -164,10 +164,32 @@ class GuiMultiresolution {
     if (!mesh)
       return;
 
+    var selMeshes = main.getSelectedMeshes().slice();
+    if (selMeshes.length === 0)
+      selMeshes = [mesh];
+
+    var estimatedBytes = Remesh.estimateVoxelMemory(selMeshes);
+    // Absolute safety ceiling (24 GB) to prevent system freezing on excessive paging/thrashing
+    var ABSOLUTE_MAX_BYTES = 24.0 * 1024 * 1024 * 1024;
+    if (estimatedBytes > ABSOLUTE_MAX_BYTES) {
+      var maxRes = Math.floor(Math.cbrt(ABSOLUTE_MAX_BYTES / 13)) - 4;
+      window.alert(TR('remeshResolutionTooHigh', maxRes));
+      return;
+    }
+
+    try {
+      var dummy = new ArrayBuffer(estimatedBytes);
+      dummy = null;
+    } catch (e) {
+      // Memory allocation failed (RangeError or Out of Memory)
+      var maxRes = Math.floor(Math.cbrt(12.0 * 1024 * 1024 * 1024 / 13)) - 4;
+      window.alert(TR('remeshResolutionTooHigh', maxRes));
+      return;
+    }
+
     var wasDynamic = mesh.isDynamic;
 
     var meshes = main.getMeshes();
-    var selMeshes = main.getSelectedMeshes().slice();
     for (var i = 0, l = selMeshes.length; i < l; ++i) {
       var sel = selMeshes[i];
       meshes.splice(main.getIndexMesh(sel), 1);

@@ -89,8 +89,10 @@ var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
 
   if (mask !== 0 && mask !== 0xff) {
     if (invSum > 0.0) invSum = 1.0 / invSum;
-    cols.push(c1 * invSum, c2 * invSum, c3 * invSum);
-    mats.push(m1 * invSum, m2 * invSum, m3 * invSum);
+    // Colors and materials are stored as Uint8 (0–255); scale back to float (0–1)
+    var inv255 = invSum / 255.0;
+    cols.push(c1 * inv255, c2 * inv255, c3 * inv255);
+    mats.push(m1 * inv255, m2 * inv255, m3 * inv255);
   }
 
   return mask;

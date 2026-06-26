@@ -1,4 +1,5 @@
 const { app, BrowserWindow, ipcMain } = require('electron');
+app.commandLine.appendSwitch('js-flags', '--max-old-space-size=16384');
 const windowStateKeeper = require('./electron-window-state');
 const path = require('path');
 

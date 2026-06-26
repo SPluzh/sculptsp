@@ -227,6 +227,9 @@ var TR = {
   alphaSkin: 'Кожа',
   remeshVoxelSize: function (val) {
     return 'Размер ячейки ≈ ' + val;
+  },
+  remeshResolutionTooHigh: function (maxRes) {
+    return 'Разрешение слишком высокое (превышен лимит памяти).\nМаксимальное рекомендуемое разрешение для этой модели: ~' + maxRes + '.';
   }
 };
 
