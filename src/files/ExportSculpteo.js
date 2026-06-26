@@ -57,7 +57,7 @@ Export.exportFileSculpteo = function (radius, xhr, statusWidget, blob) {
 
   var fd = new FormData();
   fd.append('file', blob);
-  fd.append('name', 'fromSculptgl');
+  fd.append('name', 'fromSculptsp');
 
   // fd.append('trackid', '....');
   // fd.append('share', '0');

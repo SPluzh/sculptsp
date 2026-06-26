@@ -378,7 +378,7 @@ class Scene {
     var canvas = document.getElementById('canvas');
     var gl = this._gl = canvas.getContext('webgl', attributes) || canvas.getContext('experimental-webgl', attributes);
     if (!gl) {
-      window.alert('Could not initialise WebGL. No WebGL, no SculptGL. Sorry.');
+      window.alert('Could not initialise WebGL. No WebGL, no SculptSP. Sorry.');
       return;
     }
 

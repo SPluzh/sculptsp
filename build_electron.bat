@@ -1,8 +1,8 @@
 @echo off
 cd /d "%~dp0"
-title SculptGL Electron Builder
+title SculptSP Electron Builder
 echo ===================================================
-echo             Building SculptGL for Electron
+echo             Building SculptSP for Electron
 echo ===================================================
 echo.
 
@@ -92,10 +92,6 @@ if not exist "standalone\wintab-x64.node" (
     echo [WARNING] standalone\wintab-x64.node is missing. Building it...
     call yarn build-wintab-x64
 )
-if not exist "standalone\wintab-ia32.node" (
-    echo [WARNING] standalone\wintab-ia32.node is missing. Building it...
-    call yarn build-wintab-ia32
-)
 
 :: Build Standalone Electron App
 echo.
@@ -113,7 +109,7 @@ if %ERRORLEVEL% neq 0 (
 cd ..
 echo.
 echo ===================================================
-echo        SculptGL Electron Build Successful!
+echo        SculptSP Electron Build Successful!
 echo ===================================================
 echo Output directories can be found inside: "%~dp0standalone"
 echo.

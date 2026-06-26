@@ -12,7 +12,7 @@ var MOUSE_MIDDLE = 2;
 var MOUSE_RIGHT = 3;
 
 // Manage events
-class SculptGL extends Scene {
+class SculptSP extends Scene {
 
   constructor() {
     super();
@@ -538,4 +538,4 @@ class SculptGL extends Scene {
   }
 }
 
-export default SculptGL;
+export default SculptSP;

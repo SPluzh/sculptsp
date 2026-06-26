@@ -4,10 +4,10 @@ var packager = require('electron-packager');
 packager({
   dir: '.',
   out: '.',
-  name: 'SculptGL',
+  name: 'SculptSP',
   prune: true, // ignore devDependencies
   all: false, // not all platform
-  arch: ['ia32', 'x64'],
+  arch: ['x64'],
   platform: 'win32',
   asar: false, // no electron archive
   overwrite: true, // overwrite output

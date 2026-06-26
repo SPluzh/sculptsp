@@ -3,12 +3,12 @@
 
 <head>
   <meta charset='utf-8' />
-  <meta name='description' content='SculptGL is a small sculpting application powered by JavaScript and webGL.'>
+  <meta name='description' content='SculptSP is a small sculpting application powered by JavaScript and webGL.'>
   <meta name='author' content='stéphane GINIER'>
   <meta name='mobile-web-app-capable' content='yes'>
   <meta name='apple-mobile-web-app-capable' content='yes'>
 
-  <title> SculptGL - A WebGL sculpting app </title>
+  <title> SculptSP - A WebGL sculpting app </title>
 
   <link rel='stylesheet' type='text/css' href='https://fonts.googleapis.com/css?family=Open+Sans:400,600'>
   <link rel='stylesheet' type='text/css' href='css/yagui.css' />
@@ -28,11 +28,11 @@
   window.sketchfabOAuth2Config = {
     hostname: 'sketchfab.com',
     client_id: 'OWoAmrd1QCS9wB54Ly17rMl2i5AHGvDNfmN4pEUH',
-    redirect_uri: 'https://stephaneginier.com/sculptgl/authSuccess.html'
+    redirect_uri: 'https://spluzh.github.io/sculptsp/authSuccess.html'
   };
   
   window.addEventListener('load', function () {
-    var app = new window.SculptGL();
+    var app = new window.SculptSP();
     app.start();
   });
   </script>
@@ -49,7 +49,7 @@
     <canvas id='canvas'></canvas>
   </div>
 
-  <script src='sculptgl.js'></script>
+  <script src='sculptsp.js'></script>
   <!-- <script src='//cdn.webglstats.com/stat.js' defer='defer' async='async'></script> -->
 </body>
 

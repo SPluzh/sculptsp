@@ -1,6 +1,6 @@
 {
-  "name": "SculptGL",
-  "homepage": "https://github.com/stephomi/sculptgl",
+  "name": "SculptSP",
+  "homepage": "https://github.com/SPluzh/sculptsp",
   "version": "0.9.0",
   "description": "A WebGL digital sculpting app",
   "author": "Stéphane GINIER",
@@ -33,15 +33,15 @@
     "website": "node_modules/.bin/webpack --env website",
     "build-wintab-ia32": "npx node-gyp rebuild --directory native/wintab --target=30.0.0 --arch=ia32 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-ia32.node -Force\"",
     "build-wintab-x64": "npx node-gyp rebuild --directory native/wintab --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-x64.node -Force\"",
-    "build-wintab": "yarn build-wintab-ia32 && yarn build-wintab-x64",
+    "build-wintab": "yarn build-wintab-x64",
     "buildElectron": "yarn release && rm -rf standalone/app/ && cp -R app/ standalone/ && cp package.json standalone",
     "standalone": "yarn buildElectron && cd standalone && node buildStandalone.js"
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/stephomi/sculptgl.git"
+    "url": "https://github.com/SPluzh/sculptsp.git"
   },
   "bugs": {
-    "url": "https://github.com/stephomi/sculptgl/issues"
+    "url": "https://github.com/SPluzh/sculptsp/issues"
   }
 }

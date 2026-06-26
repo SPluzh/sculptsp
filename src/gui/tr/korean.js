@@ -204,7 +204,7 @@ var TR = {
   sketchfabAbort: null,
   sketchfabUploadProcessing: null,
 
-  about: 'SculptGL 정보',
+  about: 'SculptSP 정보',
 
   alphaNone: null,
   alphaSquare: null,

@@ -51,7 +51,7 @@ Export.VERSION = 3;
 // NbFacesTexCoords (u32) => 0 or nbFaces
 // faces (u32 * 4 * nbFaces)
 //
-/** Export SGL (sculptgl) file */
+/** Export SGL (sculptsp) file */
 
 Export.exportSGL = function (meshes, main) {
   var nbMeshes = meshes.length;

@@ -7,10 +7,10 @@ module.exports = function (env) {
   var config = {
     entry: './main.js',
     output: {
-      library: 'sculptgl',
+      library: 'sculptsp',
       libraryTarget: 'umd',
       path: path.resolve(__dirname, 'app'),
-      filename: 'sculptgl.js'
+      filename: 'sculptsp.js'
     },
     resolve: {
       modules: [

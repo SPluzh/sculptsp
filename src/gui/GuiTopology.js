@@ -38,7 +38,7 @@ class GuiMultiresolution {
 
     // surface nets remeshing
     menu.addTitle(TR('remeshTitle'));
-    this._ctrlRes1 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 400, 1);
+    this._ctrlRes1 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 2000, 1);
     this._voxelSizeLabel1 = document.createElement('li');
     this._voxelSizeLabel1.style.cssText = 'font-size: 11px; color: #aaa; text-align: right; padding: 2px 10px 4px 0; font-style: italic; list-style: none;';
     this._ctrlRes1.domContainer.parentNode.insertBefore(this._voxelSizeLabel1, this._ctrlRes1.domContainer.nextSibling);
@@ -47,7 +47,7 @@ class GuiMultiresolution {
 
     // marching cube remeshing
     menu.addTitle(TR('remeshTitleMC'));
-    this._ctrlRes2 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 400, 1);
+    this._ctrlRes2 = menu.addSlider(TR('remeshResolution'), Remesh.RESOLUTION, cbResolution, 8, 2000, 1);
     this._voxelSizeLabel2 = document.createElement('li');
     this._voxelSizeLabel2.style.cssText = 'font-size: 11px; color: #aaa; text-align: right; padding: 2px 10px 4px 0; font-style: italic; list-style: none;';
     this._ctrlRes2.domContainer.parentNode.insertBefore(this._voxelSizeLabel2, this._ctrlRes2.domContainer.nextSibling);

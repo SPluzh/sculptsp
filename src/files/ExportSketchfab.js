@@ -88,9 +88,9 @@ Export.exportFileSketchfab = function (key, xhr, statusWidget, blob) {
   if (xhr.isAborted) return;
 
   var fd = new FormData();
-  fd.append('modelFile', blob, 'sculptglModel.zip');
+  fd.append('modelFile', blob, 'sculptspModel.zip');
   fd.append('name', 'My model');
-  fd.append('tags', 'sculptgl');
+  fd.append('tags', 'sculptsp');
 
   if (typeof key === 'object' && key.hasOwnProperty('token_type') && key.token_type === 'Bearer') {
     xhr.setRequestHeader('Authorization', 'Bearer ' + key.access_token);

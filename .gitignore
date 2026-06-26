@@ -1,6 +1,6 @@
 .DS_Store
 yarn.lock
-app/sculptgl.js
+app/sculptsp.js
 app/index.html
 standalone/*
 cache/*

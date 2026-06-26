@@ -127,7 +127,7 @@ var getOptionsURL = function () {
   options.scalecenter = queryBool(params.scalecenter, false);
 
   // display
-  options.grid = queryBool(params.grid, true);
+  options.grid = queryBool(params.grid, false);
   options.outline = queryBool(params.outline, false);
   options.outlinecolor = queryColor(params.outlinecolor, [0.3, 0.0, 0.0, 1.0]);
   options.mirrorline = queryBool(params.mirrorline, false);

@@ -30,7 +30,7 @@ var TR = {
   fileVertexSRGB: 'Vertexfarbe sRGB',
   fileExportSceneTitle: 'Exportieren',
   fileExportAll: 'Alles Exportieren',
-  fileExportSGL: 'Speichern .sgl (SculptGL)',
+  fileExportSGL: 'Speichern .sgl (SculptSP)',
   fileExportOBJ: 'Speichern .obj',
   fileExportPLY: 'Speichern .ply',
   fileExportSTL: 'Speichern .stl',

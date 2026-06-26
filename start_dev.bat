@@ -1,8 +1,8 @@
 @echo off
 cd /d "%~dp0"
-title SculptGL Dev Launcher
+title SculptSP Dev Launcher
 echo ===================================================
-echo               Starting SculptGL
+echo               Starting SculptSP
 echo ===================================================
 echo.
 
@@ -46,11 +46,11 @@ if %ERRORLEVEL% neq 0 (
 
 echo.
 echo Launching Webpack watch and Local server...
-start "SculptGL Webpack Watch" cmd /k "%DEV_CMD%"
-start "SculptGL Dev Server" cmd /k "%SERVER_CMD%"
+start "SculptSP Webpack Watch" cmd /k "%DEV_CMD%"
+start "SculptSP Dev Server" cmd /k "%SERVER_CMD%"
 
 echo.
-echo SculptGL development environment is running!
+echo SculptSP development environment is running!
 echo - Webpack is watching for changes.
 echo - Local server is hosting the app at http://localhost:8080
 echo.

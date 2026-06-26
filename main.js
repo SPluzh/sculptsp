@@ -1,3 +1,3 @@
-import SculptGL from './src/SculptGL';
+import SculptSP from './src/SculptSP';
 
-window.SculptGL = SculptGL;
+window.SculptSP = SculptSP;

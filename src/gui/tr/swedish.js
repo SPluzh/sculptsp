@@ -30,7 +30,7 @@ var TR = {
   fileVertexSRGB: 'sRGB vertexfärg',
   fileExportSceneTitle: 'Exportera Scen',
   fileExportAll: 'Exportera alla',
-  fileExportSGL: 'Spara .sgl (SculptGL)',
+  fileExportSGL: 'Spara .sgl (SculptSP)',
   fileExportOBJ: 'Spara .obj',
   fileExportPLY: 'Spara .ply',
   fileExportSTL: 'Spara .stl',

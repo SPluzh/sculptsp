@@ -30,7 +30,7 @@ var TR = {
   fileVertexSRGB: 'sRGB verteks renk',
   fileExportSceneTitle: 'Sahneyi Dışa Aktar',
   fileExportAll: 'tümünü ver',
-  fileExportSGL: 'Kaydet .sgl (SculptGL)',
+  fileExportSGL: 'Kaydet .sgl (SculptSP)',
   fileExportOBJ: 'Kaydet .obj',
   fileExportPLY: 'Kaydet .ply',
   fileExportSTL: 'Kaydet .stl',

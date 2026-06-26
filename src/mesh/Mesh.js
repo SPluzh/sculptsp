@@ -2289,7 +2289,7 @@ class Mesh {
     if (nbUnusedVertex > 0)
       this.setNbVertices(acc);
 
-    // Only the unique "positoned" vertices are pre transform, because sculptgl 
+    // Only the unique "positioned" vertices are pre transform, because sculptsp 
     // requires the duplicate vertices to be after the uniques positioned vertices
     if (this.hasUV()) {
       var fArUV = this.getFacesTexCoord();

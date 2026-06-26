@@ -1,9 +1,9 @@
 Status
 ======
 
-I don't maintain Sculptgl anymore (except small/minor fixes).
+This is a fork of SculptGL named SculptSP.
 
-SculptGL - WebGL sculpting
+SculptSP - WebGL sculpting
 ==========================
 
 You can try it [**here**](http://stephaneginier.com/sculptgl).

@@ -30,7 +30,7 @@ var TR = {
   fileVertexSRGB: 'sRGB 頂點色彩',
   fileExportSceneTitle: '匯出場景',
   fileExportAll: '匯出出口',
-  fileExportSGL: '儲存 .sgl (SculptGL)',
+  fileExportSGL: '儲存 .sgl (SculptSP)',
   fileExportOBJ: '儲存 .obj',
   fileExportPLY: '儲存 .ply',
   fileExportSTL: '儲存 .stl',
