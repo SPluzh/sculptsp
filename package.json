@@ -21,6 +21,7 @@
     "copy-webpack-plugin": "^7.0.0",
     "electron": "^11.2.3",
     "electron-packager": "^15.2.0",
+    "node-addon-api": "^8.9.0",
     "webpack": "^5.21.2",
     "webpack-cli": "^4.5.0"
   },
@@ -30,6 +31,9 @@
     "release": "node_modules/.bin/webpack --env release",
     "webad": "node_modules/.bin/webpack --env webad",
     "website": "node_modules/.bin/webpack --env website",
+    "build-wintab-ia32": "npx node-gyp rebuild --directory native/wintab --target=11.2.3 --arch=ia32 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-ia32.node -Force\"",
+    "build-wintab-x64": "npx node-gyp rebuild --directory native/wintab --target=11.2.3 --arch=x64 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-x64.node -Force\"",
+    "build-wintab": "yarn build-wintab-ia32 && yarn build-wintab-x64",
     "buildElectron": "yarn release && rm -rf standalone/app/ && cp -R app/ standalone/ && cp package.json standalone",
     "standalone": "yarn buildElectron && cd standalone && node buildStandalone.js"
   },

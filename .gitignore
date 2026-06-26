@@ -16,3 +16,6 @@ tools/*.png
 tools/dist
 gemini.md
 .cursorrules
+native/wintab/build/
+wintab_diag/*.exe
+wintab_diag/*.obj

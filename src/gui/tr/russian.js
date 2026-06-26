@@ -160,6 +160,13 @@ var TR = {
   pressureTitle: 'Планшет pressure',
   pressureRadius: 'Нажим-размер',
   pressureIntensity: 'Нажим-жесткость',
+  pressureInput: 'API планшета',
+  pressureInputWindowsInk: 'Windows Ink (PointerEvents)',
+  pressureInputWintab: 'Wintab (Wacom)',
+  pressureStatusWinTabActive: 'Статус: WinTab Активен',
+  pressureStatusWinTabInactive: 'Статус: WinTab Неактивен (нет устройства?)',
+  pressureStatusWindowsInk: 'Статус: Windows Ink (PointerEvents)',
+  pressureLivePressure: 'Нажим: ',
 
   // rendering
   renderingTitle: 'Визуализация',

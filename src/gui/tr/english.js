@@ -160,6 +160,13 @@ var TR = {
   pressureTitle: 'Tablet pressure',
   pressureRadius: 'Pressure radius',
   pressureIntensity: 'Pressure intensity',
+  pressureInput: 'Tablet API',
+  pressureInputWindowsInk: 'Windows Ink (PointerEvents)',
+  pressureInputWintab: 'Wintab (Wacom)',
+  pressureStatusWinTabActive: 'Status: WinTab Active',
+  pressureStatusWinTabInactive: 'Status: WinTab Inactive (no device?)',
+  pressureStatusWindowsInk: 'Status: Windows Ink (PointerEvents)',
+  pressureLivePressure: 'Pressure: ',
 
   // rendering
   renderingTitle: 'Rendering',

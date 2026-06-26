@@ -77,7 +77,9 @@ class SculptGL extends Scene {
   }
 
   onPointer(event) {
-    Tablet.pressure = event.pressure;
+    if (!(Tablet.isWintabActive && Tablet.useWintab)) {
+      Tablet.pressure = event.pressure;
+    }
   }
 
   initHammer() {

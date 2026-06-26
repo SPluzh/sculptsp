@@ -87,6 +87,16 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+:: Check and build wintab binaries if missing
+if not exist "standalone\wintab-x64.node" (
+    echo [WARNING] standalone\wintab-x64.node is missing. Building it...
+    call yarn build-wintab-x64
+)
+if not exist "standalone\wintab-ia32.node" (
+    echo [WARNING] standalone\wintab-ia32.node is missing. Building it...
+    call yarn build-wintab-ia32
+)
+
 :: Build Standalone Electron App
 echo.
 echo Packaging Electron App...
