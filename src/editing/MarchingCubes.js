@@ -543,7 +543,6 @@ var edgeTable = new Uint32Array([
     [2, 6],
     [3, 7]
   ];
-
 var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
   var colors = voxels.colorField;
   var materials = voxels.materialField;
@@ -574,29 +573,49 @@ var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
     if (p !== Infinity) {
       p = Math.min(1 / Math.abs(p), 1e15);
       invSum += p;
-      c1 += colors[id3] * p;
-      c2 += colors[id3 + 1] * p;
-      c3 += colors[id3 + 2] * p;
-      m1 += materials[id3] * p;
-      m2 += materials[id3 + 1] * p;
-      m3 += materials[id3 + 2] * p;
+      if (colors) {
+        c1 += colors[id3] * p;
+        c2 += colors[id3 + 1] * p;
+        c3 += colors[id3 + 2] * p;
+      }
+      if (materials) {
+        m1 += materials[id3] * p;
+        m2 += materials[id3 + 1] * p;
+        m3 += materials[id3 + 2] * p;
+      }
     }
   }
 
   if (edgeTable[mask] !== 0) {
     if (invSum > 0.0) invSum = 1.0 / invSum;
+    if (colors) {
+      var inv255 = invSum / 255.0;
+      cols[0] = c1 * inv255;
+      cols[1] = c2 * inv255;
+      cols[2] = c3 * inv255;
+    } else {
+      var uCol = voxels.uniformColor;
+      cols[0] = uCol[0];
+      cols[1] = uCol[1];
+      cols[2] = uCol[2];
+    }
 
-    cols[0] = c1 * invSum;
-    cols[1] = c2 * invSum;
-    cols[2] = c3 * invSum;
-
-    mats[0] = m1 * invSum;
-    mats[1] = m2 * invSum;
-    mats[2] = m3 * invSum;
+    if (materials) {
+      var inv255 = invSum / 255.0;
+      mats[0] = m1 * inv255;
+      mats[1] = m2 * inv255;
+      mats[2] = m3 * inv255;
+    } else {
+      var uMat = voxels.uniformMaterial;
+      mats[0] = uMat[0];
+      mats[1] = uMat[1];
+      mats[2] = uMat[2];
+    }
   }
 
   return mask;
 };
+
 
 MarchingCubes.computeSurface = function (voxels) {
   var dims = voxels.dims;

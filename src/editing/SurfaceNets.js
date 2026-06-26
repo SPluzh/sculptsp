@@ -44,7 +44,6 @@ var computeEdgeTable = function (cubeEdges) {
 //Precompute edge table, like Paul Bourke does.
 var cubeEdges = computeCubeEdges();
 var edgeTable = computeEdgeTable(cubeEdges);
-
 var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
   var colors = voxels.colorField;
   var materials = voxels.materialField;
@@ -76,12 +75,16 @@ var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
         if (p !== Infinity) {
           p = Math.min(1 / Math.abs(p), 1e15);
           invSum += p;
-          c1 += colors[id3] * p;
-          c2 += colors[id3 + 1] * p;
-          c3 += colors[id3 + 2] * p;
-          m1 += materials[id3] * p;
-          m2 += materials[id3 + 1] * p;
-          m3 += materials[id3 + 2] * p;
+          if (colors) {
+            c1 += colors[id3] * p;
+            c2 += colors[id3 + 1] * p;
+            c3 += colors[id3 + 2] * p;
+          }
+          if (materials) {
+            m1 += materials[id3] * p;
+            m2 += materials[id3 + 1] * p;
+            m3 += materials[id3 + 2] * p;
+          }
         }
       }
     }
@@ -89,10 +92,20 @@ var readScalarValues = function (voxels, grid, dims, n, cols, mats) {
 
   if (mask !== 0 && mask !== 0xff) {
     if (invSum > 0.0) invSum = 1.0 / invSum;
-    // Colors and materials are stored as Uint8 (0–255); scale back to float (0–1)
-    var inv255 = invSum / 255.0;
-    cols.push(c1 * inv255, c2 * inv255, c3 * inv255);
-    mats.push(m1 * inv255, m2 * inv255, m3 * inv255);
+    if (colors) {
+      var inv255 = invSum / 255.0;
+      cols.push(c1 * inv255, c2 * inv255, c3 * inv255);
+    } else {
+      var uCol = voxels.uniformColor;
+      cols.push(uCol[0], uCol[1], uCol[2]);
+    }
+    if (materials) {
+      var inv255 = invSum / 255.0;
+      mats.push(m1 * inv255, m2 * inv255, m3 * inv255);
+    } else {
+      var uMat = voxels.uniformMaterial;
+      mats.push(uMat[0], uMat[1], uMat[2]);
+    }
   }
 
   return mask;

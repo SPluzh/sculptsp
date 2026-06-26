@@ -14,6 +14,44 @@ Remesh.RESOLUTION = 150;
 Remesh.BLOCK = false;
 Remesh.SMOOTHING = true;
 
+var getUniformColor = function (meshes) {
+  var firstColor = null;
+  for (var i = 0; i < meshes.length; ++i) {
+    var cAr = meshes[i].getColors();
+    if (!cAr) continue;
+    if (!firstColor) {
+      firstColor = [cAr[0], cAr[1], cAr[2]];
+    }
+    for (var j = 0; j < cAr.length; j += 3) {
+      if (Math.abs(cAr[j] - firstColor[0]) > 0.001 ||
+          Math.abs(cAr[j + 1] - firstColor[1]) > 0.001 ||
+          Math.abs(cAr[j + 2] - firstColor[2]) > 0.001) {
+        return null; // Not uniform
+      }
+    }
+  }
+  return firstColor || [0.7, 0.7, 0.7];
+};
+
+var getUniformMaterial = function (meshes) {
+  var firstMat = null;
+  for (var i = 0; i < meshes.length; ++i) {
+    var mAr = meshes[i].getMaterials();
+    if (!mAr) continue;
+    if (!firstMat) {
+      firstMat = [mAr[0], mAr[1], mAr[2]];
+    }
+    for (var j = 0; j < mAr.length; j += 3) {
+      if (Math.abs(mAr[j] - firstMat[0]) > 0.001 ||
+          Math.abs(mAr[j + 1] - firstMat[1]) > 0.001 ||
+          Math.abs(mAr[j + 2] - firstMat[2]) > 0.001) {
+        return null; // Not uniform
+      }
+    }
+  }
+  return firstMat || [0.0, 0.95, 0.0];
+};
+
 var floodFill = function (voxels) {
   var step = voxels.step;
   var res = voxels.dims;
@@ -47,7 +85,9 @@ var floodFill = function (voxels) {
         if (idNext >= datalen || idNext < 0) continue; // range check
         if (tagCell[idNext] === 1) continue; // check if already tagged as exterior
         if (distField[idNext] === Infinity) continue; // check if we are in the far exterior zone
-        if (crossedEdges[(off >= 0 ? cell : idNext) * 3 + dirsEdge[i]] === 0) {
+        var idx = off >= 0 ? cell : idNext;
+        var bit = 1 << dirsEdge[i];
+        if ((crossedEdges[idx] & bit) === 0) {
           tagCell[idNext] = 1;
           stack[curStack++] = idNext;
         }
@@ -178,15 +218,17 @@ var voxelize = function (mesh, voxels) {
           if (newDist < distField[n]) {
             distField[n] = newDist;
             var n3 = n * 3;
-            // Store as Uint8 (0–255); divide by 255 when reading in SurfaceNets/MarchingCubes
-            colors[n3] = (c1x * 255 + 0.5) | 0;
-            colors[n3 + 1] = (c1y * 255 + 0.5) | 0;
-            colors[n3 + 2] = (c1z * 255 + 0.5) | 0;
-            materials[n3] = (m1x * 255 + 0.5) | 0;
-            materials[n3 + 1] = (m1y * 255 + 0.5) | 0;
-            materials[n3 + 2] = (m1z * 255 + 0.5) | 0;
+            if (colors) {
+              colors[n3] = (c1x * 255 + 0.5) | 0;
+              colors[n3 + 1] = (c1y * 255 + 0.5) | 0;
+              colors[n3 + 2] = (c1z * 255 + 0.5) | 0;
+            }
+            if (materials) {
+              materials[n3] = (m1x * 255 + 0.5) | 0;
+              materials[n3 + 1] = (m1y * 255 + 0.5) | 0;
+              materials[n3 + 2] = (m1z * 255 + 0.5) | 0;
+            }
           }
-
           if (newDist > step)
             continue;
 
@@ -195,15 +237,15 @@ var voxelize = function (mesh, voxels) {
             if (val < 0.0 || val > step)
               continue;
 
-            var idEdge = n * 3 + it;
-            if (crossedEdges[idEdge] === 1)
+            var bit = 1 << it;
+            if ((crossedEdges[n] & bit) !== 0)
               continue;
 
             var dist = Geometry.intersectionRayTriangleEdges(point, dirUnit[it], triEdge1, triEdge2, v1);
             if (dist < 0.0 || dist > step)
               continue;
 
-            crossedEdges[idEdge] = 1;
+            crossedEdges[n] |= bit;
           }
 
         }
@@ -211,9 +253,8 @@ var voxelize = function (mesh, voxels) {
     }
   }
 };
-
 // grid structure
-var createVoxelData = function (box) {
+var createVoxelData = function (box, meshes) {
   var step = Math.max((box[3] - box[0]), (box[4] - box[1]), (box[5] - box[2])) / Remesh.RESOLUTION;
   var stepMin = step * 1.51;
   var stepMax = step * 1.51;
@@ -224,17 +265,31 @@ var createVoxelData = function (box) {
   var ry = Math.ceil((max[1] - min[1]) / step);
   var rz = Math.ceil((max[2] - min[2]) / step);
 
-  var datalen = rx * ry * rz;
-  // Compact layout: Float32 distField + Uint8 colors + Uint8 materials + Uint8 crossedEdges
-  // 4 + 3 + 3 + 3 = 13 bytes/voxel (vs 31 bytes previously → ~2.4x memory reduction)
-  var buffer = new ArrayBuffer(13 * datalen);
-  var distField = new Float32Array(buffer, 0, datalen);
-  // Colors/materials stored as Uint8 (0-255) — sufficient precision for vertex color interpolation
-  var colors = new Uint8Array(buffer, 4 * datalen, datalen * 3);
-  var materials = new Uint8Array(buffer, 7 * datalen, datalen * 3);
-  var crossedEdges = new Uint8Array(buffer, 10 * datalen, datalen * 3);
+  var uCol = getUniformColor(meshes);
+  var uMat = getUniformMaterial(meshes);
 
-  // Initialize distField to Infinity; colors/materials default to 0 (fine — only read when distField is finite)
+  var bytesPerVoxel = 5;
+  if (uCol === null) bytesPerVoxel += 3;
+  if (uMat === null) bytesPerVoxel += 3;
+
+  var datalen = rx * ry * rz;
+  var buffer = new ArrayBuffer(bytesPerVoxel * datalen);
+  var distField = new Float32Array(buffer, 0, datalen);
+
+  var offset = 4 * datalen;
+  var colors = null;
+  if (uCol === null) {
+    colors = new Uint8Array(buffer, offset, datalen * 3);
+    offset += datalen * 3;
+  }
+  var materials = null;
+  if (uMat === null) {
+    materials = new Uint8Array(buffer, offset, datalen * 3);
+    offset += datalen * 3;
+  }
+  var crossedEdges = new Uint8Array(buffer, offset, datalen);
+
+  // Initialize distField to Infinity
   for (var idf = 0; idf < datalen; ++idf)
     distField[idf] = Infinity;
 
@@ -247,6 +302,8 @@ var createVoxelData = function (box) {
   voxels.distanceField = distField;
   voxels.colorField = colors;
   voxels.materialField = materials;
+  voxels.uniformColor = uCol;
+  voxels.uniformMaterial = uMat;
   return voxels;
 };
 
@@ -344,7 +401,7 @@ Remesh.remesh = function (meshes, baseMesh, manifold) {
   console.timeEnd('1. prepareMeshes');
 
   console.time('2. voxelization');
-  var voxels = createVoxelData(box);
+  var voxels = createVoxelData(box, meshes);
   for (var i = 0, l = meshes.length; i < l; ++i)
     voxelize(meshes[i], voxels);
   console.timeEnd('2. voxelization');
@@ -483,6 +540,14 @@ Remesh.mergeMeshes = function (meshes, baseMesh) {
   return createMesh(baseMesh, arr.faces, arr.vertices, arr.colors, arr.materials);
 };
 
+Remesh.getBytesPerVoxel = function (meshes) {
+  if (!meshes || meshes.length === 0) return 11;
+  var bytesPerVoxel = 5;
+  if (getUniformColor(meshes) === null) bytesPerVoxel += 3;
+  if (getUniformMaterial(meshes) === null) bytesPerVoxel += 3;
+  return bytesPerVoxel;
+};
+
 Remesh.estimateVoxelMemory = function (meshes) {
   if (!meshes || meshes.length === 0) return 0;
   var box = [Infinity, Infinity, Infinity, -Infinity, -Infinity, -Infinity];
@@ -521,7 +586,7 @@ Remesh.estimateVoxelMemory = function (meshes) {
   var ry = Math.ceil((box[4] + stepMax - (box[1] - stepMin)) / step);
   var rz = Math.ceil((box[5] + stepMax - (box[2] - stepMin)) / step);
   var datalen = rx * ry * rz;
-  return 13 * datalen; // 4 (Float32 dist) + 3 (Uint8 color) + 3 (Uint8 material) + 3 (Uint8 edges)
+  return Remesh.getBytesPerVoxel(meshes) * datalen;
 };
 
 Remesh.computeVoxelStep = function (meshes) {
