@@ -184,13 +184,11 @@ class GuiRendering {
   }
 
   updateMesh() {
+    this._menu.setVisibility(true);
     var mesh = this._main.getMesh();
     if (!mesh) {
-      this._menu.setVisibility(false);
       return;
     }
-
-    this._menu.setVisibility(true);
     this._ctrlShaders.setValue(mesh.getShaderType(), true);
     this._ctrlFlatShading.setValue(mesh.getFlatShading(), true);
     this._ctrlShowWireframe.setValue(mesh.getShowWireframe(), true);

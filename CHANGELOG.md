@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **UI**: Ensured that the right sidebar panels (Sculpting, Topology, and Rendering tools) remain visible and do not hide when the scene is empty.
 - **ZSphere Tool**: Implemented full symmetry support. Enabling the symmetry checkbox now mirrors all actions, including drawing, moving, scaling, rotating, deleting, and merging spheres symmetrically across the center axis. Dragging a sphere away from the center plane automatically generates its mirrored partner, and dragging it back merges them into a single center-plane sphere.
 - **ZSphere Tool**: Updated the coloring scheme of ZSpheres so that inactive spheres are dark gray, connection links (gaps) between spheres are gray, and the active sphere is bright red. Added active Matcap material rendering and proper RGBM encoding to ZSpheres and connection links to prevent them from blowing up to pure white under direct lighting, making them look like a regular sculpting mesh.
 - **ZSphere Tool**: Updated the "Create Mesh" reconstruction feature to automatically copy and inherit the active rendering configuration (including Matcap material, flat shading, curvature, and wireframe) from the active scene mesh.

@@ -389,11 +389,10 @@ class GuiMultiresolution {
 
   /** Update topology information */
   updateMesh() {
+    this._menu.setVisibility(true);
     if (!this._main.getMesh()) {
-      this._menu.setVisibility(false);
       return;
     }
-    this._menu.setVisibility(true);
     this.updateMeshResolution();
     var bool = this._main.getMesh().isDynamic;
     this.updateDynamicVisibility(bool);

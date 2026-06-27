@@ -303,7 +303,7 @@ class GuiSculpting {
   }
 
   updateMesh() {
-    this._menu.setVisibility(!!this._main.getMesh());
+    this._menu.setVisibility(true);
   }
 
   _startModalBrushRadius() {
