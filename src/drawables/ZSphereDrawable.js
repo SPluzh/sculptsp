@@ -2,6 +2,8 @@ import { vec3, mat3, mat4, quat } from 'gl-matrix';
 import MeshStatic from '../mesh/meshStatic/MeshStatic.js';
 import Primitives from './Primitives.js';
 import ShaderZSphere from '../render/shaders/ShaderZSphere.js';
+import ShaderLib from '../render/ShaderLib.js';
+import Enums from '../misc/Enums.js';
 
 var createSphereArray = function (radius = 1.0, widthSegments = 16, heightSegments = 12) {
   var vAr = [];
@@ -103,6 +105,19 @@ class ZSphereDrawable {
 
     var camera = main.getCamera();
 
+    // Bind active Matcap texture
+    var ShaderMatcap = ShaderLib[Enums.Shader.MATCAP];
+    var activeMatcap = 0;
+    var activeMesh = main.getMesh();
+    if (activeMesh && typeof activeMesh.getMatcap === 'function') {
+      activeMatcap = activeMesh.getMatcap();
+    }
+    var matcapTex = ShaderMatcap.textures[activeMatcap] || ShaderMatcap.getDummyTexture(gl);
+
+    gl.activeTexture(gl.TEXTURE0);
+    gl.bindTexture(gl.TEXTURE_2D, matcapTex);
+    gl.uniform1i(shader.uniforms.uTexture0, 0);
+
     // 1. Draw connection cylinders
     shader.attributes.aVertex.bindToBuffer(this._cylinderGeom.getVertexBuffer());
     shader.attributes.aNormal.bindToBuffer(this._cylinderGeom.getNormalBuffer());
@@ -154,15 +169,16 @@ class ZSphereDrawable {
       mat3.transpose(this._n, this._n);
       gl.uniformMatrix3fv(shader.uniforms.uN, false, this._n);
 
+      gl.uniformMatrix4fv(shader.uniforms.uMV, false, mv);
+
       gl.uniform1f(shader.uniforms.uRadiusBottom, parent.radius);
       gl.uniform1f(shader.uniforms.uRadiusTop, child.radius);
 
-      // Color
-      var selected = (child === this._graph._selected || parent === this._graph._selected) ||
-                     (this._graph._hoveredLink &&
+      // Color: only highlight connection links when they are hovered; base color is medium gray
+      var selected = (this._graph._hoveredLink &&
                       this._graph._hoveredLink.parent === parent &&
                       this._graph._hoveredLink.child === child);
-      gl.uniform3fv(shader.uniforms.uColor, [0.5, 0.5, 0.5]);
+      gl.uniform3fv(shader.uniforms.uColor, [0.4, 0.4, 0.4]);
       gl.uniform1f(shader.uniforms.uSelected, selected ? 1.0 : 0.0);
 
       this._cylinderGeom.getIndexBuffer().bind();
@@ -194,14 +210,16 @@ class ZSphereDrawable {
       mat3.transpose(this._n, this._n);
       gl.uniformMatrix3fv(shader.uniforms.uN, false, this._n);
 
+      gl.uniformMatrix4fv(shader.uniforms.uMV, false, mv);
+
       gl.uniform1f(shader.uniforms.uRadiusBottom, 1.0);
       gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);
 
-      // Color
+      // Color: active (selected) is red, inactive spheres are dark gray
       var selected = (node === this._graph._selected);
-      var color = (node.parent === null) ? [0.8, 0.2, 0.2] : [0.8, 0.5, 0.2]; // Root is reddish, others orange
+      var color = selected ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.25];
       gl.uniform3fv(shader.uniforms.uColor, color);
-      gl.uniform1f(shader.uniforms.uSelected, selected ? 1.0 : 0.0);
+      gl.uniform1f(shader.uniforms.uSelected, 0.0);
 
       this._sphereGeom.getIndexBuffer().bind();
       gl.drawElements(gl.TRIANGLES, this._sphereGeom.getCount(), gl.UNSIGNED_INT, 0);
@@ -225,6 +243,8 @@ class ZSphereDrawable {
       mat3.invert(this._n, this._n);
       mat3.transpose(this._n, this._n);
       gl.uniformMatrix3fv(shader.uniforms.uN, false, this._n);
+
+      gl.uniformMatrix4fv(shader.uniforms.uMV, false, mv);
 
       gl.uniform1f(shader.uniforms.uRadiusBottom, 1.0);
       gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);

@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **ZSphere Tool**: Updated the coloring scheme of ZSpheres so that inactive spheres are dark gray, connection links (gaps) between spheres are gray, and the active sphere is bright red. Added active Matcap material rendering and proper RGBM encoding to ZSpheres and connection links to prevent them from blowing up to pure white under direct lighting, making them look like a regular sculpting mesh.
+- **ZSphere Tool**: Updated the "Create Mesh" reconstruction feature to automatically copy and inherit the active rendering configuration (including Matcap material, flat shading, curvature, and wireframe) from the active scene mesh.
+- **ZSphere Tool**: Disabled ZSphere interaction on right-clicks and middle-clicks. Active selections, hovered links, and preview nodes are immediately cleared when starting camera orbit/zoom/pan operations, ensuring the skeletal structure does not react to right-clicks.
+- **ZSphere Tool**: Completely disabled all ZSphere tool reactions to the Alt key (including deletion mode and hover clearance), allowing Alt to be used purely for default camera navigation/pan/zoom shortcuts without any tool interference. Deletion mode is now activated exclusively using the Ctrl key.
+- **ZSphere Tool**: Disabled all hover highlighting and selection indicators (for both spheres and links/gaps) when Ctrl is held down (deletion mode). Active selections are cleared instantly when pressing Ctrl, preventing misleading visual highlights.
 - **Camera**: Fixed a bug where ZSpheres disappeared when moving/zooming/orbiting the camera. Camera near/far clipping planes are now optimized based on the bounding box of active elements (including ZSpheres and grid) even if the mesh count is zero. Safe margins are now added to prevent aggressive clipping when working with small bounding volumes or zooming closely/distantly.
 - **ZSphere Tool**: Added a **Rotate** mode that allows rotating the chain of descendant ZSpheres around the selected sphere using camera-aligned mouse dragging.
 - **ZSphere Tool**: Made the link connections between ZSpheres render at full thickness, tapering smoothly from the parent sphere's radius to the child sphere's radius.

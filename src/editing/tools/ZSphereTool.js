@@ -5,6 +5,7 @@ import ZSphereDrawable from '../../drawables/ZSphereDrawable.js';
 import MeshStatic from '../../mesh/meshStatic/MeshStatic.js';
 import Multimesh from '../../mesh/multiresolution/Multimesh.js';
 import MarchingCubes from '../MarchingCubes.js';
+import Enums from '../../misc/Enums.js';
 
 class ZSphereTool extends SculptBase {
 
@@ -23,17 +24,29 @@ class ZSphereTool extends SculptBase {
     this._startRadius = 1.0;
     this._startMouseX = 0.0;
 
-    // Track keyboard states for Alt/Ctrl deletion
+    // Track keyboard states for Ctrl deletion and Alt key blocking
     this._isCtrlDown = false;
     this._isAltDown = false;
 
     this._onKeyDown = (e) => {
-      if (e.key === 'Control') this._isCtrlDown = true;
-      if (e.key === 'Alt') this._isAltDown = true;
+      if (e.key === 'Control') {
+        this._isCtrlDown = true;
+        this.clearHoverAndSelection();
+      } else if (e.key === 'Alt') {
+        this._isAltDown = true;
+        this.clearHoverAndSelection();
+      }
     };
     this._onKeyUp = (e) => {
-      if (e.key === 'Control') this._isCtrlDown = false;
-      if (e.key === 'Alt') this._isAltDown = false;
+      if (e.key === 'Control') {
+        this._isCtrlDown = false;
+        this.preUpdate();
+        this._main.render();
+      } else if (e.key === 'Alt') {
+        this._isAltDown = false;
+        this.preUpdate();
+        this._main.render();
+      }
     };
 
   }
@@ -65,6 +78,22 @@ class ZSphereTool extends SculptBase {
     this._graph._selected = null;
     this._graph._hoveredLink = null;
     this._graph._previewNode = null;
+  }
+
+  clearHoverAndSelection() {
+    var changed = false;
+    if (this._graph._hoveredLink || this._graph._previewNode) {
+      this._graph._hoveredLink = null;
+      this._graph._previewNode = null;
+      changed = true;
+    }
+    if (this._graph._selected) {
+      this._graph._selected = null;
+      changed = true;
+    }
+    if (changed) {
+      this._main.render();
+    }
   }
 
   // Intersect ray with a sphere
@@ -182,6 +211,16 @@ class ZSphereTool extends SculptBase {
 
   preUpdate() {
     var main = this._main;
+    var isAlt = this._isAltDown || main._isAltDown;
+    var isCtrl = this._isCtrlDown || main._isCtrlDown;
+    // Do not hover/select or show preview if a camera/mask action is active OR if deletion/Alt keys are active
+    if ((main._action !== Enums.Action.NOTHING && main._action !== Enums.Action.SCULPT_EDIT) || isCtrl || isAlt) {
+      this._graph._selected = null;
+      this._graph._hoveredLink = null;
+      this._graph._previewNode = null;
+      return;
+    }
+
     if (this._isDragging && this._activeNode) {
       this._graph._selected = this._activeNode;
       this._graph._hoveredLink = null;
@@ -208,9 +247,15 @@ class ZSphereTool extends SculptBase {
         this._graph._hoveredLink = null;
         this._graph._previewNode = null;
       } else if (hit.type === 'link') {
-        this._graph._selected = null;
-        this._graph._hoveredLink = { parent: hit.link.parent, child: hit.link.child };
-        this._graph._previewNode = { position: hit.link.position, radius: hit.link.radius };
+        if (isCtrl) {
+          this._graph._selected = null;
+          this._graph._hoveredLink = null;
+          this._graph._previewNode = null;
+        } else {
+          this._graph._selected = null;
+          this._graph._hoveredLink = { parent: hit.link.parent, child: hit.link.child };
+          this._graph._previewNode = { position: hit.link.position, radius: hit.link.radius };
+        }
       }
     } else {
       this._graph._selected = null;
@@ -236,8 +281,15 @@ class ZSphereTool extends SculptBase {
 
     var hit = this.hitTest(rayOrigin, rayDir);
 
-    // Delete node on Alt/Ctrl-click
-    if (this._isAltDown || this._isCtrlDown) {
+    // Do not perform actions if Alt is down (prevents creation/manipulation during navigation)
+    var isAlt = this._isAltDown || main._isAltDown;
+    var isCtrl = this._isCtrlDown || main._isCtrlDown;
+    if (isAlt) {
+      return false;
+    }
+
+    // Delete node on Ctrl-click
+    if (isCtrl) {
       if (hit && hit.type === 'node') {
         this._graph.removeNode(hit.node);
         this._graph._selected = null;
@@ -564,6 +616,11 @@ class ZSphereTool extends SculptBase {
     // Wrap in Multimesh and add to scene
     var multimesh = new Multimesh(newMesh);
     multimesh.initRender();
+
+    var activeMesh = this._main.getMesh() || (this._main.getMeshes().length > 0 ? this._main.getMeshes()[0] : null);
+    if (activeMesh) {
+      multimesh.copyRenderConfig(activeMesh);
+    }
 
     this._main.addNewMesh(multimesh);
     this._main.render();

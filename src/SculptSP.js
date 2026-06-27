@@ -382,6 +382,8 @@ class SculptSP extends Scene {
   // HANDLES EVENTS
   ////////////////
   onDeviceUp() {
+    this._isAltDown = false;
+    this._isCtrlDown = false;
     this.setCanvasCursor('default');
     Multimesh.RENDER_HINT = Multimesh.NONE;
     this._sculptManager.end();
@@ -429,11 +431,25 @@ class SculptSP extends Scene {
     if (this._focusGui)
       return;
 
+    this._isAltDown = event.altKey;
+    this._isCtrlDown = event.ctrlKey;
+
     this.setMousePosition(event);
 
     var mouseX = this._mouseX;
     var mouseY = this._mouseY;
     var button = event.which;
+
+    // Clear ZSphere hover/selected states on right/middle click
+    if (button !== MOUSE_LEFT) {
+      var zsphereTool = this._sculptManager.getTool(Enums.Tools.ZSPHERE);
+      if (zsphereTool && zsphereTool._graph && (zsphereTool._graph._selected || zsphereTool._graph._hoveredLink || zsphereTool._graph._previewNode)) {
+        zsphereTool._graph._selected = null;
+        zsphereTool._graph._hoveredLink = null;
+        zsphereTool._graph._previewNode = null;
+        this.render();
+      }
+    }
 
     var canEdit = false;
     if (button === MOUSE_LEFT)
@@ -494,6 +510,10 @@ class SculptSP extends Scene {
   onDeviceMove(event) {
     if (this._focusGui)
       return;
+
+    this._isAltDown = event.altKey;
+    this._isCtrlDown = event.ctrlKey;
+
     this.setMousePosition(event);
 
     var mouseX = this._mouseX;
