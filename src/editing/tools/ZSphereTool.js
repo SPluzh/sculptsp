@@ -6,6 +6,7 @@ import MeshStatic from '../../mesh/meshStatic/MeshStatic.js';
 import Multimesh from '../../mesh/multiresolution/Multimesh.js';
 import SurfaceNets from '../SurfaceNets.js';
 import Enums from '../../misc/Enums.js';
+import Geometry from '../../math3d/Geometry.js';
 
 class ZSphereTool extends SculptBase {
 
@@ -67,7 +68,7 @@ class ZSphereTool extends SculptBase {
         vec3.copy(origin, camera._center);
       }
       if (this._main.getSculptManager().getSymmetry()) {
-        origin[0] = 0.0;
+        origin = this._snapToSymmetryPlane(origin);
       }
       this._historyState = this._graph.serialize();
       this._graph.addRoot(origin, 2.5);
@@ -138,6 +139,49 @@ class ZSphereTool extends SculptBase {
     }
 
     this._historyState = null;
+  }
+
+  _getSymmetricPosition(pos) {
+    var mesh = this._main.getMesh();
+    if (mesh) {
+      // Transform world position to mesh local space
+      var invMatrix = mat4.create();
+      mat4.invert(invMatrix, mesh.getMatrix());
+      var localPos = vec3.create();
+      vec3.transformMat4(localPos, pos, invMatrix);
+      
+      // Mirror the local position across local symmetry plane
+      var ptPlane = mesh.getSymmetryOrigin();
+      var nPlane = mesh.getSymmetryNormal();
+      var mirroredLocal = vec3.clone(localPos);
+      Geometry.mirrorPoint(mirroredLocal, ptPlane, nPlane);
+      
+      // Transform back to world space
+      var worldPos = vec3.create();
+      vec3.transformMat4(worldPos, mirroredLocal, mesh.getMatrix());
+      return worldPos;
+    } else {
+      // Fallback to world X=0 plane
+      return vec3.fromValues(-pos[0], pos[1], pos[2]);
+    }
+  }
+
+  _getDistanceToSymmetryPlane(pos) {
+    var symPos = this._getSymmetricPosition(pos);
+    return vec3.dist(pos, symPos) * 0.5;
+  }
+
+  _snapToSymmetryPlane(pos) {
+    var symPos = this._getSymmetricPosition(pos);
+    var snapped = vec3.create();
+    vec3.add(snapped, pos, symPos);
+    vec3.scale(snapped, snapped, 0.5);
+    return snapped;
+  }
+
+  _getSymmetrySnapThreshold() {
+    if (!this._activeNode) return 0.08;
+    return Math.max(0.08, 0.15 * this._activeNode.radius);
   }
 
   // Intersect ray with a sphere
@@ -378,7 +422,7 @@ class ZSphereTool extends SculptBase {
           }
         }
         if (isSym) {
-          hitPoint[0] = 0.0;
+          hitPoint = this._snapToSymmetryPlane(hitPoint);
         }
         this._graph.addRoot(hitPoint, 2.5);
         main.render();
@@ -421,7 +465,7 @@ class ZSphereTool extends SculptBase {
             var partnerParent = parent.symmetryPartner;
             var partnerChild = child.symmetryPartner;
 
-            var symPos = vec3.fromValues(-hit.link.position[0], hit.link.position[1], hit.link.position[2]);
+            var symPos = this._getSymmetricPosition(hit.link.position);
             var partnerNewNode = this._graph.addChild(partnerParent, symPos, hit.link.radius);
 
             var pIdx = partnerParent.children.indexOf(partnerChild);
@@ -512,30 +556,28 @@ class ZSphereTool extends SculptBase {
         if (isSym) {
           // If active node has no partner and we dragged off-center, spawn partner
           if (!this._activeNode.symmetryPartner) {
-            if (Math.abs(this._activeNode.position[0]) > 0.08) {
+            if (this._getDistanceToSymmetryPlane(this._activeNode.position) > this._getSymmetrySnapThreshold()) {
               var partnerParent = parent.symmetryPartner || parent;
-              var symPos = vec3.fromValues(-this._activeNode.position[0], this._activeNode.position[1], this._activeNode.position[2]);
+              var symPos = this._getSymmetricPosition(this._activeNode.position);
               var partnerChild = this._graph.addChild(partnerParent, symPos, this._activeNode.radius);
               this._activeNode.symmetryPartner = partnerChild;
               partnerChild.symmetryPartner = this._activeNode;
             } else {
-              this._activeNode.position[0] = 0.0;
+              vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
             }
           } else {
             // Active node already has a partner
-            if (Math.abs(this._activeNode.position[0]) <= 0.08) {
+            if (this._getDistanceToSymmetryPlane(this._activeNode.position) <= this._getSymmetrySnapThreshold()) {
               // Dragged back to center, delete partner and snap to center
               var partner = this._activeNode.symmetryPartner;
               this._activeNode.symmetryPartner = null;
               partner.symmetryPartner = null;
               this._graph.removeNode(partner);
-              this._activeNode.position[0] = 0.0;
+              vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
             } else {
               // Update partner position/radius symmetrically
               var partner = this._activeNode.symmetryPartner;
-              partner.position[0] = -this._activeNode.position[0];
-              partner.position[1] = this._activeNode.position[1];
-              partner.position[2] = this._activeNode.position[2];
+              vec3.copy(partner.position, this._getSymmetricPosition(this._activeNode.position));
               partner.radius = this._activeNode.radius;
             }
           }
@@ -546,13 +588,27 @@ class ZSphereTool extends SculptBase {
       vec3.copy(this._activeNode.position, worldPos);
 
       if (isSym) {
-        if (this._activeNode.symmetryPartner) {
-          var partner = this._activeNode.symmetryPartner;
-          partner.position[0] = -this._activeNode.position[0];
-          partner.position[1] = this._activeNode.position[1];
-          partner.position[2] = this._activeNode.position[2];
+        var parent = this._activeNode.parent;
+        if (parent) {
+          if (!this._activeNode.symmetryPartner) {
+            // Central node stays central, keep it snapped to symmetry plane
+            vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
+          } else {
+            // Dragged partner back to center: delete partner and snap to center
+            if (this._getDistanceToSymmetryPlane(this._activeNode.position) <= this._getSymmetrySnapThreshold()) {
+              var partner = this._activeNode.symmetryPartner;
+              this._activeNode.symmetryPartner = null;
+              partner.symmetryPartner = null;
+              this._graph.removeNode(partner);
+              vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
+            } else {
+              var partner = this._activeNode.symmetryPartner;
+              vec3.copy(partner.position, this._getSymmetricPosition(this._activeNode.position));
+            }
+          }
         } else {
-          this._activeNode.position[0] = 0.0;
+          // Root node has no parent, keep it snapped to center axis
+          vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
         }
       }
     } else if (this._dragMode === 'scale') {
@@ -584,27 +640,50 @@ class ZSphereTool extends SculptBase {
       // Rotate descendants around the active node's position
       var descendants = this._getDescendants(this._activeNode);
       var relPos = vec3.create();
+      var rotated = [];
       for (var i = 0; i < descendants.length; ++i) {
         var d = descendants[i];
+        if (d === this._activeNode.symmetryPartner) continue;
+        if (isSym && d.symmetryPartner && rotated.indexOf(d.symmetryPartner) !== -1) {
+          // Will mirror from partner later
+          continue;
+        }
+
         var initPos = this._initialPositions.get(d.id);
         if (initPos) {
           vec3.sub(relPos, initPos, this._activeNode.position);
           vec3.transformQuat(relPos, relPos, q);
           vec3.add(d.position, this._activeNode.position, relPos);
+          rotated.push(d);
         }
       }
 
-      if (isSym && this._activeNode.symmetryPartner) {
-        var partnerNode = this._activeNode.symmetryPartner;
-        var qSym = quat.fromValues(q[0], -q[1], -q[2], q[3]);
-        var partnerDescendants = this._getDescendants(partnerNode);
-        for (var i = 0; i < partnerDescendants.length; ++i) {
-          var d = partnerDescendants[i];
-          var initPos = this._initialPositions.get(d.id);
-          if (initPos) {
-            vec3.sub(relPos, initPos, partnerNode.position);
-            vec3.transformQuat(relPos, relPos, qSym);
-            vec3.add(d.position, partnerNode.position, relPos);
+      if (isSym) {
+        // Mirror the positions of all partners of rotated nodes
+        for (var i = 0; i < rotated.length; ++i) {
+          var d = rotated[i];
+          if (d.symmetryPartner) {
+            vec3.copy(d.symmetryPartner.position, this._getSymmetricPosition(d.position));
+          }
+        }
+
+        // Also rotate descendants of the partner node if it exists
+        if (this._activeNode.symmetryPartner) {
+          var partnerNode = this._activeNode.symmetryPartner;
+          var partnerDescendants = this._getDescendants(partnerNode);
+          for (var i = 0; i < partnerDescendants.length; ++i) {
+            var d = partnerDescendants[i];
+            if (d.symmetryPartner) {
+              vec3.copy(d.position, this._getSymmetricPosition(d.symmetryPartner.position));
+            } else {
+              var initPos = this._initialPositions.get(d.id);
+              if (initPos) {
+                vec3.sub(relPos, initPos, partnerNode.position);
+                var qSym = quat.fromValues(q[0], -q[1], -q[2], q[3]);
+                vec3.transformQuat(relPos, relPos, qSym);
+                vec3.add(d.position, partnerNode.position, relPos);
+              }
+            }
           }
         }
       }
@@ -630,12 +709,34 @@ class ZSphereTool extends SculptBase {
 
       if (minNode) {
         var threshold = 0.3 * (this._activeNode.radius + minNode.radius);
-        if (minDist < threshold) {
-          if (this._activeNode.symmetryPartner && minNode.symmetryPartner) {
-            this._graph.mergeNodes(this._activeNode.symmetryPartner, minNode.symmetryPartner);
+        
+        // Prioritize merging symmetry partners together at the center axis
+        var partner = this._activeNode.symmetryPartner;
+        var mergePartners = false;
+        if (partner) {
+          var closeToCenter = this._getDistanceToSymmetryPlane(this._activeNode.position) < this._getSymmetrySnapThreshold();
+          if ((minNode === partner && minDist < threshold) || closeToCenter) {
+            mergePartners = true;
           }
-          this._graph.mergeNodes(this._activeNode, minNode);
+        }
+
+        if (mergePartners) {
+          this._activeNode.symmetryPartner = null;
+          partner.symmetryPartner = null;
+          this._graph.removeNode(partner);
+          vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
           this._main.render();
+        } else {
+          // Standard merge only if both are central or both are symmetric
+          var activeHasPartner = !!this._activeNode.symmetryPartner;
+          var minHasPartner = !!minNode.symmetryPartner;
+          if (activeHasPartner === minHasPartner && minDist < threshold) {
+            if (this._activeNode.symmetryPartner && minNode.symmetryPartner) {
+              this._graph.mergeNodes(this._activeNode.symmetryPartner, minNode.symmetryPartner);
+            }
+            this._graph.mergeNodes(this._activeNode, minNode);
+            this._main.render();
+          }
         }
       }
     }
@@ -831,7 +932,7 @@ class ZSphereTool extends SculptBase {
       vec3.copy(origin, camera._center);
     }
     if (this._main.getSculptManager().getSymmetry()) {
-      origin[0] = 0.0;
+      origin = this._snapToSymmetryPlane(origin);
     }
     this._graph.addRoot(origin, 2.5);
     this._main.render();

@@ -4,6 +4,7 @@ import Primitives from './Primitives.js';
 import ShaderZSphere from '../render/shaders/ShaderZSphere.js';
 import ShaderLib from '../render/ShaderLib.js';
 import Enums from '../misc/Enums.js';
+import Geometry from '../math3d/Geometry.js';
 
 var createSphereArray = function (radius = 1.0, widthSegments = 16, heightSegments = 12) {
   var vAr = [];
@@ -57,6 +58,31 @@ class ZSphereDrawable {
     this._mvp = mat4.create();
     this._n = mat3.create();
     this._modelMatrix = mat4.create();
+  }
+
+  _getSymmetricPosition(pos, mesh) {
+    if (mesh) {
+      var invMatrix = mat4.create();
+      mat4.invert(invMatrix, mesh.getMatrix());
+      var localPos = vec3.create();
+      vec3.transformMat4(localPos, pos, invMatrix);
+      
+      var ptPlane = mesh.getSymmetryOrigin();
+      var nPlane = mesh.getSymmetryNormal();
+      var mirroredLocal = vec3.clone(localPos);
+      Geometry.mirrorPoint(mirroredLocal, ptPlane, nPlane);
+      
+      var worldPos = vec3.create();
+      vec3.transformMat4(worldPos, mirroredLocal, mesh.getMatrix());
+      return worldPos;
+    } else {
+      return vec3.fromValues(-pos[0], pos[1], pos[2]);
+    }
+  }
+
+  _getDistanceToSymmetryPlane(pos, mesh) {
+    var symPos = this._getSymmetricPosition(pos, mesh);
+    return vec3.dist(pos, symPos) * 0.5;
   }
 
   isVisible() {
@@ -226,12 +252,28 @@ class ZSphereDrawable {
       gl.uniform1f(shader.uniforms.uRadiusBottom, 1.0);
       gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);
 
+      var isOnSymmetryPlane = false;
+      if (main.getSculptManager().getSymmetry()) {
+        var threshold = Math.max(0.08, 0.15 * node.radius);
+        var activeMesh = main.getMesh();
+        var distToSymmetryPlane = this._getDistanceToSymmetryPlane(node.position, activeMesh);
+        if (distToSymmetryPlane <= threshold) {
+          isOnSymmetryPlane = true;
+        }
+      }
+
       // Color: active (selected) is red, inactive spheres are dark gray
+      // If on the symmetry plane, color is purple (dark purple for inactive, bright purple for active).
       var selected = (node === this._graph._selected || 
                       (main.getSculptManager().getSymmetry() && 
                        this._graph._selected && 
                        node === this._graph._selected.symmetryPartner));
-      var color = selected ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.25];
+      var color;
+      if (isOnSymmetryPlane) {
+        color = selected ? [0.8, 0.1, 0.9] : [0.55, 0.15, 0.75];
+      } else {
+        color = selected ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.25];
+      }
       gl.uniform3fv(shader.uniforms.uColor, color);
       gl.uniform1f(shader.uniforms.uSelected, 0.0);
 
@@ -273,9 +315,14 @@ class ZSphereDrawable {
 
       drawPreview(pNode.position);
 
-      if (main.getSculptManager().getSymmetry() && Math.abs(pNode.position[0]) > 0.05) {
-        var symPos = vec3.fromValues(-pNode.position[0], pNode.position[1], pNode.position[2]);
-        drawPreview(symPos);
+      if (main.getSculptManager().getSymmetry()) {
+        var activeMesh = main.getMesh();
+        var dist = this._getDistanceToSymmetryPlane(pNode.position, activeMesh);
+        var threshold = Math.max(0.08, 0.15 * pNode.radius);
+        if (dist > threshold) {
+          var symPos = this._getSymmetricPosition(pNode.position, activeMesh);
+          drawPreview(symPos);
+        }
       }
     }
 
