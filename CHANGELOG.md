@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **ZSphere Tool**: Fixed a bug where ZSpheres disappeared after pressing Ctrl+Z (Undo) and only reappeared when clicking the empty space. This was caused by the global key handler temporarily switching the active tool to Masking when the Ctrl key was held down. Modifier key tool switching is now disabled while in ZSphere mode, ensuring the armature remains visible and Ctrl+click deletion works correctly.
+- **ZSphere Tool**: Integrated full undo/redo history support. Adding, moving, scaling, rotating, deleting, and clearing ZSpheres can now be seamlessly undone and redone using standard keyboard shortcuts (Ctrl+Z and Ctrl+Y / Ctrl+Shift+Z) or the history buttons.
 - **ZSphere Tool**: Fixed a bug where generating a mesh from ZSpheres would reset the current matcap material and rendering settings (such as flat shading, curvature, and transparency) in the rendering panel back to their defaults. Newly generated meshes now correctly inherit the active matcap and render settings. Also fixed an issue where the generated mesh would have a yellow/orange tint by default due to marching cubes uniform colors; the default base vertex color is now initialized to white [1.0, 1.0, 1.0] to render the matcaps in their true colors.
 - **ZSphere Tool**: Replaced Marching Cubes surface reconstruction with SurfaceNets (Quad Remesh) for ZSphere mesh generation, producing a clean quad mesh rather than a triangle mesh.
 - **ZSphere Tool**: Fixed a bug where the generated mesh from ZSpheres could not be sculpted or picked by brushes. The application now automatically switches to the Brush tool and hides the ZSphere skeleton armature when a mesh is generated, enabling immediate sculpting.

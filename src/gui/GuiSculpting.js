@@ -316,6 +316,8 @@ class GuiSculpting {
 
   _checkModifierKey(event) {
     var selectedTool = this.getSelectedTool();
+    if (selectedTool === Enums.Tools.ZSPHERE)
+      return false;
 
     if (this._main._action === Enums.Action.NOTHING) {
       if (event.shiftKey && !event.altKey && !event.ctrlKey) {

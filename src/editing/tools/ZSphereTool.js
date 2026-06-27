@@ -28,6 +28,8 @@ class ZSphereTool extends SculptBase {
     this._isCtrlDown = false;
     this._isAltDown = false;
 
+    this._historyState = null;
+
     this._onKeyDown = (e) => {
       if (e.key === 'Control') {
         this._isCtrlDown = true;
@@ -67,7 +69,11 @@ class ZSphereTool extends SculptBase {
       if (this._main.getSculptManager().getSymmetry()) {
         origin[0] = 0.0;
       }
+      this._historyState = this._graph.serialize();
       this._graph.addRoot(origin, 2.5);
+      this._main.render();
+      this.pushHistoryState();
+    } else {
       this._main.render();
     }
   }
@@ -97,6 +103,41 @@ class ZSphereTool extends SculptBase {
     if (changed) {
       this._main.render();
     }
+  }
+
+  pushHistoryState() {
+    if (!this._historyState) return;
+
+    var before = this._historyState;
+    var after = this._graph.serialize();
+
+    var beforeStr = JSON.stringify(before);
+    var afterStr = JSON.stringify(after);
+
+    if (beforeStr !== afterStr) {
+      var main = this._main;
+      var graph = this._graph;
+      var tool = this;
+
+      var undoCb = function() {
+        tool._activeNode = null;
+        tool._isDragging = false;
+        tool.clearHoverAndSelection();
+        graph.deserialize(JSON.parse(beforeStr));
+        main.render();
+      };
+      var redoCb = function() {
+        tool._activeNode = null;
+        tool._isDragging = false;
+        tool.clearHoverAndSelection();
+        graph.deserialize(JSON.parse(afterStr));
+        main.render();
+      };
+
+      main.getStateManager().pushStateCustom(undoCb, redoCb);
+    }
+
+    this._historyState = null;
   }
 
   // Intersect ray with a sphere
@@ -269,6 +310,8 @@ class ZSphereTool extends SculptBase {
   }
 
   start(ctrl) {
+    this._historyState = this._graph.serialize();
+
     var main = this._main;
     var camera = main.getCamera();
     var mouseX = main._mouseX;
@@ -288,6 +331,7 @@ class ZSphereTool extends SculptBase {
     var isAlt = this._isAltDown || main._isAltDown;
     var isCtrl = this._isCtrlDown || main._isCtrlDown;
     if (isAlt) {
+      this._historyState = null;
       return false;
     }
 
@@ -303,6 +347,9 @@ class ZSphereTool extends SculptBase {
         this._graph.removeNode(hit.node);
         this._graph._selected = null;
         main.render();
+        this.pushHistoryState();
+      } else {
+        this._historyState = null;
       }
       return false;
     }
@@ -441,6 +488,7 @@ class ZSphereTool extends SculptBase {
       }
     }
 
+    this._historyState = null;
     return false;
   }
 
@@ -594,6 +642,8 @@ class ZSphereTool extends SculptBase {
     this._isDragging = false;
     this._activeNode = null;
     this._dragMode = '';
+
+    this.pushHistoryState();
   }
 
   createMesh() {
@@ -767,11 +817,14 @@ class ZSphereTool extends SculptBase {
   }
 
   clearGraph() {
+    this._historyState = this._graph.serialize();
     this._graph.clear();
     this._main.render();
+    this.pushHistoryState();
   }
 
   addRootSphere() {
+    this._historyState = this._graph.serialize();
     var camera = this._main.getCamera();
     var origin = vec3.create();
     if (camera && camera._center) {
@@ -782,6 +835,7 @@ class ZSphereTool extends SculptBase {
     }
     this._graph.addRoot(origin, 2.5);
     this._main.render();
+    this.pushHistoryState();
   }
 
   addSculptToScene(scene) {
