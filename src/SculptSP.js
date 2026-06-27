@@ -452,8 +452,11 @@ class SculptSP extends Scene {
     }
 
     var canEdit = false;
-    if (button === MOUSE_LEFT)
+    if (button === MOUSE_LEFT) {
+      console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
       canEdit = this._sculptManager.start(event.shiftKey);
+      console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
+    }
 
     if (button === MOUSE_LEFT && canEdit)
       this.setCanvasCursor('none');

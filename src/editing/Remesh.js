@@ -56,7 +56,7 @@ var getUniformMaterial = function (meshes) {
       }
     }
   }
-  return firstMat || [0.0, 0.95, 0.0];
+  return firstMat || [0.0, 0.95, 1.0];
 };
 
 var floodFill = function (voxels) {

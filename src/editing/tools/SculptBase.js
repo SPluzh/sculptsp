@@ -47,10 +47,14 @@ class SculptBase {
     var main = this._main;
     var picking = main.getPicking();
 
-    if (!picking.intersectionMouseMeshes())
+    console.log('[SculptBase] start: calling intersectionMouseMeshes()');
+    var hit = picking.intersectionMouseMeshes();
+    console.log('[SculptBase] start: intersectionMouseMeshes returned', hit);
+    if (!hit)
       return false;
 
     var mesh = main.setOrUnsetMesh(picking.getMesh(), ctrl);
+    console.log('[SculptBase] start: setOrUnsetMesh returned mesh:', mesh ? mesh.getID() : 'null');
     if (!mesh)
       return false;
 

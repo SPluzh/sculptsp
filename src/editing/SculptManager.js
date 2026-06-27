@@ -96,7 +96,9 @@ class SculptManager {
 
   start(ctrl) {
     var tool = this.getCurrentTool();
+    console.log('[SculptManager] start: tool is', tool ? tool.constructor.name : 'null');
     var canEdit = tool.start(ctrl);
+    console.log('[SculptManager] start: tool.start returned', canEdit, 'mesh is', this._main.getMesh() ? this._main.getMesh().getID() : 'null', 'total meshes in scene:', this._main.getMeshes().length);
     if (this._main.getPicking().getMesh() && this.isUsingContinuous())
       this._sculptTimer = window.setInterval(tool._cbContinuous, 16.6);
     return canEdit;
@@ -126,12 +128,6 @@ class SculptManager {
 
   addSculptToScene(scene) {
     this.getCurrentTool().addSculptToScene(scene);
-    if (this._toolIndex !== Enums.Tools.ZSPHERE) {
-      var zsphereTool = this.getTool(Enums.Tools.ZSPHERE);
-      if (zsphereTool && zsphereTool._drawable) {
-        scene.push(zsphereTool._drawable);
-      }
-    }
   }
 }
 

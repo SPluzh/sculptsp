@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **ZSphere Tool**: Fixed a bug where the generated mesh from ZSpheres could not be sculpted or picked by brushes. The application now automatically switches to the Brush tool and hides the ZSphere skeleton armature when a mesh is generated, enabling immediate sculpting.
 - **Fix**: Resolved an uncaught TypeError (`Cannot read properties of null (reading 'isDynamic')`) in `SculptSP.onDeviceMove` when dragging or interacting in a scene with no active mesh.
 - **UI**: Ensured that the right sidebar panels (Sculpting, Topology, and Rendering tools) remain visible and do not hide when the scene is empty.
 - **ZSphere Tool**: Implemented full symmetry support. Enabling the symmetry checkbox now mirrors all actions, including drawing, moving, scaling, rotating, deleting, and merging spheres symmetrically across the center axis. Dragging a sphere away from the center plane automatically generates its mirrored partner, and dragging it back merges them into a single center-plane sphere.

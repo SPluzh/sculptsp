@@ -700,7 +700,7 @@ class ZSphereTool extends SculptBase {
       dims: [resolution, resolution, resolution],
       distanceField: distanceField,
       uniformColor: [0.8, 0.5, 0.2],
-      uniformMaterial: [0.5, 0.0, 0.0]
+      uniformMaterial: [0.5, 0.0, 1.0]
     };
 
     var meshData = MarchingCubes.computeSurface(voxels);
@@ -738,6 +738,14 @@ class ZSphereTool extends SculptBase {
 
     this._main.addNewMesh(multimesh);
     this._main.render();
+
+    // Switch to Brush tool so the user can sculpt immediately
+    var gui = this._main.getGui();
+    if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
+      gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.BRUSH);
+    } else {
+      this._main.getSculptManager().setToolIndex(Enums.Tools.BRUSH);
+    }
   }
 
   clearGraph() {
