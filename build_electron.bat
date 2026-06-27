@@ -87,6 +87,10 @@ if %ERRORLEVEL% neq 0 (
     exit /b %ERRORLEVEL%
 )
 
+:: Remove "type": "module" from standalone\package.json to support CommonJS in Electron
+node -e "const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('standalone/package.json', 'utf8')); delete pkg.type; fs.writeFileSync('standalone/package.json', JSON.stringify(pkg, null, 2), 'utf8');"
+
+
 :: Check and build wintab binaries if missing
 if not exist "standalone\wintab-x64.node" (
     echo [WARNING] standalone\wintab-x64.node is missing. Building it...

@@ -29,7 +29,7 @@
     "build-wintab-ia32": "npx node-gyp rebuild --directory native/wintab --target=30.0.0 --arch=ia32 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-ia32.node -Force\"",
     "build-wintab-x64": "npx node-gyp rebuild --directory native/wintab --target=30.0.0 --arch=x64 --dist-url=https://electronjs.org/headers && powershell -Command \"Copy-Item -Path native\\wintab\\build\\Release\\wintab.node -Destination standalone\\wintab-x64.node -Force\"",
     "build-wintab": "yarn build-wintab-x64",
-    "buildElectron": "yarn release && rm -rf standalone/app/ && cp -R app/ standalone/ && cp package.json standalone",
+    "buildElectron": "yarn release && rm -rf standalone/app/ && cp -R app/ standalone/ && cp package.json standalone && node -e \"const fs = require('fs'); const pkg = JSON.parse(fs.readFileSync('standalone/package.json', 'utf8')); delete pkg.type; fs.writeFileSync('standalone/package.json', JSON.stringify(pkg, null, 2), 'utf8');\"",
     "standalone": "yarn buildElectron && cd standalone && node buildStandalone.js",
     "tauri": "tauri",
     "build-tauri": "tauri build"
