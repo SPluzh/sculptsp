@@ -547,7 +547,8 @@ class SculptSP extends Scene {
       if (action === Enums.Action.SCULPT_EDIT) {
         Multimesh.RENDER_HINT = Multimesh.SCULPT;
         this._sculptManager.update(this);
-        if (this.getMesh().isDynamic)
+        var mesh = this.getMesh();
+        if (mesh && mesh.isDynamic)
           this._gui.updateMeshInfo();
       }
     }

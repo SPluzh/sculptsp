@@ -342,10 +342,11 @@ class ZSphereTool extends SculptBase {
         if (hit.type === 'node') {
           // Create child ZSphere
           var parent = hit.node;
-          var child = this._graph.addChild(parent, parent.position, parent.radius);
+          var newRadius = parent.radius * 0.7;
+          var child = this._graph.addChild(parent, parent.position, newRadius);
 
           if (isSym && parent.symmetryPartner && parent.symmetryPartner !== parent) {
-            var partnerChild = this._graph.addChild(parent.symmetryPartner, parent.symmetryPartner.position, parent.symmetryPartner.radius);
+            var partnerChild = this._graph.addChild(parent.symmetryPartner, parent.symmetryPartner.position, newRadius);
             child.symmetryPartner = partnerChild;
             partnerChild.symmetryPartner = child;
           }
@@ -458,7 +459,7 @@ class ZSphereTool extends SculptBase {
         var screenParent = camera.project(parent.position);
         var worldPos = camera.unproject(mouseX, mouseY, screenParent[2]);
         vec3.copy(this._activeNode.position, worldPos);
-        this._activeNode.radius = parent.radius;
+        this._activeNode.radius = parent.radius * 0.7;
 
         if (isSym) {
           // If active node has no partner and we dragged off-center, spawn partner
