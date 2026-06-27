@@ -2,6 +2,7 @@
 yarn.lock
 app/sculptsp.js
 app/index.html
+app/assets/
 standalone/*
 cache/*
 node_modules

@@ -1,0 +1,382 @@
+# План ускорения Voxel Remesh через WASM
+
+## 1. Где теряется время — профиль пайплайна
+
+Текущие шаги `Remesh.remeshAsync` и их вес:
+
+| Шаг | Функция | Сложность | Доля времени |
+|-----|---------|-----------|--------------|
+| 1 | `prepareMeshes` + HoleFilling | O(V) | ~5% |
+| **2** | **`voxelize`** | **O(tri × voxels)** | **~60%** |
+| **3** | **`floodFill`** | **O(voxels)** | **~15%** |
+| **4** | **`marchingCubes` / `surfaceNets`** | **O(voxels)** | **~15%** |
+| 5 | `createMesh` + init | O(V+F) | ~5% |
+
+> **Цель WASM**: шаги 2, 3, 4 → ожидаемое ускорение **5–10x**  
+> Шаги 1 и 5 остаются в JS (там WebGL/MeshStatic — не портируемы в WASM).
+
+---
+
+## 2. Архитектура решения
+
+```
+JS (main thread)
+│
+├── Remesh.remeshAsync()      ← без изменений снаружи
+│       │
+│       ▼
+│   RemeshWorker (Web Worker)   ← NEW: изолирует тяжёлые вычисления
+│   ┌──────────────────────────────────────────────────────┐
+│   │  WasmRemesh.js  (тонкая JS-обёртка)                  │
+│   │  ┌────────────────────────────────────────────────┐  │
+│   │  │  remesh.wasm  (C++ → Emscripten)               │  │
+│   │  │  • voxelize(vertices, indices, bbox, res)      │  │
+│   │  │  • floodFill(distField, crossedEdges, dims)    │  │
+│   │  │  • marchingCubes(voxels, dims) → vertices+idx │  │
+│   │  │  • surfaceNets(voxels, dims)   → vertices+idx │  │
+│   │  └────────────────────────────────────────────────┘  │
+│   └──────────────────────────────────────────────────────┘
+│       │  Transferable ArrayBuffers (нулевое копирование)
+│       ▼
+│   createMesh(baseMesh, faces, vertices, ...)   ← JS (WebGL)
+```
+
+**Публичный API `Remesh.js` не меняется.** `remesh()` и `remeshAsync()` остаются — внутри просто появляется путь через WASM с фолбеком на JS.
+
+---
+
+## 3. Что нужно написать на C++
+
+Три функции — прямая трансляция существующего JS:
+
+### 3.1 `voxelize` (самый горячий путь)
+
+```cpp
+// Принимает меш (вершины + треугольники), заполняет distField + crossedEdges
+void voxelize(
+    const float* vertices,  int nbVertices,
+    const int*   indices,   int nbTriangles,
+    float* distField,       // rx*ry*rz float32, инициализирован в Infinity
+    uint8_t* crossedEdges,  // rx*ry*rz uint8, инициализирован в 0
+    const float* bbox,      // [minX,minY,minZ, step, rx,ry,rz]
+    int rx, int ry, int rz
+);
+```
+
+Алгоритм идентичен JS — per-triangle SDF, point-to-triangle distance, ray-edge crossing. В C++ с `-O3` это будет автовекторизовано компилятором.
+
+### 3.2 `floodFill`
+
+```cpp
+void floodFill(
+    float*   distField,
+    uint8_t* crossedEdges,
+    int rx, int ry, int rz
+);
+```
+
+Стек-обход идентичен JS. В C++ — нет накладных расходов на GC и боксинг.
+
+### 3.3 `marchingCubes` / `surfaceNets`
+
+```cpp
+// Возвращает: количество вершин и граней, записывает в out-буферы
+int marchingCubes(
+    const float*   distField,
+    const uint8_t* colors,     // может быть NULL (uniformColor)
+    const uint8_t* materials,  // может быть NULL (uniformMaterial)
+    float uColorR, float uColorG, float uColorB,  // uniform color fallback
+    float uMatR,   float uMatG,   float uMatB,
+    int rx, int ry, int rz,
+    float** outVertices,  int* outNbVertices,
+    float** outColors,
+    float** outMaterials,
+    int**   outFaces,     int* outNbFaces
+);
+```
+
+Таблицы `edgeTable` и `triTable` копируются из `MarchingCubes.js` 1-в-1 в C++.
+
+---
+
+## 4. Структура файлов
+
+```
+sculptsp/
+├── src/
+│   ├── editing/
+│   │   ├── Remesh.js            ← модифицирован (добавлен wasm-путь)
+│   │   ├── WasmRemesh.js        ← NEW: JS-обёртка над .wasm
+│   │   ├── MarchingCubes.js     ← без изменений (JS фолбек)
+│   │   └── SurfaceNets.js       ← без изменений (JS фолбек)
+│   └── workers/
+│       └── RemeshWorker.js      ← NEW: Web Worker
+├── src-wasm/
+│   ├── remesh.cpp               ← NEW: voxelize + floodFill + MC + SN
+│   ├── geometry.h               ← NEW: point-to-triangle math (из Geometry.js)
+│   └── CMakeLists.txt           ← NEW: сборочный скрипт
+├── public/
+│   └── wasm/
+│       ├── remesh.js            ← генерируется Emscripten
+│       └── remesh.wasm          ← генерируется Emscripten
+└── package.json                 ← добавить script "build:wasm"
+```
+
+---
+
+## 5. Передача данных JS ↔ WASM (нулевое копирование)
+
+### Входные данные (JS → WASM)
+
+```js
+// WasmRemesh.js
+function meshToWasm(wasm, mesh) {
+  const vAr = mesh.getVertices();   // Float32Array уже есть
+  const iAr = mesh.getTriangles();  // Uint32Array уже есть
+
+  // Выделяем память в куче WASM
+  const vPtr = wasm._malloc(vAr.byteLength);
+  const iPtr = wasm._malloc(iAr.byteLength);
+
+  // Копируем напрямую в WASM-кучу (единственное копирование)
+  wasm.HEAPF32.set(vAr, vPtr >> 2);
+  wasm.HEAPU32.set(iAr, iPtr >> 2);
+
+  return { vPtr, iPtr };
+}
+```
+
+### Выходные данные (WASM → JS, через Transferable)
+
+```js
+// После marchingCubes — забрать результат из WASM-кучи без лишних копий
+function wasmResultToTransferable(wasm, resultPtr) {
+  const nbVerts  = wasm.HEAP32[(resultPtr + 0) >> 2];
+  const nbFaces  = wasm.HEAP32[(resultPtr + 4) >> 2];
+  const vPtr     = wasm.HEAP32[(resultPtr + 8) >> 2];
+  const fPtr     = wasm.HEAP32[(resultPtr + 12) >> 2];
+  const cPtr     = wasm.HEAP32[(resultPtr + 16) >> 2];
+  const mPtr     = wasm.HEAP32[(resultPtr + 20) >> 2];
+
+  // Slice → создаёт новый ArrayBuffer, который можно transfer'ить в main thread
+  return {
+    vertices:  new Float32Array(wasm.HEAPF32.buffer, vPtr, nbVerts * 3).slice(),
+    faces:     new Uint32Array(wasm.HEAPU32.buffer, fPtr, nbFaces * 4).slice(),
+    colors:    cPtr ? new Float32Array(wasm.HEAPF32.buffer, cPtr, nbVerts * 3).slice() : null,
+    materials: mPtr ? new Float32Array(wasm.HEAPF32.buffer, mPtr, nbVerts * 3).slice() : null,
+  };
+}
+```
+
+---
+
+## 6. Web Worker (`src/workers/RemeshWorker.js`)
+
+```js
+import RemeshWasmInit from '/wasm/remesh.js';
+
+let wasm = null;
+
+async function getWasm() {
+  if (!wasm) wasm = await RemeshWasmInit();
+  return wasm;
+}
+
+self.onmessage = async function ({ data }) {
+  const { type, payload, id } = data;
+
+  if (type === 'remesh') {
+    try {
+      const w = await getWasm();
+      const result = await doRemesh(w, payload); // вся тяжёлая работа здесь
+      // Transferable: буферы переходят без копирования
+      self.postMessage({ type: 'done', id, result }, [
+        result.vertices.buffer,
+        result.faces.buffer,
+        result.colors?.buffer,
+        result.materials?.buffer,
+      ].filter(Boolean));
+    } catch (err) {
+      self.postMessage({ type: 'error', id, message: err.message });
+    }
+  }
+
+  if (type === 'progress') {
+    self.postMessage({ type: 'progress', id, ...data });
+  }
+};
+
+async function doRemesh(wasm, { meshesData, resolution, manifold, block }) {
+  // 1. Передать меши в WASM
+  // 2. Вызвать wasm._voxelizeAll(...)
+  // 3. Вызвать wasm._floodFill(...)
+  // 4. Вызвать wasm._marchingCubes(...) или wasm._surfaceNets(...)
+  // 5. Забрать результат
+}
+```
+
+---
+
+## 7. Изменения в `Remesh.js`
+
+Минимальные — только добавить новый путь, ничего не сломать:
+
+```js
+// Добавить в начало файла
+import { isWasmAvailable, remeshViaWasm } from './WasmRemesh.js';
+
+// Флаг — можно выставить из UI
+Remesh.USE_WASM = true;
+
+// Модифицировать remeshAsync — добавить wasm-ветку
+Remesh.remeshAsync = async function (meshes, baseMesh, manifold, progressCallback) {
+  // Попытка WASM-пути
+  if (Remesh.USE_WASM) {
+    try {
+      return await remeshViaWasm(meshes, baseMesh, manifold, progressCallback);
+    } catch (e) {
+      console.warn('[Remesh] WASM failed, falling back to JS:', e);
+    }
+  }
+
+  // Существующий JS-пайплайн (без изменений ниже)
+  var totalSteps = manifold && Remesh.SMOOTHING ? 6 : 5;
+  // ... весь текущий код ...
+};
+```
+
+---
+
+## 8. Build-система
+
+### `src-wasm/build.bat` (Windows)
+```bat
+@echo off
+set EMSDK=C:\emsdk
+call %EMSDK%\emsdk_env.bat
+
+emcc src-wasm/remesh.cpp ^
+  -O3 ^
+  -msimd128 ^
+  -s WASM=1 ^
+  -s EXPORT_ES6=1 ^
+  -s MODULARIZE=1 ^
+  -s EXPORT_NAME="RemeshWasm" ^
+  -s EXPORTED_RUNTIME_METHODS="['ccall','cwrap','HEAPF32','HEAPU32','HEAPU8','HEAP32','_malloc','_free']" ^
+  -s ALLOW_MEMORY_GROWTH=1 ^
+  -s MAXIMUM_MEMORY=2GB ^
+  -s ENVIRONMENT=worker ^
+  -o public/wasm/remesh.js
+
+echo Done.
+```
+
+> `-msimd128` включает WASM SIMD — автоматически векторизует операции с `float`.  
+> `-s ENVIRONMENT=worker` — оптимизирует бандл только для Web Worker (меньше размер).
+
+### `package.json` — добавить скрипт
+```json
+{
+  "scripts": {
+    "build:wasm": "src-wasm\\build.bat",
+    "build:wasm:linux": "bash src-wasm/build.sh"
+  }
+}
+```
+
+### `vite.config.js` — добавить поддержку WASM + COOP/COEP заголовков
+
+```js
+// В секцию server: { ... }
+server: {
+  port: 8080,
+  host: true,
+  headers: {
+    // Нужно для SharedArrayBuffer и Atomics (опционально, но полезно для Worker)
+    'Cross-Origin-Opener-Policy': 'same-origin',
+    'Cross-Origin-Embedder-Policy': 'require-corp',
+  }
+},
+// В секцию build: { rollupOptions: { ... } }
+// .wasm уже обрабатывается Vite нативно начиная с v4 — дополнительный плагин не нужен
+// Только убедиться что public/wasm/ попадает в сборку (public/ всегда копируется)
+```
+
+---
+
+## 9. Пошаговый план реализации
+
+### Этап 1 — Минимальный MVP (3–5 дней)
+- [ ] Установить emsdk (`winget install emsdk` или с сайта)
+- [ ] Написать `src-wasm/remesh.cpp` — только `voxelize` (самый горячий шаг)
+- [ ] Написать `src-wasm/build.bat` и скомпилировать
+- [ ] Написать `WasmRemesh.js` — загрузка модуля + вызов только voxelize
+- [ ] Заменить шаг 2 в `remeshAsync` на WASM, шаги 3–4 оставить JS
+- [ ] Измерить прирост: **ожидается 3–5x** по общему времени
+
+### Этап 2 — Полный WASM-пайплайн (ещё 3–5 дней)
+- [ ] Добавить `floodFill` в C++
+- [ ] Добавить `marchingCubes` в C++ (скопировать lookup-таблицы)
+- [ ] Добавить `surfaceNets` в C++ (опционально — MC обычно предпочтительнее)
+- [ ] Объединить в один WASM-вызов (меньше round-trip'ов)
+- [ ] **Ожидаемый итог: 5–10x ускорение**
+
+### Этап 3 — Web Worker (2–3 дня)
+- [ ] Вынести WASM-вычисления в `RemeshWorker.js`
+- [ ] UI не замерзает во время remesh — прогресс-бар работает плавно
+- [ ] Обновить `remeshAsync` для работы через Worker API
+
+---
+
+## 10. Оценка прироста производительности
+
+| Шаг | JS время (res=150) | WASM время | Ускорение |
+|-----|-------------------|------------|-----------|
+| voxelize | ~2000 мс | ~300 мс | **~7x** |
+| floodFill | ~400 мс | ~60 мс | **~7x** |
+| marchingCubes | ~300 мс | ~50 мс | **~6x** |
+| **Итого** | **~2700 мс** | **~410 мс** | **~6–7x** |
+
+> Числа приблизительные — зависят от разрешения и сложности меша.  
+> При `RESOLUTION=200` разница ещё заметнее (объём растёт кубически).
+
+---
+
+## 11. Фолбек при недоступности WASM
+
+```js
+// WasmRemesh.js
+let wasmModule = null;
+let wasmFailed = false;
+
+export async function isWasmAvailable() {
+  if (wasmFailed) return false;
+  try {
+    if (!wasmModule) {
+      const init = await import('/wasm/remesh.js');
+      wasmModule = await init.default();
+    }
+    return true;
+  } catch (e) {
+    wasmFailed = true;
+    return false;
+  }
+}
+```
+
+Если `remesh.wasm` недоступен (старый браузер, Electron без флагов, ошибка загрузки) — автоматически используется существующий JS-пайплайн. Пользователь ничего не заметит.
+
+---
+
+## 12. Примечания по совместимости
+
+| Среда | Статус |
+|-------|--------|
+| Chrome 91+ | ✅ WASM SIMD поддерживается |
+| Firefox 89+ | ✅ |
+| Electron 13+ | ✅ (встроенный Chromium) |
+| Safari 16.4+ | ✅ |
+| Старые браузеры | ➡ фолбек на JS |
+
+> COOP/COEP заголовки нужны только для `SharedArrayBuffer`.  
+> Transferable ArrayBuffers работают без них — и это наш подход.

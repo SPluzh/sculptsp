@@ -1,0 +1,422 @@
+# SculptXR vs SculptSP — Подробное сравнение
+
+## Краткое резюме
+
+| | **sculptsp** | **sculptxr** |
+|---|---|---|
+| Версия | 0.9.0 | 3.8.0 |
+| Описание | WebGL-скульптинг (десктоп) | WebXR-скульптинг (VR + десктоп) |
+| Бандлер | Webpack 5 + Babel | Vite 5 (ES-модули нативно) |
+| Основной фреймворк | Чистый WebGL (кастомный движок) | Three.js + WebXR |
+| Объём `src/SculptXX.js` | 542 строки | **1831+ строк** |
+| Объём `src/Scene.js` | 20 КБ | **400 КБ** |
+| GUI-инструментарий | yagui (старая JS-библиотека) | HTML-панели + canvas-рендер в VR |
+
+---
+
+## 1. Происхождение и цель
+
+**sculptsp** — это форк оригинального SculptGL с минимальными изменениями: исправления, добавление Electron/Tauri для упаковки в .exe, WinTab (давление пера на Windows). Проект ориентирован на **десктопный браузер** и нативный запуск через Electron.
+
+**sculptxr** — это агрессивная эволюция sculptsp: взял тот же фундамент SculptGL, и надстроил поверх него полноценный **WebXR (VR) рантайм**, новый GUI, систему анимации, риггинг, ARKit-блендшейпы, voxel-движок на WASM, квад-ремеш и многое другое. По сути это уже другое приложение.
+
+---
+
+## 2. Система сборки
+
+### sculptsp — Webpack + CommonJS
+```
+Бандлер:    Webpack 5 + Babel
+Тип модулей: CommonJS (import 'misc/Polyfill', без расширений)
+Resolving:  Custom resolve.modules → [src/, lib/, node_modules/]
+Dev:        webpack -w (watch)
+Release:    webpack --env release (с Babel транспиляцией)
+```
+
+### sculptxr — Vite + ES Modules
+```
+Бандлер:    Vite 5
+Тип модулей: ES Modules native ("type": "module" в package.json)
+Dev:        vite (HMR, мгновенный перезапуск)
+Build:      vite build
+HTTPS:      @vitejs/plugin-basic-ssl (нужен для WebXR!)
+COEP/COOP:  Заголовки Cross-Origin-Embedder-Policy (нужны для SharedArrayBuffer / WASM)
+Workers:    format: 'es' (ES модули в Web Workers)
+```
+
+> **Почему Vite?** WebXR в браузере требует HTTPS. Vite обеспечивает это из коробки через плагин. Также нужны COOP/COEP-заголовки для SharedArrayBuffer, который использует WASM-движок вокселей.
+
+---
+
+## 3. Зависимости
+
+### sculptsp
+```json
+dependencies:
+  file-saver, gl-matrix, hammerjs, http-server, raw-loader, yagui
+
+devDependencies:
+  Babel, webpack, electron, electron-packager, tauri, node-addon-api
+```
+
+### sculptxr
+```json
+dependencies:
+  gl-matrix, manifold-3d, modern-screenshot, three,
+  three-html-render, @awesome.me/webawesome, @fortawesome/fontawesome-free
+
+devDependencies:
+  vite, @vitejs/plugin-basic-ssl
+```
+
+**Ключевые отличия:**
+- `hammerjs` → **удалён** в sculptxr (реализован свой менеджер жестов через Pointer Events API)
+- `yagui` → **удалён** (заменён HTML-панелями и canvas-рендером)
+- `three` — **новый**, sculptsp не использует Three.js вовсе
+- `manifold-3d` — **новый**, для watertight-меша в boolean-операциях и симметрии
+- `@awesome.me/webawesome`, `@fortawesome/fontawesome-free` — иконки для VR-интерфейса
+- `raw-loader`, `Babel` — **не нужны** в sculptxr (Vite обрабатывает всё нативно)
+
+---
+
+## 4. Структура исходников `src/`
+
+### sculptsp `src/`
+```
+SculptSP.js (542 строки — главный класс событий)
+Scene.js    (20 КБ)
+drawables/, editing/, files/, gui/, math3d/, mesh/, misc/, render/, states/, worker/
+yagui/      ← ресурсы старого GUI
+```
+
+### sculptxr `src/`
+```
+SculptGL.js (1831+ строк — главный класс событий, с VR-поддержкой)
+Scene.js    (400 КБ — ОГРОМНЫЙ, всё управление сценой)
+Version.js
+XRControllerModelFactory_local.js  ← VR-контроллеры
+controller_matrix_sniffer.js       ← отладка VR
+controller_readd.js
+controller_tree_sniffer.js
+force_controller_render.js
+print_mesh_diagnostics.js
+print_vr_camera.js
+webgl_state_sniffer.js
+drawables/, editing/, files/, gui/, math3d/, mesh/, misc/, render/, resources/, states/, worker/, workers/
+```
+`src/workers/` — Web Workers для параллельных вычислений.
+
+---
+
+## 5. GUI
+
+### sculptsp GUI
+```
+gui/
+  Gui.js             (6 КБ — основной, yagui-обёртка)
+  GuiBackground.js   (1.5 КБ)
+  GuiCamera.js       (10 КБ)
+  GuiConfig.js       (0.6 КБ)
+  GuiFiles.js        (7 КБ)
+  GuiMesh.js         (1.1 КБ)
+  GuiRendering.js    (9.4 КБ)
+  GuiScene.js        (8 КБ)
+  GuiSculpting.js    (17 КБ)
+  GuiSculptingTools.js (14 КБ)
+  GuiStates.js       (1.7 КБ)
+  GuiTR.js           (2.2 КБ)
+  GuiTablet.js       (2.3 КБ — настройки пера WinTab)
+  GuiTopology.js     (23 КБ)
+  tr/                (переводы)
+```
+
+### sculptxr GUI
+```
+gui/
+  Gui.js                (52 КБ — в 8x больше!)
+  GuiAnimation.js       (34 КБ — граф-редактор анимации)
+  GuiBackground.js      (1.5 КБ)
+  GuiBlendshapes.js     (10 КБ — ARKit-блендшейпы)
+  GuiCamera.js          (4 КБ)
+  GuiConfig.js          (0.7 КБ)
+  GuiFiles.js           (15.5 КБ)
+  GuiMesh.js            (1.1 КБ)
+  GuiReference.js       (1.4 КБ — изображения-референсы)
+  GuiRendering.js       (12.7 КБ)
+  GuiSculpting.js       (13.8 КБ)
+  GuiSculptingTools.js  (17.5 КБ)
+  GuiStates.js          (1.7 КБ)
+  GuiTR.js              (2.2 КБ)
+  GuiTablet.js          (0.6 КБ — урезан, нет WinTab)
+  GuiTimeline.js        (210 КБ — полноценный DAW-таймлайн!)
+  GuiTopology.js        (13.8 КБ)
+  GuiXR.js             (280 КБ — весь VR UI!)
+  BlendshapeStackPanel.js (43 КБ — Photoshop-стиль панель)
+  TimelineHelper.js     (20 КБ)
+  htmlvr/               ← HTML-шаблоны для VR-панелей
+  tabIcons.js, theme.js
+  tr/                   (переводы)
+  vr/                   (16 VR-specific модулей)
+    GuiVRAnimation.js   (63 КБ)
+    GuiVRScene.js       (17 КБ)
+    GuiVRSettings.js    (15 КБ)
+    GuiVRTools.js       (45 КБ)
+    GuiVRTopology.js    (19 КБ)
+    + 11 других
+```
+
+---
+
+## 6. Инструменты редактирования (`src/editing/tools/`)
+
+### sculptsp — 16 инструментов
+| Инструмент | Размер |
+|---|---|
+| Brush | 3.3 КБ |
+| ClayBuildup | 5.4 КБ |
+| Crease | 2.6 КБ |
+| Drag | 5.0 КБ |
+| Flatten | 2.9 КБ |
+| Inflate | 2.5 КБ |
+| LocalScale | 2.8 КБ |
+| Masking | 10.9 КБ |
+| Move | 5.9 КБ |
+| Paint | 5.8 КБ |
+| Pinch | 2.2 КБ |
+| SculptBase | 14 КБ |
+| Smooth | 6.4 КБ |
+| Tools | 2.0 КБ |
+| Transform | 3.1 КБ |
+| Twist | 4.6 КБ |
+
+### sculptxr — 36 инструментов (в 2.25x больше!)
+Всё что есть в sculptsp, плюс:
+
+| Новый инструмент | Размер | Описание |
+|---|---|---|
+| **Grab** | 18.6 КБ | Захват геометрии (мощнее Drag) |
+| **CutTool** | 57 КБ | Разрезание меша |
+| **CollapseEdge** | 6.3 КБ | Схлопывание рёбер |
+| **DissolveEdge** | 10.3 КБ | Удаление рёбер |
+| **DissolveVertex** | 7.3 КБ | Удаление вершин |
+| **EdgeCreate** | 13.5 КБ | Создание рёбер |
+| **Extrude** | 45 КБ | Экструзия граней |
+| **FillHole** | 20.9 КБ | Заполнение дыр |
+| **GeodesicPoseTool** | 24 КБ | Позирование по геодезическому расстоянию |
+| **Inset** | 24.7 КБ | Вставка грани |
+| **SimpleSplitEdge** | 11.2 КБ | Разрезание ребра |
+| **Slide** | 24.6 КБ | Скольжение вершин по рёбрам |
+| **SnapWeldCenter** | 7.3 КБ | Сварка вершин |
+| **SpinEdge** | 6.9 КБ | Вращение ребра |
+| **SplitEdge** | 11.9 КБ | Разделение ребра |
+| **SplitFace** | 4.3 КБ | Разделение грани |
+| **SculptVoxel** | 93.4 КБ | Воксельная лепка |
+| **TransformVR** | 19.1 КБ | 6DOF трансформ для VR |
+| **Weld** | 6.7 КБ | Сварка вершин |
+| **DeleteFace** | 2.4 КБ | Удаление граней |
+| **Relax** | 0.3 КБ | Релаксация |
+
+---
+
+## 7. Editing (остальные модули)
+
+### sculptsp `src/editing/`
+```
+Gizmo.js         (23 КБ)
+HoleFilling.js   (6.3 КБ)
+MarchingCubes.js (17.2 КБ)
+Remesh.js        (24 КБ)
+Reversion.js     (18.5 КБ)
+SculptManager.js (2.4 КБ — минимальный!)
+Subdivision.js   (22 КБ)
+SurfaceNets.js   (7.1 КБ)
+```
+
+### sculptxr `src/editing/`
+```
+Gizmo.js             (38.9 КБ — +60%, 6DOF VR gizmo)
+GizmoVR.js           (25.6 КБ — VR-specific gizmo)  ← NEW
+HoleFilling.js       (3.9 КБ)
+MarchingCubes.js     (16.7 КБ)
+Remesh.js            (25 КБ)
+Reversion.js         (18.7 КБ)
+SculptManager.js     (54.3 КБ — в 22x больше!)      ← ОГРОМНЫЙ
+Subdivision.js       (22 КБ)
+SurfaceNets.js       (13.1 КБ — переписан для WASM)
+AnimationRegistry.js (88 КБ — полная система анимации)  ← NEW
+ArkitBlendshapes.js  (8.9 КБ — 52 ARKit-блендшейпа)    ← NEW
+Geodesic.js          (7.3 КБ — геодезический движок)    ← NEW
+VoxelState.js        (65.9 КБ — воксельный SDF движок)  ← NEW
+ReferenceManager.js  (3.6 КБ — изображения-референсы)   ← NEW
+```
+
+---
+
+## 8. Mesh-система
+
+### sculptsp
+```
+Mesh.js          (68 КБ)
+MeshData.js      (3.4 КБ)
+RenderData.js    (1.4 КБ)
+TransformData.js (0.9 КБ)
+dynamic/, meshStatic/, multiresolution/
+```
+
+### sculptxr
+```
+Mesh.js          (100 КБ — +47%)
+MeshData.js      (3.4 КБ)
+MeshReference.js (5.5 КБ)  ← NEW (undo через swap-ссылок)
+MeshSafe.js      (77.3 КБ) ← NEW (safe copy для undo)
+MeshSymmetry.js  (20.6 КБ) ← NEW (зеркальная симметрия)
+RenderData.js    (1.6 КБ)
+TransformData.js (0.9 КБ)
+dynamic/, meshStatic/, multiresolution/
+```
+
+---
+
+## 9. States (Undo/Redo)
+
+### sculptsp
+```
+StateAddRemove.js      (1.4 КБ)
+StateColorAndMaterial.js (3.0 КБ)
+StateCustom.js         (0.4 КБ)
+StateDynamic.js        (8.5 КБ)
+StateGeometry.js       (2.6 КБ)
+StateManager.js        (3.7 КБ)
+StateMultiresolution.js (3.4 КБ)
+```
+
+### sculptxr
+```
+StateAddRemove.js       (2.0 КБ)  ← увеличен
+StateColorAndMaterial.js (3.0 КБ)
+StateCustom.js          (0.4 КБ)
+StateDynamic.js         (8.5 КБ)
+StateGeometry.js        (2.7 КБ)
+StateManager.js         (4.5 КБ)  ← увеличен
+StateMultiresolution.js (3.4 КБ)
+StateVoxel.js           (0.6 КБ)  ← NEW (undo для вокселей)
+```
+
+---
+
+## 10. Обработка ввода
+
+### sculptsp — Hammer.js
+- Жесты (pan/pinch/doubletap) через библиотеку **Hammer.js**
+- Pointer Events слушаются на `window`
+- WinTab (давление пера Windows) — через нативный Node.js addon
+
+### sculptxr — Нативный Pointer Events API (без Hammer.js)
+- Полностью переписан на нативный Pointer Events
+- Собственный менеджер жестов: `_fingerPointers Map`, pinch-дистанция, EMA-сглаживание
+- Поддержка **Apple Pencil**: дебаунс 300ms, Touch Events fallback, dedup iPadOS-дублей
+- Поддержка **VR контроллеров**: `handleXRInput`, 6DOF raycast
+- Pointer Events слушаются на `canvas` (не на `window`) — правильнее
+- Слушатели `pointerover` с `stopPropagation` чтобы Three.js WebXRManager не делал лишних raycast
+
+---
+
+## 11. VR-специфика sculptxr
+
+Всё ниже **отсутствует в sculptsp полностью:**
+
+- **WebXR сессия**: `immersive-vr`, `immersive-ar` (passthrough на Quest 3)
+- **6DOF контроллеры**: левый = меню/мета, правый = скульптинг/лазер
+- **VR UI**: 16 отдельных панелей (GuiVRTools, GuiVRAnimation, GuiVRScene...), рендерятся в canvas → texture
+- **Spectator Mode**: VR View Mirror / Desktop / Tracked / Stationary (6DOF Dreams mode)
+- **Three.js рендеринг**: миграция с raw WebGL (с поддержкой legacy-шейдеров параллельно)
+- **VR Gizmo**: GizmoVR — 6DOF трансформ в метровом пространстве
+- **GeodesicPoseTool**: позирование части меша по геодезическому расстоянию
+- **Статус платформ**: специальные фиксы для GalaxyXR, Virtual Desktop, Apple Vision Pro
+
+---
+
+## 12. Анимационная система
+
+### sculptsp
+Нет системы анимации.
+
+### sculptxr — Полноценный DAW (Digital Audio Workstation-стиль)
+- `AnimationRegistry.js` (88 КБ) — хранилище всех треков и ключевых кадров
+- `GuiTimeline.js` (210 КБ!) — граф-редактор с Transform Box, кривыми, соло-каналами
+- `GuiAnimation.js` (34 КБ) — десктопная панель
+- `GuiVRAnimation.js` (63 КБ) — VR-панель с двуручным зумом
+- Поддержка: morph-shape delta оверлеи, ARKit-блендшейпы (52 формы), mocap-запись
+- Экспорт: `.sxr`, `.sgl`, **GLB** (с анимацией)
+
+---
+
+## 13. Уникальные файлы sculptxr (отсутствуют в sculptsp)
+
+| Файл/папка | Назначение |
+|---|---|
+| `voxel_wasm/` | Rust-WASM для SDF-вокселей (SurfaceNets) |
+| `src/editing/VoxelState.js` | JS-слой управления воксельным полем |
+| `src/editing/AnimationRegistry.js` | Система анимации |
+| `src/editing/ArkitBlendshapes.js` | 52 ARKit-блендшейпа (лицевой риггинг) |
+| `src/editing/Geodesic.js` | Геодезический движок для Pose tool |
+| `src/editing/GizmoVR.js` | VR 6DOF трансформ-гизмо |
+| `src/editing/ReferenceManager.js` | Менеджер изображений-референсов |
+| `src/mesh/MeshSafe.js` | Безопасный клон меша для undo |
+| `src/mesh/MeshSymmetry.js` | Зеркальная симметрия |
+| `src/gui/GuiTimeline.js` | DAW таймлайн (210 КБ) |
+| `src/gui/GuiXR.js` | Весь VR UI (280 КБ) |
+| `src/gui/GuiAnimation.js` | Десктопная анимация |
+| `src/gui/GuiBlendshapes.js` | Панель блендшейпов |
+| `src/gui/BlendshapeStackPanel.js` | Photoshop-стиль стек |
+| `src/gui/GuiReference.js` | Референс-изображения |
+| `src/gui/theme.js` | Catppuccin-тема UI |
+| `src/gui/vr/` | 16 VR-specific GUI модулей |
+| `src/gui/htmlvr/` | HTML-шаблоны VR-панелей |
+| `src/XRControllerModelFactory_local.js` | Модели VR-контроллеров |
+| `src/states/StateVoxel.js` | Undo для вокселей |
+| `src/workers/` | Web Workers |
+| `bump.mjs` | Скрипт автоинкремента версии |
+| `deploy.sh` / `deploy_beta.sh` | Деплой на tokeru.com |
+| `implementation_plan_eye_rig.md` | Eye rig (look-at + saccades) |
+
+---
+
+## 14. Уникальные файлы sculptsp (отсутствуют в sculptxr)
+
+| Файл/папка | Назначение |
+|---|---|
+| `src/SculptSP.js` | Главный класс (имя другое) |
+| `src/gui/GuiScene.js` | Замена для outliner (в xr — в составе GuiXR) |
+| `src/gui/GuiTablet.js` (2.3 КБ) | Полные настройки WinTab |
+| `src/editing/tools/ClayBuildup.js` | Инструмент Clay Buildup |
+| `native/wintab/` | WinTab нативный addon для Node.js |
+| `src-tauri/` | Tauri v2 интеграция |
+| `build_tauri.bat` | Tauri сборка |
+| `start_dev.bat` | Скрипт быстрого запуска |
+| `wintab_diag/` | Диагностика WinTab |
+| `sculptxr/` | Вложенная копия sculptxr-ветки |
+| `webpack.config.js` | Webpack конфигурация |
+| `main.js` (71 байт) | Точка входа для Electron |
+| `AGENTS.md` | Инструкции для AI-агентов |
+| `gemini.md` | Gemini-специфичные инструкции |
+
+---
+
+## 15. Итоговая схема различий
+
+```
+sculptsp (оригинал/база)              sculptxr (эволюция/VR-ветка)
+─────────────────────────            ──────────────────────────────────
+Webpack + Babel                  →   Vite + ES Modules native
+yagui GUI                        →   HTML-панели + canvas VR UI
+Hammer.js жесты                  →   Нативный Pointer Events API
+16 инструментов лепки            →   36 инструментов (+20 новых)
+Нет анимации                     →   DAW-таймлайн + ARKit блендшейпы
+Нет VR                           →   Полный WebXR (VR + AR)
+Raw WebGL (наследие SculptGL)    →   Three.js (migration in progress)
+Нет WASM                         →   Rust WASM (SurfaceNets, Manifold-3D)
+WinTab (Electron, Windows)       →   iPad/Pencil поддержка
+Tauri v2 упаковка                →   Electron + деплой на tokeru.com
+542-строчный главный класс       →   1831-строчный главный класс
+```

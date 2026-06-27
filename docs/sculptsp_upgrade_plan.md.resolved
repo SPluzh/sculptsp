@@ -1,0 +1,298 @@
+# План модернизации SculptSP
+
+## Фаза 1 — Миграция на Vite
+**Цель:** убрать Webpack/Babel, ускорить разработку в 10-30x
+
+### Шаги
+1. `npm install -D vite @vitejs/plugin-basic-ssl`
+2. Удалить из `devDependencies`: `webpack`, `webpack-cli`, `@babel/core`, `@babel/preset-env`, `babel-loader`, `copy-webpack-plugin`, `raw-loader`
+3. Создать `vite.config.js`:
+```js
+import { defineConfig } from 'vite';
+import basicSsl from '@vitejs/plugin-basic-ssl';
+
+export default defineConfig({
+  plugins: [basicSsl()],
+  resolve: { alias: { /* старые webpack aliases */ } },
+  server: {
+    https: true,
+    port: 8080,
+    headers: {
+      'Cross-Origin-Embedder-Policy': 'require-corp',
+      'Cross-Origin-Opener-Policy': 'same-origin',
+    }
+  }
+});
+```
+4. Починить импорты: добавить относительные пути и `.js` расширения
+   - Использовать `fix_imports.py` (уже есть в проекте)
+5. Обновить `package.json` scripts:
+```json
+"dev": "vite",
+"build": "vite build",
+"preview": "vite preview"
+```
+6. Переместить статику в `public/`, обновить `index.html` как Vite-точку входа
+
+**Результат:** `yarn dev` → сервер за <1 сек, HMR, HTTPS из коробки
+
+---
+
+## Фаза 2 — WASM-модули
+**Цель:** ускорить тяжёлые операции, добавить новые возможности
+
+### 2A — manifold-3d (из npm, готов сразу)
+```bash
+npm install manifold-3d
+```
+Применение:
+- **Boolean операции** (Union / Subtract / Intersect) — сейчас отсутствуют
+- **Watertight меш** для симметрии без артефактов
+- Использовать как в sculptxr: `import Manifold from 'manifold-3d'`
+
+### 2B — SurfaceNets / MarchingCubes → Rust WASM
+- Портировать `SurfaceNets.js` на Rust (или взять готовый из sculptxr `voxel_wasm/`)
+- Vite поддерживает `.wasm` нативно — просто `import`
+- Zero-Copy: JS пишет в WASM heap напрямую
+
+### 2C — Quad Remesh (опционально)
+```bash
+# quadrs — Rust порт Instant Meshes (используется в sculptxr)
+# подключить как WASM через вызов из Remesh.js
+```
+
+**Результат:** Remesh/Boolean в 5-10x быстрее, новые Boolean-операции
+
+---
+
+## Фаза 3 — Статичный UI (Topbar + Sidebars)
+**Цель:** заменить yagui на нативный HTML/CSS
+
+### Структура
+```html
+<div id="ui-root">          <!-- pointer-events: none -->
+  <header id="topbar"></header>
+  <aside id="sidebar-left"></aside>
+  <aside id="sidebar-right">
+    <nav class="tabs">
+      <button data-tab="render">Render</button>
+      <button data-tab="topology">Topology</button>
+      <button data-tab="scene">Scene</button>
+    </nav>
+    <div class="tab-content" id="tab-render">...</div>
+    <div class="tab-content" id="tab-topology">...</div>
+  </aside>
+</div>
+<canvas id="viewport"></canvas>
+```
+
+### CSS-токены
+```css
+:root {
+  --bg:        #0d0d0f;
+  --panel:     #161618;
+  --border:    #2a2a2e;
+  --accent:    #00c896;
+  --text:      #e0e0e0;
+  --text-dim:  #888;
+}
+```
+
+### Замена GuiModules
+Каждый `GuiXxx.js` переписывается как класс который:
+- Создаёт свои HTML-элементы (`createElement`)
+- Вешает слушатели на `input`, `button`
+- Вызывает те же `this._main.*` методы что и раньше
+
+```js
+// Пример GuiSculpting.js новый
+export class GuiSculpting {
+  init(container, main) {
+    container.innerHTML = `
+      <label>Radius
+        <input type="range" id="sl-radius" min="1" max="200" value="50">
+      </label>`;
+    document.getElementById('sl-radius').oninput = e =>
+      main.getSculptManager().setRadius(+e.target.value);
+  }
+}
+```
+
+**Убрать зависимость:** `npm uninstall yagui`
+
+---
+
+## Фаза 4 — Динамичный UI (Lit Web Components)
+**Цель:** Pie Menu + Custom Shelf
+
+```bash
+npm install lit
+```
+
+### 4A — Pie Menu
+```js
+// src/gui/components/PieMenu.js
+import { LitElement, html, css } from 'lit';
+
+export class PieMenu extends LitElement {
+  static properties = { items: {}, visible: {}, x: {}, y: {} };
+
+  posFor(i) {
+    const angle = (i / this.items.length) * Math.PI * 2 - Math.PI / 2;
+    const R = 90;
+    return `left:${R + R * Math.cos(angle)}px; top:${R + R * Math.sin(angle)}px`;
+  }
+
+  render() {
+    if (!this.visible) return html``;
+    return html`
+      <div class="ring">
+        ${this.items.map((item, i) => html`
+          <button style=${this.posFor(i)} @click=${() => { item.action(); this.visible = false; }}>
+            ${item.icon ? html`<img src=${item.icon}>` : item.label}
+          </button>
+        `)}
+      </div>`;
+  }
+}
+customElements.define('pie-menu', PieMenu);
+```
+
+Открывать по правой кнопке мыши на canvas или по клавише (настраивается).
+
+### 4B — Custom Shelf
+```js
+// src/gui/components/CustomShelf.js
+import { LitElement, html } from 'lit';
+
+export class CustomShelf extends LitElement {
+  // Команды из localStorage
+  get items() {
+    return JSON.parse(localStorage.getItem('shelf') || '[]');
+  }
+  addItem(cmd) {
+    const items = this.items;
+    items.push(cmd);
+    localStorage.setItem('shelf', JSON.stringify(items));
+    this.requestUpdate();
+  }
+  render() {
+    return html`
+      <div class="shelf">
+        ${this.items.map(cmd => html`
+          <button @click=${() => COMMANDS[cmd.id]?.()}>
+            ${cmd.label}
+          </button>
+        `)}
+      </div>`;
+  }
+}
+customElements.define('custom-shelf', CustomShelf);
+```
+
+Реестр команд:
+```js
+// src/gui/commands.js
+export const COMMANDS = {
+  smooth:       (main) => main.getSculptManager().setTool(Enums.Tools.SMOOTH),
+  flatten:      (main) => main.getSculptManager().setTool(Enums.Tools.FLATTEN),
+  remesh_4k:    (main) => main.remesh(4000),
+  symmetry_x:   (main) => main.toggleSymmetry('x'),
+  // ... все инструменты
+};
+```
+
+Правая кнопка на любом элементе sidebar → контекстное меню → "Добавить в полку".
+
+---
+
+## Фаза 5 — Drag-and-Drop (interact.js)
+**Цель:** перетаскивание кнопок в Custom Shelf
+
+```bash
+npm install interactjs
+```
+
+```js
+import interact from 'interactjs';
+
+// Кнопки sidebar можно тащить в полку
+interact('.gui-tool-btn').draggable({
+  onend(event) {
+    const shelf = document.querySelector('custom-shelf');
+    const cmdId = event.target.dataset.cmd;
+    shelf.addItem({ id: cmdId, label: event.target.textContent });
+  }
+});
+
+// Кнопки в полке можно менять местами
+interact('.shelf button').draggable({
+  onmove: dragMoveListener  // стандартный пример из docs
+});
+```
+
+---
+
+## Фаза 6 — Floating UI (всплывающие панели)
+**Цель:** контекстные попапы точно под курсором
+
+```bash
+npm install @floating-ui/dom
+```
+
+```js
+import { computePosition, flip, shift, offset } from '@floating-ui/dom';
+
+function showPopup(referenceEl, popupEl) {
+  computePosition(referenceEl, popupEl, {
+    placement: 'bottom-start',
+    middleware: [offset(8), flip(), shift({ padding: 8 })],
+  }).then(({ x, y }) => {
+    popupEl.style.left = x + 'px';
+    popupEl.style.top  = y + 'px';
+    popupEl.style.display = 'block';
+  });
+}
+
+// Использование: быстрая панель слайдеров под курсором
+canvas.addEventListener('keydown', e => {
+  if (e.code === 'Space') {
+    showPopup(cursorAnchor, quickPanel);
+  }
+});
+```
+
+---
+
+## Итоговый стек зависимостей
+
+```
+Убрать (dev):   webpack, webpack-cli, babel, copy-webpack-plugin, raw-loader
+Убрать (prod):  yagui
+
+Добавить (dev): vite, @vitejs/plugin-basic-ssl
+
+Добавить (prod):
+  manifold-3d      ~800 КБ WASM  (boolean, watertight)
+  lit              ~17 КБ        (Web Components)
+  interactjs       ~60 КБ        (drag-and-drop)
+  @floating-ui/dom ~12 КБ        (позиционирование попапов)
+```
+
+Итого новых prod-зависимостей: ~889 КБ (почти всё — WASM manifold).
+
+---
+
+## Порядок выполнения
+
+```
+Фаза 1  Vite migration         ~1 день   (блокирует всё остальное)
+Фаза 2A manifold-3d            ~0.5 дня  (npm install + интеграция)
+Фаза 3  Статичный HTML UI      ~3 дня    (заменить все GuiXxx.js)
+Фаза 4  Lit компоненты         ~2 дня    (Pie Menu + Shelf)
+Фаза 5  interact.js drag       ~1 день
+Фаза 6  Floating UI попапы     ~1 день
+Фаза 2B SurfaceNets WASM       ~3 дня    (Rust/WASM порт)
+
+Итого: ~12 дней
+```
