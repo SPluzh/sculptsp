@@ -4,7 +4,7 @@ import ZSphereGraph from '../ZSphereGraph.js';
 import ZSphereDrawable from '../../drawables/ZSphereDrawable.js';
 import MeshStatic from '../../mesh/meshStatic/MeshStatic.js';
 import Multimesh from '../../mesh/multiresolution/Multimesh.js';
-import MarchingCubes from '../MarchingCubes.js';
+import SurfaceNets from '../SurfaceNets.js';
 import Enums from '../../misc/Enums.js';
 
 class ZSphereTool extends SculptBase {
@@ -695,15 +695,16 @@ class ZSphereTool extends SculptBase {
       }
     }
 
-    // 3. Reconstruct surface using Marching Cubes
+    // 3. Reconstruct surface using SurfaceNets (Quad Remesh)
     var voxels = {
       dims: [resolution, resolution, resolution],
       distanceField: distanceField,
-      uniformColor: [0.8, 0.5, 0.2],
+      uniformColor: [1.0, 1.0, 1.0],
       uniformMaterial: [0.5, 0.0, 1.0]
     };
 
-    var meshData = MarchingCubes.computeSurface(voxels);
+    SurfaceNets.BLOCK = false;
+    var meshData = SurfaceNets.computeSurface(voxels);
 
     // Transform vertices back to world coords
     var vertices = meshData.vertices;
@@ -734,6 +735,23 @@ class ZSphereTool extends SculptBase {
     var activeMesh = this._main.getMesh() || (this._main.getMeshes().length > 0 ? this._main.getMeshes()[0] : null);
     if (activeMesh) {
       multimesh.copyRenderConfig(activeMesh);
+    }
+
+    var gui = this._main.getGui();
+    if (gui && gui._ctrlRendering) {
+      var rendering = gui._ctrlRendering;
+      multimesh.setFlatShading(rendering.getFlatShading());
+      multimesh.setShowWireframe(rendering.getWireframe());
+      multimesh.setShaderType(rendering.getShaderName());
+      if (rendering._ctrlMatcap) {
+        multimesh.setMatcap(rendering._ctrlMatcap.getValue());
+      }
+      if (rendering._ctrlCurvature) {
+        multimesh.setCurvature(rendering._ctrlCurvature.getValue() / 20.0);
+      }
+      if (rendering._ctrlTransparency) {
+        multimesh.setOpacity(1.0 - rendering._ctrlTransparency.getValue() / 100.0);
+      }
     }
 
     this._main.addNewMesh(multimesh);

@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **ZSphere Tool**: Fixed a bug where generating a mesh from ZSpheres would reset the current matcap material and rendering settings (such as flat shading, curvature, and transparency) in the rendering panel back to their defaults. Newly generated meshes now correctly inherit the active matcap and render settings. Also fixed an issue where the generated mesh would have a yellow/orange tint by default due to marching cubes uniform colors; the default base vertex color is now initialized to white [1.0, 1.0, 1.0] to render the matcaps in their true colors.
+- **ZSphere Tool**: Replaced Marching Cubes surface reconstruction with SurfaceNets (Quad Remesh) for ZSphere mesh generation, producing a clean quad mesh rather than a triangle mesh.
 - **ZSphere Tool**: Fixed a bug where the generated mesh from ZSpheres could not be sculpted or picked by brushes. The application now automatically switches to the Brush tool and hides the ZSphere skeleton armature when a mesh is generated, enabling immediate sculpting.
 - **Fix**: Resolved an uncaught TypeError (`Cannot read properties of null (reading 'isDynamic')`) in `SculptSP.onDeviceMove` when dragging or interacting in a scene with no active mesh.
 - **UI**: Ensured that the right sidebar panels (Sculpting, Topology, and Rendering tools) remain visible and do not hide when the scene is empty.
