@@ -11,6 +11,7 @@ class Move extends SculptBase {
     this._intensity = 1.0;
     this._topoCheck = true;
     this._negative = false; // along normal
+    this._focalShift = 0.6;
     this._moveData = {
       center: [0.0, 0.0, 0.0],
       dir: [0.0, 0.0],
@@ -22,6 +23,15 @@ class Move extends SculptBase {
       vProxy: null
     };
     this._idAlpha = 0;
+  }
+
+
+  getFallOff(dist) {
+    if (dist >= 1.0) return 0.0;
+    var focalShift = this._focalShift;
+    var base = 1.0 - dist * dist;
+    var exponent = Math.pow(2.0, (focalShift - 0.6) * 2.0) * 3.0;
+    return Math.pow(base, exponent);
   }
 
   startSculpt() {
@@ -94,11 +104,11 @@ class Move extends SculptBase {
     var mouseX = main._mouseX;
     var mouseY = main._mouseY;
     this.updateMoveDir(picking, mouseX, mouseY);
-    this.move(picking.getPickedVertices(), picking.getIntersectionPoint(), picking.getLocalRadius2(), this._moveData, picking);
+    this.move(picking.getPickedVertices(), this._moveData.center, picking.getLocalRadius2(), this._moveData, picking);
 
     if (useSym) {
       this.updateMoveDir(pickingSym, mouseX, mouseY, true);
-      this.move(pickingSym.getPickedVertices(), pickingSym.getIntersectionPoint(), pickingSym.getLocalRadius2(), this._moveDataSym, pickingSym);
+      this.move(pickingSym.getPickedVertices(), this._moveDataSym.center, pickingSym.getLocalRadius2(), this._moveDataSym, pickingSym);
     }
 
     var mesh = this.getMesh();
