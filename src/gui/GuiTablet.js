@@ -16,7 +16,8 @@ class GuiTablet {
     var isElectron = (typeof process !== 'undefined') &&
                      process.versions &&
                      process.versions.electron;
-    if (isElectron) {
+    var isTauri = (typeof window !== 'undefined') && window.__TAURI__ !== undefined;
+    if (isElectron || isTauri) {
       menu.addTitle(TR('pressureInput'));
       var optionsApi = [];
       optionsApi[0] = TR('pressureInputWindowsInk');

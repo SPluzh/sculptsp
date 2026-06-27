@@ -10,6 +10,7 @@
     "beforeBuildCommand": "yarn release"
   },
   "app": {
+    "withGlobalTauri": true,
     "windows": [
       {
         "title": "SculptSP",
