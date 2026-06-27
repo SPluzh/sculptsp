@@ -495,10 +495,12 @@ body {
   right: 20px;
   width: 80px;
   height: 80px;
-  perspective: none;
+  perspective: 2000px;
   z-index: 10;
   pointer-events: auto;
   user-select: none;
+  transform: translate3d(0, 0, 0);
+  will-change: transform;
 }
 
 /* Вращающийся куб */
@@ -508,6 +510,7 @@ body {
   position: relative;
   transform-style: preserve-3d;
   transition: transform 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+  will-change: transform;
 }
 
 /* Базовый интерактивный элемент куба */
@@ -519,14 +522,9 @@ body {
   border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
-.cube-face {
+.cube-face, .cube-edge, .cube-corner {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-}
-
-.cube-edge, .cube-corner {
-  backface-visibility: visible;
-  -webkit-backface-visibility: visible;
 }
 
 /* Грани */
@@ -631,12 +629,10 @@ body {
   background: #529fcc !important;
   border-color: #ffffff !important;
   color: #ffffff;
-  z-index: 20; /* Показываем активный элемент поверх остальных */
 }
 
 .cube-corner:hover {
   background: #ffffff !important;
-  z-index: 20;
 }
 
 .cube-corner:hover::before {
