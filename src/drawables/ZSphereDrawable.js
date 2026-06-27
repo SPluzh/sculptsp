@@ -175,9 +175,20 @@ class ZSphereDrawable {
       gl.uniform1f(shader.uniforms.uRadiusTop, child.radius);
 
       // Color: only highlight connection links when they are hovered; base color is medium gray
-      var selected = (this._graph._hoveredLink &&
-                      this._graph._hoveredLink.parent === parent &&
-                      this._graph._hoveredLink.child === child);
+      var selected = false;
+      if (this._graph._hoveredLink) {
+        var hParent = this._graph._hoveredLink.parent;
+        var hChild = this._graph._hoveredLink.child;
+        if (hParent === parent && hChild === child) {
+          selected = true;
+        } else if (main.getSculptManager().getSymmetry()) {
+          var pPartner = parent.symmetryPartner;
+          var cPartner = child.symmetryPartner;
+          if (pPartner && cPartner && hParent === pPartner && hChild === cPartner) {
+            selected = true;
+          }
+        }
+      }
       gl.uniform3fv(shader.uniforms.uColor, [0.4, 0.4, 0.4]);
       gl.uniform1f(shader.uniforms.uSelected, selected ? 1.0 : 0.0);
 
@@ -216,7 +227,10 @@ class ZSphereDrawable {
       gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);
 
       // Color: active (selected) is red, inactive spheres are dark gray
-      var selected = (node === this._graph._selected);
+      var selected = (node === this._graph._selected || 
+                      (main.getSculptManager().getSymmetry() && 
+                       this._graph._selected && 
+                       node === this._graph._selected.symmetryPartner));
       var color = selected ? [0.8, 0.1, 0.1] : [0.25, 0.25, 0.25];
       gl.uniform3fv(shader.uniforms.uColor, color);
       gl.uniform1f(shader.uniforms.uSelected, 0.0);
@@ -228,33 +242,41 @@ class ZSphereDrawable {
     // 3. Draw preview node if present
     if (this._graph._previewNode) {
       var pNode = this._graph._previewNode;
+      var drawPreview = (pos) => {
+        mat4.identity(this._modelMatrix);
+        mat4.translate(this._modelMatrix, this._modelMatrix, pos);
+        mat4.scale(this._modelMatrix, this._modelMatrix, [pNode.radius, pNode.radius, pNode.radius]);
 
-      mat4.identity(this._modelMatrix);
-      mat4.translate(this._modelMatrix, this._modelMatrix, pNode.position);
-      mat4.scale(this._modelMatrix, this._modelMatrix, [pNode.radius, pNode.radius, pNode.radius]);
+        mat4.mul(this._mvp, camera.getProjection(), camera.getView());
+        mat4.mul(this._mvp, this._mvp, this._modelMatrix);
+        gl.uniformMatrix4fv(shader.uniforms.uMVP, false, this._mvp);
 
-      mat4.mul(this._mvp, camera.getProjection(), camera.getView());
-      mat4.mul(this._mvp, this._mvp, this._modelMatrix);
-      gl.uniformMatrix4fv(shader.uniforms.uMVP, false, this._mvp);
+        var mv = mat4.create();
+        mat4.mul(mv, camera.getView(), this._modelMatrix);
+        mat3.fromMat4(this._n, mv);
+        mat3.invert(this._n, this._n);
+        mat3.transpose(this._n, this._n);
+        gl.uniformMatrix3fv(shader.uniforms.uN, false, this._n);
 
-      var mv = mat4.create();
-      mat4.mul(mv, camera.getView(), this._modelMatrix);
-      mat3.fromMat4(this._n, mv);
-      mat3.invert(this._n, this._n);
-      mat3.transpose(this._n, this._n);
-      gl.uniformMatrix3fv(shader.uniforms.uN, false, this._n);
+        gl.uniformMatrix4fv(shader.uniforms.uMV, false, mv);
 
-      gl.uniformMatrix4fv(shader.uniforms.uMV, false, mv);
+        gl.uniform1f(shader.uniforms.uRadiusBottom, 1.0);
+        gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);
 
-      gl.uniform1f(shader.uniforms.uRadiusBottom, 1.0);
-      gl.uniform1f(shader.uniforms.uRadiusTop, 1.0);
+        // Color: green preview
+        gl.uniform3fv(shader.uniforms.uColor, [0.3, 0.8, 0.3]);
+        gl.uniform1f(shader.uniforms.uSelected, 0.0);
 
-      // Color: green preview
-      gl.uniform3fv(shader.uniforms.uColor, [0.3, 0.8, 0.3]);
-      gl.uniform1f(shader.uniforms.uSelected, 0.0);
+        this._sphereGeom.getIndexBuffer().bind();
+        gl.drawElements(gl.TRIANGLES, this._sphereGeom.getCount(), gl.UNSIGNED_INT, 0);
+      };
 
-      this._sphereGeom.getIndexBuffer().bind();
-      gl.drawElements(gl.TRIANGLES, this._sphereGeom.getCount(), gl.UNSIGNED_INT, 0);
+      drawPreview(pNode.position);
+
+      if (main.getSculptManager().getSymmetry() && Math.abs(pNode.position[0]) > 0.05) {
+        var symPos = vec3.fromValues(-pNode.position[0], pNode.position[1], pNode.position[2]);
+        drawPreview(symPos);
+      }
     }
 
     // Cleanup bindings

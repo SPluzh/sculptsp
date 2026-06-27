@@ -70,6 +70,12 @@ class GuiSculpting {
 
   onSymmetryChange(value) {
     this._sculptManager._symmetry = value;
+    if (value) {
+      var zsphereTool = this._sculptManager.getTool(Enums.Tools.ZSPHERE);
+      if (zsphereTool && zsphereTool._graph) {
+        zsphereTool._graph.updateSymmetryPartners();
+      }
+    }
     this._main.render();
   }
 

@@ -7,6 +7,7 @@ class ZSphereNode {
     this.radius = radius;
     this.parent = parent;
     this.children = [];
+    this.symmetryPartner = null;
   }
 }
 ZSphereNode._nextId = 0;
@@ -42,8 +43,16 @@ class ZSphereGraph {
 
   removeNode(node) {
     if (!node) return;
+
+    if (node.symmetryPartner) {
+      node.symmetryPartner.symmetryPartner = null;
+    }
+
     // Recursive remove helper
     const removeSubtree = (n) => {
+      if (n.symmetryPartner) {
+        n.symmetryPartner.symmetryPartner = null;
+      }
       // Remove all children first
       const childrenCopy = n.children.slice();
       for (let i = 0; i < childrenCopy.length; ++i) {
@@ -123,6 +132,45 @@ class ZSphereGraph {
     this._nodes = [];
   }
 
+  updateSymmetryPartners() {
+    // Clear all existing symmetry partners first
+    for (var i = 0; i < this._nodes.length; ++i) {
+      this._nodes[i].symmetryPartner = null;
+    }
+
+    // Pair them up
+    for (var i = 0; i < this._nodes.length; ++i) {
+      var nA = this._nodes[i];
+      if (nA.symmetryPartner) continue;
+
+      // If it is very close to the symmetry plane (X=0), it doesn't need a partner
+      if (Math.abs(nA.position[0]) < 0.08) {
+        continue;
+      }
+
+      // Find a partner
+      var bestPartner = null;
+      var minDist = 0.5; // threshold distance for pairing
+      for (var j = 0; j < this._nodes.length; ++j) {
+        if (i === j) continue;
+        var nB = this._nodes[j];
+        if (nB.symmetryPartner) continue;
+
+        var targetX = -nA.position[0];
+        var d = vec3.dist(nB.position, [targetX, nA.position[1], nA.position[2]]);
+        if (d < minDist) {
+          minDist = d;
+          bestPartner = nB;
+        }
+      }
+
+      if (bestPartner) {
+        nA.symmetryPartner = bestPartner;
+        bestPartner.symmetryPartner = nA;
+      }
+    }
+  }
+
   serialize() {
     // Return a JSON-serializable representation of the graph
     return this._nodes.map(node => {
@@ -130,7 +178,8 @@ class ZSphereGraph {
         id: node.id,
         position: Array.from(node.position),
         radius: node.radius,
-        parentId: node.parent ? node.parent.id : null
+        parentId: node.parent ? node.parent.id : null,
+        symmetryPartnerId: (node.symmetryPartner && node.symmetryPartner !== node) ? node.symmetryPartner.id : null
       };
     });
   }
@@ -153,7 +202,7 @@ class ZSphereGraph {
 
     ZSphereNode._nextId = maxId + 1;
 
-    // Second pass: hook up parent/child relations
+    // Second pass: hook up parent/child and symmetry relations
     data.forEach(item => {
       const node = idMap.get(item.id);
       if (item.parentId === null) {
@@ -164,6 +213,9 @@ class ZSphereGraph {
           node.parent = parent;
           parent.children.push(node);
         }
+      }
+      if (item.symmetryPartnerId !== undefined && item.symmetryPartnerId !== null) {
+        node.symmetryPartner = idMap.get(item.symmetryPartnerId) || null;
       }
       this._nodes.push(node);
     });
