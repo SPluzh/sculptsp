@@ -347,4 +347,19 @@ GuiTools[Enums.Tools.CLAYBUILDUP] = {
   }
 };
 
+GuiTools[Enums.Tools.ZSPHERE] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(fold.addCombobox(TR('sculptZSphereMode'), tool, '_mode', {
+      draw: 'draw',
+      move: 'move',
+      scale: 'scale',
+      rotate: 'rotate'
+    }));
+    this._ctrls.push(fold.addButton(TR('sculptZSphereAddRoot'), tool, 'addRootSphere'));
+    this._ctrls.push(fold.addButton(TR('sculptZSphereCreateMesh'), tool, 'createMesh'));
+    this._ctrls.push(fold.addButton(TR('sculptZSphereClear'), tool, 'clearGraph'));
+  }
+};
+
 export default GuiSculptingTools;

@@ -123,6 +123,11 @@ var TR = {
   sculptMasking: '2D Маска (-Ctrl)',
   sculptTransform: 'Трансформация',
   sculptClayBuildup: 'Clay Buildup',
+  sculptZSphere: 'ZSphere',
+  sculptZSphereMode: 'Режим',
+  sculptZSphereAddRoot: 'Создать корневую ZSphere',
+  sculptZSphereCreateMesh: 'Создать сетку',
+  sculptZSphereClear: 'Очистить ZSpheres',
 
   sculptCommon: 'Общее',
   sculptTool: 'Инструмент',

@@ -13,6 +13,7 @@ import Masking from './Masking.js';
 import LocalScale from './LocalScale.js';
 import Transform from './Transform.js';
 import ClayBuildup from './ClayBuildup.js';
+import ZSphereTool from './ZSphereTool.js';
 
 var Tools = [];
 
@@ -30,6 +31,7 @@ Tools[Enums.Tools.MASKING] = Masking;
 Tools[Enums.Tools.LOCALSCALE] = LocalScale;
 Tools[Enums.Tools.TRANSFORM] = Transform;
 Tools[Enums.Tools.CLAYBUILDUP] = ClayBuildup;
+Tools[Enums.Tools.ZSPHERE] = ZSphereTool;
 
 Tools[Enums.Tools.BRUSH].uiName = 'sculptBrush';
 Tools[Enums.Tools.INFLATE].uiName = 'sculptInflate';
@@ -45,5 +47,6 @@ Tools[Enums.Tools.MASKING].uiName = 'sculptMasking';
 Tools[Enums.Tools.LOCALSCALE].uiName = 'sculptLocalScale';
 Tools[Enums.Tools.TRANSFORM].uiName = 'sculptTransform';
 Tools[Enums.Tools.CLAYBUILDUP].uiName = 'sculptClayBuildup';
+Tools[Enums.Tools.ZSPHERE].uiName = 'sculptZSphere';
 
 export default Tools;

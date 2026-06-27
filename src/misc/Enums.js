@@ -29,7 +29,8 @@ Enums.Tools = {
   MASKING: 10,
   LOCALSCALE: 11,
   TRANSFORM: 12,
-  CLAYBUILDUP: 13
+  CLAYBUILDUP: 13,
+  ZSPHERE: 14
 };
 
 // display shader type
@@ -46,7 +47,8 @@ Enums.Shader = {
   FXAA: 9,
   CONTOUR: 10,
   PAINTUV: 11,
-  BLUR: 12
+  BLUR: 12,
+  ZSPHERE: 13
 };
 
 // camera projection

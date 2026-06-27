@@ -123,6 +123,11 @@ var TR = {
   sculptLocalScale: 'Local scale',
   sculptTransform: 'Transform',
   sculptClayBuildup: 'Clay Buildup',
+  sculptZSphere: 'ZSphere',
+  sculptZSphereMode: 'Mode',
+  sculptZSphereAddRoot: 'Create Root ZSphere',
+  sculptZSphereCreateMesh: 'Create Mesh',
+  sculptZSphereClear: 'Clear ZSpheres',
 
   sculptCommon: 'Common',
   sculptTool: 'Tool',

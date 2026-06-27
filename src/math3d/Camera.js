@@ -265,8 +265,11 @@ class Camera {
     var distToBoxCenter = vec3.dist(eye, boxCenter);
 
     var boxRadius = 0.5 * vec3.dist(bb, vec3.set(_TMP_VEC3, bb[3], bb[4], bb[5]));
-    this._near = Math.max(0.01, distToBoxCenter - boxRadius);
-    this._far = boxRadius + distToBoxCenter;
+    
+    // Add a safe margin to avoid aggressive near/far clipping planes
+    var margin = Math.max(10.0, boxRadius * 1.5, distToBoxCenter * 0.15);
+    this._near = Math.max(0.01, distToBoxCenter - margin);
+    this._far = distToBoxCenter + margin;
     this.updateProjection();
   }
 

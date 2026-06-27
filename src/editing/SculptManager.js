@@ -20,10 +20,33 @@ class SculptManager {
     this._selection = new Selection(main._gl); // the selection geometry (red hover circle)
 
     this.init();
+    
+    // Activate the default tool
+    var defaultTool = this.getCurrentTool();
+    if (defaultTool) {
+      console.log('Activating default tool:', this._toolIndex);
+      if (defaultTool.onActivate) {
+        defaultTool.onActivate();
+      }
+    }
   }
 
   setToolIndex(id) {
+    var oldTool = this.getCurrentTool();
+    if (oldTool) {
+      console.log('Deactivating tool:', this._toolIndex);
+      if (oldTool.onDeactivate) {
+        oldTool.onDeactivate();
+      }
+    }
     this._toolIndex = id;
+    var newTool = this.getCurrentTool();
+    if (newTool) {
+      console.log('Activating tool:', id);
+      if (newTool.onActivate) {
+        newTool.onActivate();
+      }
+    }
   }
 
   getToolIndex() {
@@ -102,7 +125,13 @@ class SculptManager {
   }
 
   addSculptToScene(scene) {
-    return this.getCurrentTool().addSculptToScene(scene);
+    this.getCurrentTool().addSculptToScene(scene);
+    if (this._toolIndex !== Enums.Tools.ZSPHERE) {
+      var zsphereTool = this.getTool(Enums.Tools.ZSPHERE);
+      if (zsphereTool && zsphereTool._drawable) {
+        scene.push(zsphereTool._drawable);
+      }
+    }
   }
 }
 

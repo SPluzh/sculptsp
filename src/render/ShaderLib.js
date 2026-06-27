@@ -15,6 +15,7 @@ import ShaderContour from './shaders/ShaderContour.js';
 
 import ShaderPaintUV from './shaders/ShaderPaintUV.js';
 import ShaderBlur from './shaders/ShaderBlur.js';
+import ShaderZSphere from './shaders/ShaderZSphere.js';
 
 var ShaderLib = [];
 
@@ -36,5 +37,6 @@ ShaderLib[Enums.Shader.CONTOUR] = ShaderContour;
 // misc
 ShaderLib[Enums.Shader.PAINTUV] = ShaderPaintUV;
 ShaderLib[Enums.Shader.BLUR] = ShaderBlur;
+ShaderLib[Enums.Shader.ZSPHERE] = ShaderZSphere;
 
 export default ShaderLib;

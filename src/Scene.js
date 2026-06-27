@@ -125,6 +125,10 @@ class Scene {
     xhr.send(null);
   }
 
+  getGL() {
+    return this._gl;
+  }
+
   getBackground() {
     return this._background;
   }
@@ -278,7 +282,8 @@ class Scene {
   _drawScene() {
     var gl = this._gl;
     var i = 0;
-    var meshes = this._meshes;
+    var meshes = this._meshes.slice();
+    this._sculptManager.addSculptToScene(meshes);
     var nbMeshes = meshes.length;
 
     ///////////////
@@ -362,8 +367,9 @@ class Scene {
   updateMatricesAndSort() {
     var meshes = this._meshes;
     var cam = this._camera;
-    if (meshes.length > 0) {
-      cam.optimizeNearFar(this.computeBoundingBoxScene());
+    var bbox = this.computeBoundingBoxScene();
+    if (bbox[0] !== Infinity) {
+      cam.optimizeNearFar(bbox);
     }
 
     for (var i = 0, nb = meshes.length; i < nb; ++i) {
