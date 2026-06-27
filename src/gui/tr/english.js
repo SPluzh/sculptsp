@@ -234,6 +234,7 @@ var TR = {
   alphaNone: 'None',
   alphaSquare: 'Square',
   alphaSkin: 'Skin',
+  alphaMy8: 'Alpha My8',
 
   remeshTitleMC: 'Voxel remeshing (manifold tris)',
   remeshRemeshMC: 'Remesh',

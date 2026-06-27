@@ -287,7 +287,12 @@ class GuiSculpting {
   addAlphaOptions(opts) {
     for (var i = 0, nbTools = GuiTools.length; i < nbTools; ++i) {
       var gTool = GuiTools[i];
-      if (gTool && gTool._ctrlAlpha) gTool._ctrlAlpha.addOptions(opts);
+      if (gTool && gTool._ctrlAlpha) {
+        gTool._ctrlAlpha.addOptions(opts);
+        if (gTool.tool && gTool.tool._idAlpha !== undefined) {
+          gTool._ctrlAlpha.setValue(gTool.tool._idAlpha, true);
+        }
+      }
     }
   }
 

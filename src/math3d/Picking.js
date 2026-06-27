@@ -452,8 +452,8 @@ class Picking {
 }
 
 // TODO update i18n strings in a dynamic way
-Picking.INIT_ALPHAS_NAMES = [TR('alphaSquare'), TR('alphaSkin')];
-Picking.INIT_ALPHAS_PATHS = ['square.jpg', 'skin.jpg'];
+Picking.INIT_ALPHAS_NAMES = [TR('alphaSquare'), TR('alphaSkin'), TR('alphaMy8')];
+Picking.INIT_ALPHAS_PATHS = ['square.jpg', 'skin.jpg', 'Alpha My8.png'];
 
 var readAlphas = function () {
   // check nodejs
@@ -466,7 +466,7 @@ var readAlphas = function () {
     if (err) return;
     for (var i = 0; i < files.length; ++i) {
       var fname = files[i];
-      if (fname == 'square.jpg' || fname == 'skin.jpg') continue;
+      if (fname == 'square.jpg' || fname == 'skin.jpg' || fname == 'Alpha My8.png') continue;
       Picking.INIT_ALPHAS_NAMES.push(fname);
       Picking.INIT_ALPHAS_PATHS.push(fname);
     }

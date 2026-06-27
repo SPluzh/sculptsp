@@ -234,6 +234,7 @@ var TR = {
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',
   alphaSkin: 'Кожа',
+  alphaMy8: 'Alpha My8',
   remeshVoxelSize: function (val) {
     return 'Размер ячейки ≈ ' + val;
   },

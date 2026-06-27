@@ -22,6 +22,7 @@ GuiSculptingTools.initGuiTools = function (sculpt, menu, main) {
       };
     }
     uTool.init(sculpt.getTool(i), menu, main);
+    uTool.tool = sculpt.getTool(i);
     GuiSculptingTools.hide(i);
   }
 };
