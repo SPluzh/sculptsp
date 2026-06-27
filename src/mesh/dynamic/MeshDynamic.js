@@ -1,9 +1,9 @@
-import Enums from 'misc/Enums';
-import Utils from 'misc/Utils';
-import Subdivision from 'mesh/dynamic/Subdivision';
-import Decimation from 'mesh/dynamic/Decimation';
-import Mesh from 'mesh/Mesh';
-import createMeshData from 'mesh/MeshData';
+import Enums from '../../misc/Enums.js';
+import Utils from '../../misc/Utils.js';
+import Subdivision from './Subdivision.js';
+import Decimation from './Decimation.js';
+import Mesh from '../Mesh.js';
+import createMeshData from '../MeshData.js';
 
 // Dynamic topology mesh (triangles only)
 // Obviously less performant than the static topology mesh

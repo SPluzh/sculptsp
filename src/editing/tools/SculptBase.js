@@ -1,5 +1,5 @@
-import Enums from 'misc/Enums';
-import Utils from 'misc/Utils';
+import Enums from '../../misc/Enums.js';
+import Utils from '../../misc/Utils.js';
 
 // Overview sculpt :
 // start (check if we hit the mesh, start state stack) -> startSculpt

@@ -1,6 +1,6 @@
 import { vec3, mat4 } from 'gl-matrix';
-import Geometry from 'math3d/Geometry';
-import SculptBase from 'editing/tools/SculptBase';
+import Geometry from '../../math3d/Geometry.js';
+import SculptBase from './SculptBase.js';
 
 class Move extends SculptBase {
 

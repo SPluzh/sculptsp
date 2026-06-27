@@ -1,4 +1,4 @@
-import TR from 'gui/GuiTR';
+import TR from './GuiTR.js';
 
 class GuiConfig {
 

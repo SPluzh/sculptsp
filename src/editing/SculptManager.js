@@ -1,6 +1,6 @@
-import Selection from 'drawables/Selection';
-import Tools from 'editing/tools/Tools';
-import Enums from 'misc/Enums';
+import Selection from '../drawables/Selection.js';
+import Tools from './tools/Tools.js';
+import Enums from '../misc/Enums.js';
 
 class SculptManager {
 

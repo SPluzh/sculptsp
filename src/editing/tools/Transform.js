@@ -1,6 +1,6 @@
 import { vec3, mat4 } from 'gl-matrix';
-import Gizmo from 'editing/Gizmo';
-import SculptBase from 'editing/tools/SculptBase';
+import Gizmo from '../Gizmo.js';
+import SculptBase from './SculptBase.js';
 
 class Transform extends SculptBase {
 

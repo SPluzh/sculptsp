@@ -1,5 +1,5 @@
-import ShaderBase from 'render/shaders/ShaderBase';
-import Attribute from 'render/Attribute';
+import ShaderBase from './ShaderBase.js';
+import Attribute from '../Attribute.js';
 
 var ShaderBlur = ShaderBase.getCopy();
 ShaderBlur.vertexName = ShaderBlur.fragmentName = 'Blur';

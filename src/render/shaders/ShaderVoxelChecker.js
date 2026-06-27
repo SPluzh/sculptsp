@@ -1,5 +1,5 @@
-import ShaderBase from 'render/shaders/ShaderBase';
-import Attribute from 'render/Attribute';
+import ShaderBase from './ShaderBase.js';
+import Attribute from '../Attribute.js';
 
 var ShaderVoxelChecker = ShaderBase.getCopy();
 ShaderVoxelChecker.vertexName = ShaderVoxelChecker.fragmentName = 'VoxelChecker';

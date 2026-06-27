@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
-import Tablet from 'misc/Tablet';
-import SculptBase from 'editing/tools/SculptBase';
-import Flatten from 'editing/tools/Flatten';
+import Tablet from '../../misc/Tablet.js';
+import SculptBase from './SculptBase.js';
+import Flatten from './Flatten.js';
 
 class Brush extends SculptBase {
 

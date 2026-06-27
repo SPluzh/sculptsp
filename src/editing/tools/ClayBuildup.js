@@ -1,8 +1,8 @@
 import { vec3 } from 'gl-matrix';
-import Tablet from 'misc/Tablet';
-import SculptBase from 'editing/tools/SculptBase';
-import Flatten from 'editing/tools/Flatten';
-import TR from 'gui/GuiTR';
+import Tablet from '../../misc/Tablet.js';
+import SculptBase from './SculptBase.js';
+import Flatten from './Flatten.js';
+import TR from '../../gui/GuiTR.js';
 
 class ClayBuildup extends SculptBase {
 

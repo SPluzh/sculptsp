@@ -1,6 +1,6 @@
-import TR from 'gui/GuiTR';
-import getOptionsURL from 'misc/getOptionsURL';
-import Enums from 'misc/Enums';
+import TR from './GuiTR.js';
+import getOptionsURL from '../misc/getOptionsURL.js';
+import Enums from '../misc/Enums.js';
 
 class GuiCamera {
 

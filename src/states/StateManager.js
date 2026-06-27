@@ -1,10 +1,10 @@
-import Utils from 'misc/Utils';
-import StAddRemove from 'states/StateAddRemove';
-import StColorAndMaterial from 'states/StateColorAndMaterial';
-import StGeometry from 'states/StateGeometry';
-import StDynamic from 'states/StateDynamic';
-import StMultiresolution from 'states/StateMultiresolution';
-import StCustom from 'states/StateCustom';
+import Utils from '../misc/Utils.js';
+import StAddRemove from './StateAddRemove.js';
+import StColorAndMaterial from './StateColorAndMaterial.js';
+import StGeometry from './StateGeometry.js';
+import StDynamic from './StateDynamic.js';
+import StMultiresolution from './StateMultiresolution.js';
+import StCustom from './StateCustom.js';
 
 class StateManager {
 

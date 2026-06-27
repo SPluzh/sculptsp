@@ -1,19 +1,19 @@
 import yagui from 'yagui';
-import TR from 'gui/GuiTR';
-import GuiBackground from 'gui/GuiBackground';
-import GuiCamera from 'gui/GuiCamera';
-import GuiConfig from 'gui/GuiConfig';
-import GuiFiles from 'gui/GuiFiles';
-import GuiMesh from 'gui/GuiMesh';
-import GuiTopology from 'gui/GuiTopology';
-import GuiRendering from 'gui/GuiRendering';
-import GuiScene from 'gui/GuiScene';
-import GuiSculpting from 'gui/GuiSculpting';
-import GuiStates from 'gui/GuiStates';
-import GuiTablet from 'gui/GuiTablet';
-import ShaderContour from 'render/shaders/ShaderContour';
+import TR from './GuiTR.js';
+import GuiBackground from './GuiBackground.js';
+import GuiCamera from './GuiCamera.js';
+import GuiConfig from './GuiConfig.js';
+import GuiFiles from './GuiFiles.js';
+import GuiMesh from './GuiMesh.js';
+import GuiTopology from './GuiTopology.js';
+import GuiRendering from './GuiRendering.js';
+import GuiScene from './GuiScene.js';
+import GuiSculpting from './GuiSculpting.js';
+import GuiStates from './GuiStates.js';
+import GuiTablet from './GuiTablet.js';
+import ShaderContour from '../render/shaders/ShaderContour.js';
 
-import Export from 'files/Export';
+import Export from '../files/Export.js';
 
 class Gui {
 

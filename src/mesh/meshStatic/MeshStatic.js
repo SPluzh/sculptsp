@@ -1,7 +1,7 @@
-import Mesh from 'mesh/Mesh';
-import TransformData from 'mesh/TransformData';
-import MeshData from 'mesh/MeshData';
-import RenderData from 'mesh/RenderData';
+import Mesh from '../Mesh.js';
+import TransformData from '../TransformData.js';
+import MeshData from '../MeshData.js';
+import RenderData from '../RenderData.js';
 
 class MeshStatic extends Mesh {
 

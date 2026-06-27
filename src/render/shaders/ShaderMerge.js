@@ -1,6 +1,6 @@
-import ShaderBase from 'render/shaders/ShaderBase';
-import Attribute from 'render/Attribute';
-import getOptionsURL from 'misc/getOptionsURL';
+import ShaderBase from './ShaderBase.js';
+import Attribute from '../Attribute.js';
+import getOptionsURL from '../../misc/getOptionsURL.js';
 
 var ShaderMerge = ShaderBase.getCopy();
 ShaderMerge.vertexName = ShaderMerge.fragmentName = 'Merge';

@@ -1,4 +1,4 @@
-import Utils from 'misc/Utils';
+import Utils from './Utils.js';
 
 // enum marked with /!\ shouldn't change (serialized in sgl file)
 

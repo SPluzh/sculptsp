@@ -1,6 +1,6 @@
 import { vec2, vec3, quat } from 'gl-matrix';
-import Geometry from 'math3d/Geometry';
-import SculptBase from 'editing/tools/SculptBase';
+import Geometry from '../../math3d/Geometry.js';
+import SculptBase from './SculptBase.js';
 
 class Twist extends SculptBase {
 

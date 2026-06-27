@@ -1,7 +1,7 @@
 import { vec3 } from 'gl-matrix';
-import Utils from 'misc/Utils';
-import Geometry from 'math3d/Geometry';
-import Smooth from 'editing/tools/Smooth';
+import Utils from '../../misc/Utils.js';
+import Geometry from '../../math3d/Geometry.js';
+import Smooth from '../../editing/tools/Smooth.js';
 
 var SubData = {
   _mesh: null,

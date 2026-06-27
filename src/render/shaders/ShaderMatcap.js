@@ -1,5 +1,5 @@
-import TR from 'gui/GuiTR';
-import ShaderBase from 'render/shaders/ShaderBase';
+import TR from '../../gui/GuiTR.js';
+import ShaderBase from './ShaderBase.js';
 
 var ShaderMatcap = ShaderBase.getCopy();
 ShaderMatcap.vertexName = ShaderMatcap.fragmentName = 'Matcap';

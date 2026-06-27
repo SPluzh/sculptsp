@@ -1,9 +1,9 @@
 import { mat3 } from 'gl-matrix';
-import ShaderBase from 'render/shaders/ShaderBase';
-import ShaderPBR from 'render/shaders/ShaderPBR';
-import Attribute from 'render/Attribute';
-import pbrGLSL from 'render/shaders/glsl/pbr.glsl';
-import mainBackgroundGLSL from 'render/shaders/glsl/mainBackground.glsl';
+import ShaderBase from './ShaderBase.js';
+import ShaderPBR from './ShaderPBR.js';
+import Attribute from '../Attribute.js';
+import pbrGLSL from './glsl/pbr.glsl';
+import mainBackgroundGLSL from './glsl/mainBackground.glsl';
 
 var ShaderBackground = ShaderBase.getCopy();
 ShaderBackground.vertexName = ShaderBackground.fragmentName = 'Background';
