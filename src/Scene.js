@@ -18,6 +18,7 @@ import Rtt from './drawables/Rtt.js';
 import ShaderLib from './render/ShaderLib.js';
 import WebGLCaps from './render/WebGLCaps.js';
 import ShaderVoxelChecker from './render/shaders/ShaderVoxelChecker.js';
+import SnapCube from './gui/SnapCube.js';
 
 class Scene {
 
@@ -77,6 +78,7 @@ class Scene {
     this._drawFullScene = false; // render everything on the rtt
     this._autoMatrix = opts.scalecenter; // scale and center the imported meshes
     this._vertexSRGB = true; // srgb vs linear colorspace for vertex color
+    this._snapCube = null;
   }
 
   start() {
@@ -97,6 +99,7 @@ class Scene {
 
     this.loadTextures();
     this._gui.initGui();
+    this._snapCube = new SnapCube(this);
     this.onCanvasResize();
 
     var modelURL = getOptionsURL().modelurl;
@@ -247,6 +250,10 @@ class Scene {
   applyRender() {
     this._preventRender = false;
     this.updateMatricesAndSort();
+
+    if (this._snapCube) {
+      this._snapCube.update(this._camera);
+    }
 
     var gl = this._gl;
     if (!gl) return;

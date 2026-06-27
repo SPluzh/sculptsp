@@ -384,20 +384,15 @@ class Camera {
   }
 
   toggleViewFront() {
-    if (Math.abs(this._quatRot[3]) > 0.99) this.resetViewBack();
-    else this.resetViewFront();
+    this.resetViewFront();
   }
 
   toggleViewTop() {
-    var dot = this._quatRot[0] * Math.SQRT1_2 + this._quatRot[3] * Math.SQRT1_2;
-    if (dot * dot > 0.99) this.resetViewBottom();
-    else this.resetViewTop();
+    this.resetViewTop();
   }
 
   toggleViewLeft() {
-    var dot = -this._quatRot[1] * Math.SQRT1_2 + this._quatRot[3] * Math.SQRT1_2;
-    if (dot * dot > 0.99) this.resetViewRight();
-    else this.resetViewLeft();
+    this.resetViewLeft();
   }
 
   computeWorldToScreenMatrix(mat) {

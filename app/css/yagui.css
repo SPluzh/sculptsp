@@ -487,3 +487,150 @@ body {
   padding-bottom: 5px;
   margin: 10px 0 10px 0;
 }
+
+/* Контейнер куба навигации */
+.snap-cube-container {
+  position: absolute;
+  top: 60px;
+  right: 20px;
+  width: 80px;
+  height: 80px;
+  perspective: none;
+  z-index: 10;
+  pointer-events: auto;
+  user-select: none;
+}
+
+/* Вращающийся куб */
+.snap-cube {
+  width: 100%;
+  height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.1s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+
+/* Базовый интерактивный элемент куба */
+.cube-face, .cube-edge, .cube-corner {
+  position: absolute;
+  box-sizing: border-box;
+  cursor: pointer;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+/* Грани */
+.cube-face {
+  width: 50px;
+  height: 50px;
+  left: 15px;
+  top: 15px;
+  line-height: 48px;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 600;
+  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.25);
+  box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.1);
+  text-transform: uppercase;
+}
+
+/* Цвета граней по осям (непрозрачные) */
+.face-front { background: #3b6bb0; } /* Z axis (Blue) */
+.face-back  { background: #4a5b78; } /* Z axis negative (Dark Slate Blue) */
+.face-left, .face-right { background: #c93b3b; } /* X axis (Red) */
+.face-top   { background: #3bb058; } /* Y axis (Green) */
+.face-bottom { background: #2d8a43; } /* Y axis negative (Dark Green) */
+
+/* Цвета ребер по смежным осям */
+.face-front-top { background: #3b8d84; }
+.face-front-bottom { background: #347a79; }
+.face-back-top { background: #428568; }
+.face-back-bottom { background: #3b725d; }
+.face-front-left, .face-front-right { background: #825375; }
+.face-back-left, .face-back-right { background: #894b59; }
+.face-top-left, .face-top-right { background: #827549; }
+.face-bottom-left, .face-bottom-right { background: #7b623f; }
+
+/* Цвета углов по смежным осям */
+.face-top-front-left::before, .face-top-front-right::before { background: #6f92a3; }
+.face-top-back-left::before, .face-top-back-right::before { background: #5b7b80; }
+.face-bottom-front-left::before, .face-bottom-front-right::before { background: #7a6b7d; }
+.face-bottom-back-left::before, .face-bottom-back-right::before { background: #5e5461; }
+
+/* Ребра */
+.cube-edge {
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+/* Горизонтальные ребра */
+.cube-edge-h {
+  width: 50px;
+  height: 21.2px;
+  left: 15px;
+  top: 29.4px;
+}
+/* Вертикальные ребра */
+.cube-edge-v {
+  width: 21.2px;
+  height: 50px;
+  left: 29.4px;
+  top: 15px;
+}
+
+/* Углы */
+.cube-corner {
+  width: 21.2px;
+  height: 18.4px;
+  left: 29.4px;
+  background: rgba(255, 255, 255, 0.15);
+  transition: background 0.15s ease;
+}
+
+.cube-corner::before {
+  content: '';
+  position: absolute;
+  top: 1px;
+  left: 1px;
+  right: 1px;
+  bottom: 1px;
+  transition: background 0.15s ease;
+}
+
+.cube-corner-top {
+  top: 27.7px;
+  transform-origin: 50% 66.67%;
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.cube-corner-top::before {
+  clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
+}
+
+.cube-corner-bottom {
+  top: 33.9px;
+  transform-origin: 50% 33.33%;
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+}
+
+.cube-corner-bottom::before {
+  clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
+}
+
+/* Наведение на элементы (активный цвет) */
+.cube-face:hover, .cube-edge:hover {
+  background: #529fcc !important;
+  border-color: #ffffff !important;
+  color: #ffffff;
+  z-index: 20; /* Показываем активный элемент поверх остальных */
+}
+
+.cube-corner:hover {
+  background: #ffffff !important;
+  z-index: 20;
+}
+
+.cube-corner:hover::before {
+  background: #529fcc !important;
+}
