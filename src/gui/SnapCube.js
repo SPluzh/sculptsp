@@ -34,30 +34,30 @@ class SnapCube {
       { name: 'bottom', cssClass: 'cube-face', label: 'Bottom', transform: 'rotateX(-90deg) translateZ(40px)', rotX: -Math.PI / 2, rotY: 0 },
 
       // Edges
-      { name: 'front-top', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(45deg) translateZ(46.1px)', rotX: Math.PI / 4, rotY: 0 },
-      { name: 'front-bottom', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(-45deg) translateZ(46.1px)', rotX: -Math.PI / 4, rotY: 0 },
-      { name: 'back-top', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(135deg) translateZ(46.1px)', rotX: Math.PI / 4, rotY: -Math.PI },
-      { name: 'back-bottom', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(-135deg) translateZ(46.1px)', rotX: -Math.PI / 4, rotY: -Math.PI },
+      { name: 'front-top', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(45deg) translateZ(45.8px)', rotX: Math.PI / 4, rotY: 0 },
+      { name: 'front-bottom', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(-45deg) translateZ(45.8px)', rotX: -Math.PI / 4, rotY: 0 },
+      { name: 'back-top', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(135deg) translateZ(45.8px)', rotX: Math.PI / 4, rotY: -Math.PI },
+      { name: 'back-bottom', cssClass: 'cube-edge cube-edge-h', transform: 'rotateX(-135deg) translateZ(45.8px)', rotX: -Math.PI / 4, rotY: -Math.PI },
 
-      { name: 'front-left', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(-45deg) translateZ(46.1px)', rotX: 0, rotY: Math.PI / 4 },
-      { name: 'front-right', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(45deg) translateZ(46.1px)', rotX: 0, rotY: -Math.PI / 4 },
-      { name: 'back-left', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(-135deg) translateZ(46.1px)', rotX: 0, rotY: 3 * Math.PI / 4 },
-      { name: 'back-right', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(135deg) translateZ(46.1px)', rotX: 0, rotY: -3 * Math.PI / 4 },
+      { name: 'front-left', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(-45deg) translateZ(45.8px)', rotX: 0, rotY: Math.PI / 4 },
+      { name: 'front-right', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(45deg) translateZ(45.8px)', rotX: 0, rotY: -Math.PI / 4 },
+      { name: 'back-left', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(-135deg) translateZ(45.8px)', rotX: 0, rotY: 3 * Math.PI / 4 },
+      { name: 'back-right', cssClass: 'cube-edge cube-edge-v', transform: 'rotateY(135deg) translateZ(45.8px)', rotX: 0, rotY: -3 * Math.PI / 4 },
 
-      { name: 'top-left', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(-90deg) rotateX(45deg) translateZ(46.1px)', rotX: Math.PI / 4, rotY: Math.PI / 2 },
-      { name: 'top-right', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(90deg) rotateX(45deg) translateZ(46.1px)', rotX: Math.PI / 4, rotY: -Math.PI / 2 },
-      { name: 'bottom-left', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(-90deg) rotateX(-45deg) translateZ(46.1px)', rotX: -Math.PI / 4, rotY: Math.PI / 2 },
-      { name: 'bottom-right', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(90deg) rotateX(-45deg) translateZ(46.1px)', rotX: -Math.PI / 4, rotY: -Math.PI / 2 },
+      { name: 'top-left', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(-90deg) rotateX(45deg) translateZ(45.8px)', rotX: Math.PI / 4, rotY: Math.PI / 2 },
+      { name: 'top-right', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(90deg) rotateX(45deg) translateZ(45.8px)', rotX: Math.PI / 4, rotY: -Math.PI / 2 },
+      { name: 'bottom-left', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(-90deg) rotateX(-45deg) translateZ(45.8px)', rotX: -Math.PI / 4, rotY: Math.PI / 2 },
+      { name: 'bottom-right', cssClass: 'cube-edge cube-edge-h', transform: 'rotateY(90deg) rotateX(-45deg) translateZ(45.8px)', rotX: -Math.PI / 4, rotY: -Math.PI / 2 },
 
       // Corners
-      { name: 'top-front-right', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(45deg) rotateX(35.26deg) translateZ(52.2px)', rotX: Math.PI / 4, rotY: -Math.PI / 4 },
-      { name: 'top-front-left', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(-45deg) rotateX(35.26deg) translateZ(52.2px)', rotX: Math.PI / 4, rotY: Math.PI / 4 },
-      { name: 'top-back-right', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(135deg) rotateX(35.26deg) translateZ(52.2px)', rotX: Math.PI / 4, rotY: -3 * Math.PI / 4 },
-      { name: 'top-back-left', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(-135deg) rotateX(35.26deg) translateZ(52.2px)', rotX: Math.PI / 4, rotY: 3 * Math.PI / 4 },
-      { name: 'bottom-front-right', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(45deg) rotateX(-35.26deg) translateZ(52.2px)', rotX: -Math.PI / 4, rotY: -Math.PI / 4 },
-      { name: 'bottom-front-left', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(-45deg) rotateX(-35.26deg) translateZ(52.2px)', rotX: -Math.PI / 4, rotY: Math.PI / 4 },
-      { name: 'bottom-back-right', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(135deg) rotateX(-35.26deg) translateZ(52.2px)', rotX: -Math.PI / 4, rotY: -3 * Math.PI / 4 },
-      { name: 'bottom-back-left', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(-135deg) rotateX(-35.26deg) translateZ(52.2px)', rotX: -Math.PI / 4, rotY: 3 * Math.PI / 4 }
+      { name: 'top-front-right', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(45deg) rotateX(35.26deg) translateZ(51.6px)', rotX: Math.PI / 4, rotY: -Math.PI / 4 },
+      { name: 'top-front-left', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(-45deg) rotateX(35.26deg) translateZ(51.6px)', rotX: Math.PI / 4, rotY: Math.PI / 4 },
+      { name: 'top-back-right', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(135deg) rotateX(35.26deg) translateZ(51.6px)', rotX: Math.PI / 4, rotY: -3 * Math.PI / 4 },
+      { name: 'top-back-left', cssClass: 'cube-corner cube-corner-top', transform: 'rotateY(-135deg) rotateX(35.26deg) translateZ(51.6px)', rotX: Math.PI / 4, rotY: 3 * Math.PI / 4 },
+      { name: 'bottom-front-right', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(45deg) rotateX(-35.26deg) translateZ(51.6px)', rotX: -Math.PI / 4, rotY: -Math.PI / 4 },
+      { name: 'bottom-front-left', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(-45deg) rotateX(-35.26deg) translateZ(51.6px)', rotX: -Math.PI / 4, rotY: Math.PI / 4 },
+      { name: 'bottom-back-right', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(135deg) rotateX(-35.26deg) translateZ(51.6px)', rotX: -Math.PI / 4, rotY: -3 * Math.PI / 4 },
+      { name: 'bottom-back-left', cssClass: 'cube-corner cube-corner-bottom', transform: 'rotateY(-135deg) rotateX(-35.26deg) translateZ(51.6px)', rotX: -Math.PI / 4, rotY: 3 * Math.PI / 4 }
     ];
 
     var self = this;

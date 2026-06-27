@@ -515,10 +515,18 @@ body {
   position: absolute;
   box-sizing: border-box;
   cursor: pointer;
+  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.cube-face {
   backface-visibility: hidden;
   -webkit-backface-visibility: hidden;
-  transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.cube-edge, .cube-corner {
+  backface-visibility: visible;
+  -webkit-backface-visibility: visible;
 }
 
 /* Грани */
@@ -566,24 +574,24 @@ body {
 }
 /* Горизонтальные ребра */
 .cube-edge-h {
-  width: 50px;
-  height: 21.2px;
-  left: 15px;
-  top: 29.4px;
+  width: 50.8px;
+  height: 22px;
+  left: 14.6px;
+  top: 29px;
 }
 /* Вертикальные ребра */
 .cube-edge-v {
-  width: 21.2px;
-  height: 50px;
-  left: 29.4px;
-  top: 15px;
+  width: 22px;
+  height: 50.8px;
+  left: 29px;
+  top: 14.6px;
 }
 
 /* Углы */
 .cube-corner {
-  width: 21.2px;
-  height: 18.4px;
-  left: 29.4px;
+  width: 22px;
+  height: 19.5px;
+  left: 29px;
   background: rgba(255, 255, 255, 0.15);
   transition: background 0.15s ease;
 }
@@ -599,7 +607,7 @@ body {
 }
 
 .cube-corner-top {
-  top: 27.7px;
+  top: 27px;
   transform-origin: 50% 66.67%;
   clip-path: polygon(50% 0%, 0% 100%, 100% 100%);
 }
@@ -609,7 +617,7 @@ body {
 }
 
 .cube-corner-bottom {
-  top: 33.9px;
+  top: 33.5px;
   transform-origin: 50% 33.33%;
   clip-path: polygon(0% 0%, 100% 0%, 50% 100%);
 }
