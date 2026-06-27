@@ -15,6 +15,7 @@ node_modules
 tools/*.png
 tools/dist
 gemini.md
+AGENTS.md
 .cursorrules
 native/wintab/build/
 wintab_diag/*.exe

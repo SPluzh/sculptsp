@@ -85,6 +85,15 @@ var TR = {
   remeshRemesh: 'Remesh',
   remeshResolution: 'Risolutione',
   remeshBlock: 'Blocca',
+  remeshProgress0: 'Inizializzazione...',
+  remeshProgress1: 'Preparazione mesh...',
+  remeshProgress2: 'Voxelizzazione...',
+  remeshProgress2Sub: 'Voxelizzazione...',
+  remeshProgress3: 'Flood fill...',
+  remeshProgress4SN: 'Surface Nets ricostruzione...',
+  remeshProgress4MC: 'Marching Cubes ricostruzione...',
+  remeshProgress5: 'Creazione mesh...',
+  remeshProgress6: 'Smoothing tangenziale...',
 
   // dynamic
   dynamicTitle: 'Topologia Dinamica',

@@ -90,6 +90,15 @@ var TR = {
   remeshRemesh: 'Remesh (Ctrl+X)',
   remeshResolution: 'Resolution (-X)',
   remeshBlock: 'Block',
+  remeshProgress0: 'Initializing...',
+  remeshProgress1: 'Preparing meshes...',
+  remeshProgress2: 'Voxelization...',
+  remeshProgress2Sub: 'Voxelization...',
+  remeshProgress3: 'Flood fill...',
+  remeshProgress4SN: 'Surface Nets reconstruction...',
+  remeshProgress4MC: 'Marching Cubes reconstruction...',
+  remeshProgress5: 'Creating mesh...',
+  remeshProgress6: 'Tangential smoothing...',
 
   // dynamic
   dynamicTitle: 'Dynamic Topology',

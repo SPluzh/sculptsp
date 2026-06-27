@@ -14,6 +14,13 @@ Remesh.RESOLUTION = 150;
 Remesh.BLOCK = false;
 Remesh.SMOOTHING = true;
 
+// Helper function to yield control to UI thread
+var yieldToUI = function () {
+  return new Promise(function (resolve) {
+    setTimeout(resolve, 0);
+  });
+};
+
 var getUniformColor = function (meshes) {
   var firstColor = null;
   for (var i = 0; i < meshes.length; ++i) {
@@ -392,6 +399,7 @@ var tangentialSmoothing = function (mesh) {
   mesh.updateGeometryBuffers();
 };
 
+// Synchronous version (kept for compatibility)
 Remesh.remesh = function (meshes, baseMesh, manifold) {
   console.time('remesh total');
 
@@ -431,6 +439,92 @@ Remesh.remesh = function (meshes, baseMesh, manifold) {
 
   if (manifold && Remesh.SMOOTHING) {
     console.time('6. tangential smoothing');
+    tangentialSmoothing(nmesh);
+    console.timeEnd('6. tangential smoothing');
+  }
+
+  console.timeEnd('remesh total');
+  console.log('\n');
+  return nmesh;
+};
+
+// Asynchronous version with progress reporting
+Remesh.remeshAsync = async function (meshes, baseMesh, manifold, progressCallback) {
+  var totalSteps = manifold && Remesh.SMOOTHING ? 6 : 5;
+  var currentStep = 0;
+
+  console.time('remesh total');
+
+  // Step 1: Prepare meshes
+  currentStep++;
+  if (progressCallback) progressCallback('remeshProgress1', currentStep, totalSteps);
+  console.time('1. prepareMeshes');
+  await yieldToUI();
+  meshes = meshes.slice();
+  var box = prepareMeshes(meshes);
+  console.timeEnd('1. prepareMeshes');
+
+  // Step 2: Voxelization
+  currentStep++;
+  if (progressCallback) progressCallback('remeshProgress2', currentStep, totalSteps);
+  console.time('2. voxelization');
+  await yieldToUI();
+  var voxels = createVoxelData(box, meshes);
+  
+  for (var i = 0, l = meshes.length; i < l; ++i) {
+    if (i > 0 && i % Math.max(1, Math.floor(l / 10)) === 0) {
+      await yieldToUI();
+      if (progressCallback) {
+        progressCallback('remeshProgress2Sub', currentStep, totalSteps, i, l);
+      }
+    }
+    voxelize(meshes[i], voxels);
+  }
+  console.timeEnd('2. voxelization');
+
+  // Step 3: Flood fill
+  currentStep++;
+  if (progressCallback) progressCallback('remeshProgress3', currentStep, totalSteps);
+  console.time('3. flood');
+  await yieldToUI();
+  floodFill(voxels);
+  console.timeEnd('3. flood');
+
+  // Step 4: Surface reconstruction
+  currentStep++;
+  var res;
+  if (manifold) {
+    if (progressCallback) progressCallback('remeshProgress4MC', currentStep, totalSteps);
+    console.time('4. marchingCubes');
+    await yieldToUI();
+    MarchingCubes.BLOCK = Remesh.BLOCK;
+    res = MarchingCubes.computeSurface(voxels);
+    console.timeEnd('4. marchingCubes');
+  } else {
+    if (progressCallback) progressCallback('remeshProgress4SN', currentStep, totalSteps);
+    console.time('4. surfaceNets');
+    await yieldToUI();
+    SurfaceNets.BLOCK = Remesh.BLOCK;
+    res = SurfaceNets.computeSurface(voxels);
+    console.timeEnd('4. surfaceNets');
+  }
+
+  // Step 5: Create mesh
+  currentStep++;
+  if (progressCallback) progressCallback('remeshProgress5', currentStep, totalSteps);
+  console.time('5. createMesh');
+  await yieldToUI();
+  var nmesh = createMesh(baseMesh, res.faces, res.vertices, res.colors, res.materials);
+  console.timeEnd('5. createMesh');
+
+  alignMeshBound(nmesh, box);
+
+  // Step 6: Tangential smoothing (optional)
+  if (manifold && Remesh.SMOOTHING) {
+    currentStep++;
+    if (progressCallback) progressCallback('remeshProgress6', currentStep, totalSteps);
+    console.time('6. tangential smoothing');
+    await yieldToUI();
     tangentialSmoothing(nmesh);
     console.timeEnd('6. tangential smoothing');
   }

@@ -90,6 +90,15 @@ var TR = {
   remeshRemesh: 'Перестроить (Ctrl+X)',
   remeshResolution: 'Разрешение (-X)',
   remeshBlock: 'Блоки-кубики',
+  remeshProgress0: 'Инициализация...',
+  remeshProgress1: 'Подготовка мешей...',
+  remeshProgress2: 'Воксилизация...',
+  remeshProgress2Sub: 'Воксилизация...',
+  remeshProgress3: 'Заполнение...',
+  remeshProgress4SN: 'Surface Nets реконструкция...',
+  remeshProgress4MC: 'Marching Cubes реконструкция...',
+  remeshProgress5: 'Создание меша...',
+  remeshProgress6: 'Тангенциальное сглаживание...',
 
   // dynamic
   dynamicTitle: 'Динамическая топология',

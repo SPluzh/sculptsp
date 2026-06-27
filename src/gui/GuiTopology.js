@@ -24,6 +24,7 @@ class GuiMultiresolution {
     this._lastPageY = 0;
 
     this._initRemeshIndicator();
+    this._initRemeshProgressIndicator();
     this.init(guiParent);
   }
 
@@ -158,7 +159,7 @@ class GuiMultiresolution {
     this._updateVoxelSizeLabel();
   }
 
-  remesh(manifold) {
+  async remesh(manifold) {
     var main = this._main;
     var mesh = main.getMesh();
     if (!mesh)
@@ -198,11 +199,30 @@ class GuiMultiresolution {
         mesh = selMeshes[i];
     }
 
-    var newMesh = Remesh.remesh(selMeshes, mesh, manifold);
-    if (wasDynamic) newMesh = new MeshDynamic(newMesh);
-    main.getStateManager().pushStateAddRemove(newMesh, main.getSelectedMeshes().slice());
-    main.getMeshes().push(newMesh);
-    main.setMesh(newMesh);
+    // Show progress indicator
+    var self = this;
+    this._showRemeshProgress(TR('remeshProgress0'), 0);
+
+    try {
+      var newMesh = await Remesh.remeshAsync(selMeshes, mesh, manifold, function (messageKey, step, totalSteps, subStep, subTotal) {
+        var message = TR(messageKey);
+        if (subStep !== undefined && subTotal !== undefined) {
+          message += ' (' + subStep + '/' + subTotal + ')';
+        }
+        var percent = (step / totalSteps) * 100;
+        self._showRemeshProgress(message, percent);
+      });
+
+      if (wasDynamic) newMesh = new MeshDynamic(newMesh);
+      main.getStateManager().pushStateAddRemove(newMesh, main.getSelectedMeshes().slice());
+      main.getMeshes().push(newMesh);
+      main.setMesh(newMesh);
+    } catch (e) {
+      console.error('Remesh failed:', e);
+      window.alert('Remesh failed: ' + e.message);
+    } finally {
+      this._hideRemeshProgress();
+    }
   }
 
   remeshMC() {
@@ -458,6 +478,9 @@ class GuiMultiresolution {
     if (this._remeshIndicator && this._remeshIndicator.parentNode) {
       this._remeshIndicator.parentNode.removeChild(this._remeshIndicator);
     }
+    if (this._remeshProgressModal && this._remeshProgressModal.parentNode) {
+      this._remeshProgressModal.parentNode.removeChild(this._remeshProgressModal);
+    }
   }
 
   _initRemeshIndicator() {
@@ -530,6 +553,92 @@ class GuiMultiresolution {
       if (this._remeshIndicator) {
         this._remeshIndicator.style.display = 'none';
       }
+    }
+  }
+
+  _initRemeshProgressIndicator() {
+    var modal = this._remeshProgressModal = document.createElement('div');
+    modal.style.position = 'fixed';
+    modal.style.top = '0';
+    modal.style.left = '0';
+    modal.style.width = '100%';
+    modal.style.height = '100%';
+    modal.style.background = 'rgba(0, 0, 0, 0.6)';
+    modal.style.backdropFilter = 'blur(4px)';
+    modal.style.webkitBackdropFilter = 'blur(4px)';
+    modal.style.display = 'none';
+    modal.style.alignItems = 'center';
+    modal.style.justifyContent = 'center';
+    modal.style.zIndex = '100000';
+    modal.style.pointerEvents = 'all';
+
+    var container = document.createElement('div');
+    container.style.background = 'rgba(30, 30, 30, 0.95)';
+    container.style.border = '1px solid rgba(255, 255, 255, 0.2)';
+    container.style.borderRadius = '12px';
+    container.style.padding = '24px 32px';
+    container.style.minWidth = '320px';
+    container.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.5)';
+    container.style.fontFamily = "'Open Sans', sans-serif";
+    container.style.color = '#ffffff';
+
+    var title = document.createElement('div');
+    title.style.fontSize = '18px';
+    title.style.fontWeight = '600';
+    title.style.marginBottom = '8px';
+    title.style.textAlign = 'center';
+    title.textContent = 'Remeshing...';
+    container.appendChild(title);
+
+    var message = this._remeshProgressMessage = document.createElement('div');
+    message.style.fontSize = '13px';
+    message.style.color = '#aaa';
+    message.style.marginBottom = '16px';
+    message.style.textAlign = 'center';
+    message.style.minHeight = '18px';
+    message.textContent = 'Initializing...';
+    container.appendChild(message);
+
+    var progressTrack = document.createElement('div');
+    progressTrack.style.width = '100%';
+    progressTrack.style.height = '8px';
+    progressTrack.style.background = 'rgba(255, 255, 255, 0.1)';
+    progressTrack.style.borderRadius = '4px';
+    progressTrack.style.overflow = 'hidden';
+    progressTrack.style.marginBottom = '12px';
+
+    var progressBar = this._remeshProgressBar = document.createElement('div');
+    progressBar.style.width = '0%';
+    progressBar.style.height = '100%';
+    progressBar.style.background = 'linear-gradient(90deg, #3b97e3, #5fbef5)';
+    progressBar.style.borderRadius = '4px';
+    progressBar.style.transition = 'width 0.3s ease-out';
+    progressTrack.appendChild(progressBar);
+    container.appendChild(progressTrack);
+
+    var percentText = this._remeshProgressPercent = document.createElement('div');
+    percentText.style.fontSize = '12px';
+    percentText.style.color = '#888';
+    percentText.style.textAlign = 'center';
+    percentText.textContent = '0%';
+    container.appendChild(percentText);
+
+    modal.appendChild(container);
+    document.body.appendChild(modal);
+  }
+
+  _showRemeshProgress(message, percent) {
+    if (this._remeshProgressModal) {
+      this._remeshProgressModal.style.display = 'flex';
+      this._remeshProgressMessage.textContent = message;
+      this._remeshProgressBar.style.width = percent + '%';
+      this._remeshProgressPercent.textContent = Math.round(percent) + '%';
+    }
+  }
+
+  _hideRemeshProgress() {
+    if (this._remeshProgressModal) {
+      this._remeshProgressModal.style.display = 'none';
     }
   }
 }
