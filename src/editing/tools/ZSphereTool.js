@@ -572,7 +572,7 @@ class ZSphereTool extends SculptBase {
               var partner = this._activeNode.symmetryPartner;
               this._activeNode.symmetryPartner = null;
               partner.symmetryPartner = null;
-              this._graph.removeNode(partner);
+              this._graph.mergeNodes(partner, this._activeNode);
               vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
             } else {
               // Update partner position/radius symmetrically
@@ -599,7 +599,7 @@ class ZSphereTool extends SculptBase {
               var partner = this._activeNode.symmetryPartner;
               this._activeNode.symmetryPartner = null;
               partner.symmetryPartner = null;
-              this._graph.removeNode(partner);
+              this._graph.mergeNodes(partner, this._activeNode);
               vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
             } else {
               var partner = this._activeNode.symmetryPartner;
@@ -723,7 +723,7 @@ class ZSphereTool extends SculptBase {
         if (mergePartners) {
           this._activeNode.symmetryPartner = null;
           partner.symmetryPartner = null;
-          this._graph.removeNode(partner);
+          this._graph.mergeNodes(partner, this._activeNode);
           vec3.copy(this._activeNode.position, this._snapToSymmetryPlane(this._activeNode.position));
           this._main.render();
         } else {

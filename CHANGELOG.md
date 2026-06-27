@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.0]
+- **ZSphere Tool**: Fixed a bug where child nodes and branches of a ZSphere symmetry partner disappeared or were lost when the partners were merged into a single sphere at the symmetry center. The merge operation now correctly preserves and re-parents the entire child hierarchy to the surviving central node.
 - **ZSphere Tool**: Implemented automatic purple coloring for ZSpheres that are positioned on the symmetry axis/plane, providing clear visual feedback when a node is in a merged/central state.
 - **ZSphere Tool**: Locked central nodes (nodes on the symmetry plane with no partner) to the symmetry plane during Move interactions, preventing them from being pulled apart or split back into two separate nodes. Also updated Rotate mode to correctly mirror rotation of descendants under central active nodes.
 - **ZSphere Tool**: Replaced the fixed `0.08` symmetry snapping/merging threshold with a dynamic, size-aware threshold based on the active ZSphere's radius (`Math.max(0.08, 0.15 * radius)`). This fixes an issue where large ZSpheres would stack on top of each other (completely overlapping centers) without triggering the symmetry merge because the hardcoded threshold was too small compared to their radius.
