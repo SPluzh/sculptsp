@@ -7,11 +7,21 @@ class Crease extends SculptBase {
     super(main);
 
     this._radius = 25;
-    this._intensity = 0.75;
+    this._intensity = 0.2;
+    this._spacing = 0.05;
     this._negative = true;
     this._culling = false;
     this._idAlpha = 0;
     this._lockPosition = false;
+  }
+
+
+  getFallOff(dist) {
+    if (dist >= 1.0) return 0.0;
+    var focalShift = this._focalShift;
+    var base = 1.0 - dist;
+    var exponent = Math.pow(2.0, focalShift * 2.0) * 2.0;
+    return base * (1.0 - Math.pow(dist, exponent));
   }
 
   stroke(picking) {
