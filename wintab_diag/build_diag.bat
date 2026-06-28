@@ -1,14 +1,16 @@
 @echo off
-:: build_diag.bat — компилирует wintab_diag.exe через MSVC или MinGW
+:: build_diag.bat — компилирует wintab_diag.exe и wintab_wininc_diag.exe через MSVC или MinGW
 
 setlocal
 
-:: Так как файл находится в папке wintab_diag, DIAG_DIR указывает на текущую директорию скрипта
 set DIAG_DIR=%~dp0
-set OUT=%DIAG_DIR%wintab_diag.exe
+set OUT1=%DIAG_DIR%wintab_diag.exe
+set OUT2=%DIAG_DIR%wintab_wininc_diag.exe
+set SRC1=%DIAG_DIR%wintab_diag.cpp
+set SRC2=%DIAG_DIR%wintab_wininc_diag.cpp
 
 echo ================================================
-echo  Building Wintab Diagnostic Tool
+echo  Building WinTab Diagnostic Tools
 echo ================================================
 
 :: Проверим, доступен ли cl.exe сразу
@@ -31,16 +33,28 @@ where cl.exe >nul 2>&1
 if %ERRORLEVEL% neq 0 goto :mingw_check
 
 :msvc_compile
-echo [MSVC] Compiling statically (/MT)...
-cl /nologo /EHsc /W3 /O2 /MT "%DIAG_DIR%wintab_diag.cpp" /Fe:"%OUT%" /link user32.lib
+echo.
+echo [MSVC] Compiling wintab_diag.exe...
+cl /nologo /EHsc /W3 /O2 /MT "%SRC1%" /Fe:"%OUT1%" /link user32.lib
+if %ERRORLEVEL% neq 0 echo [MSVC] wintab_diag compile FAILED.
+
+echo.
+echo [MSVC] Compiling wintab_wininc_diag.exe...
+cl /nologo /EHsc /W3 /O2 /MT "%SRC2%" /Fe:"%OUT2%" /link user32.lib advapi32.lib gdi32.lib /SUBSYSTEM:WINDOWS
 if %ERRORLEVEL% == 0 goto :done
-echo [MSVC] Compile failed, falling back to MinGW...
+echo [MSVC] wintab_wininc_diag compile failed, falling back to MinGW...
 
 :mingw_check
 where g++.exe >nul 2>&1
 if %ERRORLEVEL% neq 0 goto :no_compiler
-echo [MinGW] Compiling statically...
-g++ -std=c++17 -O2 -static -o "%OUT%" "%DIAG_DIR%wintab_diag.cpp" -luser32
+
+echo.
+echo [MinGW] Compiling wintab_diag.exe...
+g++ -std=c++17 -O2 -static -o "%OUT1%" "%SRC1%" -luser32
+
+echo.
+echo [MinGW] Compiling wintab_wininc_diag.exe...
+g++ -std=c++17 -O2 -static -o "%OUT2%" "%SRC2%" -luser32 -ladvapi32 -lgdi32 -mwindows
 if %ERRORLEVEL% == 0 goto :done
 echo [MinGW] Compile failed.
 
@@ -57,10 +71,18 @@ exit /b 1
 
 :done
 echo.
-echo Build OK: %OUT%
+echo ================================================
+echo  Build complete
+echo ================================================
 echo.
-echo Usage:
-echo   wintab_diag.exe           -- single diagnostic check
-echo   wintab_diag.exe --live    -- live pressure bar (Ctrl+C to exit)
+echo Usage: wintab_diag.exe
+echo   wintab_diag.exe              -- single check
+echo   wintab_diag.exe --live       -- live pressure bar
+echo.
+echo Usage: wintab_wininc_diag.exe
+echo   wintab_wininc_diag.exe               -- LIVE (WinTab + Windows Ink)
+echo   wintab_wininc_diag.exe --wintab      -- WinTab only, live
+echo   wintab_wininc_diag.exe --ink         -- Windows Ink only, live
+echo   wintab_wininc_diag.exe --check       -- single-shot, no live loop
 echo.
 pause
