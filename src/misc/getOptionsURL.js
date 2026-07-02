@@ -58,6 +58,7 @@ var readShortcuts = function (str) {
   shortcuts['N'.charCodeAt(0)] = keyAction.NEGATIVE;
   shortcuts['C'.charCodeAt(0)] = keyAction.PICKER;
   shortcuts['X'.charCodeAt(0)] = keyAction.REMESH_RESOLUTION;
+  shortcuts['Z'.charCodeAt(0)] = keyAction.TOPOLOGY_DETAIL;
   shortcuts[46] = keyAction.DELETE; // DEL
   // camera
   shortcuts['G'.charCodeAt(0)] = keyAction.CAMERA_FOV;

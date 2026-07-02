@@ -150,6 +150,9 @@ var TR = {
   sculptExtractTitle: 'Estrazione',
   sculptExtractThickness: 'Assottigliamento',
   sculptExtractAction: 'Estrai !',
+  sculptTopology: 'Topologia',
+  sculptTopologyDetail: 'Livello di dettaglio',
+  sculptTopologyDecimate: 'Decimazione (semplifica)',
 
   // states
   stateTitle: 'Story',

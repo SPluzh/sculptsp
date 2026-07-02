@@ -30,7 +30,8 @@ Enums.Tools = {
   LOCALSCALE: 11,
   TRANSFORM: 12,
   CLAYBUILDUP: 13,
-  ZSPHERE: 14
+  ZSPHERE: 14,
+  TOPOLOGY: 15
 };
 
 // display shader type
@@ -93,7 +94,8 @@ Enums.KeyAction = Utils.extend({
   STRIFE_DOWN: acc++,
   WIREFRAME: acc++,
   REMESH: acc++,
-  REMESH_RESOLUTION: acc++
+  REMESH_RESOLUTION: acc++,
+  TOPOLOGY_DETAIL: acc++
 }, Enums.Tools);
 
 export default Enums;

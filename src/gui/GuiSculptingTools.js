@@ -362,4 +362,12 @@ GuiTools[Enums.Tools.ZSPHERE] = {
   }
 };
 
+GuiTools[Enums.Tools.TOPOLOGY] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(addCtrlRadius(tool, fold, this, main));
+    this._ctrls.push(addCtrlSpacing(tool, fold));
+  }
+};
+
 export default GuiSculptingTools;

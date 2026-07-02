@@ -141,6 +141,9 @@ var TR = {
   sculptExtractTitle: 'Extrahieren',
   sculptExtractThickness: 'Dicke',
   sculptExtractAction: 'Extrahieren !',
+  sculptTopology: 'Topologie',
+  sculptTopologyDetail: 'Detailstufe',
+  sculptTopologyDecimate: 'Dezimierung (vereinfachen)',
 
   // states
   stateTitle: 'Verlauf',

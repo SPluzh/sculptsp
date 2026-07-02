@@ -141,6 +141,9 @@ var TR = {
   sculptExtractTitle: 'Extrahera',
   sculptExtractThickness: 'Tjocklek',
   sculptExtractAction: 'Extrahera!',
+  sculptTopology: 'Topologi',
+  sculptTopologyDetail: 'Detaljnivå',
+  sculptTopologyDecimate: 'Decimering (förenkla)',
 
   // states
   stateTitle: 'Historia',

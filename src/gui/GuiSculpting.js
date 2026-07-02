@@ -18,6 +18,7 @@ class GuiSculpting {
     this._modalBrushRadius = false; // modal brush radius change
     this._modalBrushIntensity = false; // modal brush intensity change
     this._modalBrushFocalShift = false; // modal brush focal shift change
+    this._modalTopologyDetail = false; // modal topology detail change
 
     // modal stuffs (not canvas based, because no 3D picking involved)
     this._lastPageX = 0;
@@ -31,6 +32,9 @@ class GuiSculpting {
     // for modal focal shift
     this._focalShiftRefX = 0;
     this._focalShiftRefY = 0;
+    // for modal topology detail
+    this._topologyDetailRefX = 0;
+    this._topologyDetailRefY = 0;
 
     this._menu = null;
     this._ctrlSculpt = null;
@@ -39,6 +43,7 @@ class GuiSculpting {
     this._ctrlTitleCommon = null;
     this._initIntensityIndicator();
     this._initFocalShiftIndicator();
+    this._initTopologyDetailIndicator();
     this.init(guiParent);
   }
 
@@ -94,6 +99,9 @@ class GuiSculpting {
     }
     if (this._focalShiftIndicator && this._focalShiftIndicator.parentNode) {
       this._focalShiftIndicator.parentNode.removeChild(this._focalShiftIndicator);
+    }
+    if (this._topologyDetailIndicator && this._topologyDetailIndicator.parentNode) {
+      this._topologyDetailIndicator.parentNode.removeChild(this._topologyDetailIndicator);
     }
   }
 
@@ -239,6 +247,75 @@ class GuiSculpting {
     }
   }
 
+  _initTopologyDetailIndicator() {
+    var indicator = this._topologyDetailIndicator = document.createElement('div');
+    indicator.style.position = 'absolute';
+    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
+    indicator.style.backdropFilter = 'blur(6px)';
+    indicator.style.webkitBackdropFilter = 'blur(6px)';
+    indicator.style.color = '#ffffff';
+    indicator.style.padding = '8px 12px';
+    indicator.style.borderRadius = '6px';
+    indicator.style.fontFamily = "'Open Sans', sans-serif";
+    indicator.style.fontSize = '12px';
+    indicator.style.fontWeight = '600';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.display = 'none';
+    indicator.style.zIndex = '99999';
+    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
+    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
+    indicator.style.minWidth = '110px';
+    indicator.style.flexDirection = 'column';
+    indicator.style.gap = '6px';
+    indicator.style.transform = 'translate(-50%, -100%)';
+    indicator.style.webkitTransform = 'translate(-50%, -100%)';
+
+    var label = this._topologyDetailIndicatorLabel = document.createElement('div');
+    label.style.display = 'flex';
+    label.style.justifyContent = 'space-between';
+    indicator.appendChild(label);
+
+    var labelText = this._topologyDetailIndicatorLabelText = document.createElement('span');
+    var labelValue = this._topologyDetailIndicatorLabelValue = document.createElement('span');
+    labelValue.style.color = '#3b97e3';
+    label.appendChild(labelText);
+    label.appendChild(labelValue);
+
+    var track = document.createElement('div');
+    track.style.width = '100%';
+    track.style.height = '5px';
+    track.style.background = 'rgba(255, 255, 255, 0.2)';
+    track.style.borderRadius = '3px';
+    track.style.overflow = 'hidden';
+
+    var fill = this._topologyDetailIndicatorFill = document.createElement('div');
+    fill.style.width = '0%';
+    fill.style.height = '100%';
+    fill.style.background = '#3b97e3';
+    fill.style.borderRadius = '3px';
+    fill.style.transition = 'width 0.05s ease-out';
+
+    track.appendChild(fill);
+    indicator.appendChild(track);
+
+    document.body.appendChild(indicator);
+  }
+
+  _updateTopologyDetailIndicator(x, y) {
+    var wid = GuiTools[this.getSelectedTool()];
+    if (this._modalTopologyDetail && wid && wid._ctrlDetail) {
+      var val = Math.round(wid._ctrlDetail.getValue());
+      this._topologyDetailIndicatorLabelText.textContent = TR('sculptTopologyDetail');
+      this._topologyDetailIndicatorLabelValue.textContent = val;
+      this._topologyDetailIndicatorFill.style.width = val + '%';
+      this._topologyDetailIndicator.style.left = x + 'px';
+      this._topologyDetailIndicator.style.top = (y - 25) + 'px';
+      this._topologyDetailIndicator.style.display = 'flex';
+    } else {
+      this._topologyDetailIndicator.style.display = 'none';
+    }
+  }
+
   getSelectedTool() {
     return this._ctrlSculpt.getValue();
   }
@@ -358,7 +435,7 @@ class GuiSculpting {
     var shk = getOptionsURL.getShortKey(event.which);
     event.stopPropagation();
 
-    if (!main._focusGui || shk === Enums.KeyAction.RADIUS || shk === Enums.KeyAction.INTENSITY || shk === Enums.KeyAction.FOCAL_SHIFT)
+    if (!main._focusGui || shk === Enums.KeyAction.RADIUS || shk === Enums.KeyAction.INTENSITY || shk === Enums.KeyAction.FOCAL_SHIFT || shk === Enums.KeyAction.TOPOLOGY_DETAIL)
       event.preventDefault();
 
     event.handled = true;
@@ -396,6 +473,16 @@ class GuiSculpting {
       }
       this._modalBrushFocalShift = main._focusGui = true;
       this._updateFocalShiftIndicator(this._focalShiftRefX, this._focalShiftRefY);
+      break;
+    case Enums.KeyAction.TOPOLOGY_DETAIL:
+      if (this.getSelectedTool() === Enums.Tools.TOPOLOGY) {
+        if (!this._modalTopologyDetail) {
+          this._topologyDetailRefX = this._lastPageX;
+          this._topologyDetailRefY = this._lastPageY;
+        }
+        this._modalTopologyDetail = main._focusGui = true;
+        this._updateTopologyDetailIndicator(this._topologyDetailRefX, this._topologyDetailRefY);
+      }
       break;
     case Enums.KeyAction.NEGATIVE:
       if (cur.toggleNegative) cur.toggleNegative();
@@ -444,6 +531,12 @@ class GuiSculpting {
       this._modalBrushFocalShift = main._focusGui = false;
       this._updateFocalShiftIndicator();
       break;
+    case Enums.KeyAction.TOPOLOGY_DETAIL:
+      if (this._modalTopologyDetail) {
+        this._modalTopologyDetail = main._focusGui = false;
+        this._updateTopologyDetailIndicator();
+      }
+      break;
     }
   }
 
@@ -474,6 +567,11 @@ class GuiSculpting {
     if (this._modalBrushFocalShift && wid._ctrlFocalShift) {
       wid._ctrlFocalShift.setValue(wid._ctrlFocalShift.getValue() + event.pageX - this._lastPageX);
       this._updateFocalShiftIndicator(this._focalShiftRefX, this._focalShiftRefY);
+    }
+
+    if (this._modalTopologyDetail && wid._ctrlDetail) {
+      wid._ctrlDetail.setValue(wid._ctrlDetail.getValue() + event.pageX - this._lastPageX);
+      this._updateTopologyDetailIndicator(this._topologyDetailRefX, this._topologyDetailRefY);
     }
 
     this._lastPageX = event.pageX;

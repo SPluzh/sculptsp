@@ -141,6 +141,9 @@ var TR = {
   sculptExtractTitle: '추출하기',
   sculptExtractThickness: '두께',
   sculptExtractAction: '추출!',
+  sculptTopology: '토폴로지',
+  sculptTopologyDetail: '세부 수준',
+  sculptTopologyDecimate: '데시메이션 (단순화)',
 
   // states
   stateTitle: '히스토리',

@@ -141,6 +141,9 @@ var TR = {
   sculptExtractTitle: 'Çıkar',
   sculptExtractThickness: 'Kalınlık',
   sculptExtractAction: 'Çıkar !',
+  sculptTopology: 'Topoloji',
+  sculptTopologyDetail: 'Detay seviyesi',
+  sculptTopologyDecimate: 'Azaltma (basitleştir)',
 
   // states
   stateTitle: 'Geçmiş',

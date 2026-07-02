@@ -141,6 +141,9 @@ var TR = {
   sculptExtractTitle: '提取',
   sculptExtractThickness: '厚度',
   sculptExtractAction: '提取 !',
+  sculptTopology: '拓扑',
+  sculptTopologyDetail: '细节级别',
+  sculptTopologyDecimate: '精简（简化）',
 
   // states
   stateTitle: '記錄',

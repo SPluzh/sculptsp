@@ -164,6 +164,9 @@ var TR = {
   sculptExtractTitle: 'Extract',
   sculptExtractThickness: 'Thickness',
   sculptExtractAction: 'Extract !',
+  sculptTopology: 'Topology',
+  sculptTopologyDetail: 'Detail level',
+  sculptTopologyDecimate: 'Decimate (simplify)',
 
   // states
   stateTitle: 'History',

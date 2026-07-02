@@ -139,6 +139,9 @@ var TR = {
   sculptExtractTitle: null,
   sculptExtractThickness: null,
   sculptExtractAction: null,
+  sculptTopology: 'トポロジー',
+  sculptTopologyDetail: '詳細レベル',
+  sculptTopologyDecimate: 'デシメーション（簡略化）',
 
   // states
   stateTitle: '履歴',

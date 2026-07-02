@@ -164,6 +164,9 @@ var TR = {
   sculptExtractTitle: 'Извлечь',
   sculptExtractThickness: 'Толщина',
   sculptExtractAction: 'Извлечь!',
+  sculptTopology: 'Топология',
+  sculptTopologyDetail: 'Уровень детализации',
+  sculptTopologyDecimate: 'Децимация (упрощение)',
 
   // states
   stateTitle: 'История',
