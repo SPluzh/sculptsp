@@ -24,6 +24,7 @@ Credits
 #### Original Author
 
 Stéphane Ginier (GitHub: [@stephomi](https://github.com/stephomi), Website: http://stephaneginier.com) - Creator of SculptGL. 
+
 You can try the original project [**here**](http://stephaneginier.com/sculptgl). 
 Additional information can be found on the [website](http://stephaneginier.com/).
 
