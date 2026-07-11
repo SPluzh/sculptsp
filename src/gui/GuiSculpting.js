@@ -337,7 +337,7 @@ class GuiSculpting {
     var showContinuous = this._sculptManager.canBeContinuous() === true;
     this._ctrlContinuous.setVisibility(showContinuous);
 
-    var showSym = newValue !== Enums.Tools.TRANSFORM;
+    var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE;
     this._ctrlSymmetry.setVisibility(showSym);
 
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);

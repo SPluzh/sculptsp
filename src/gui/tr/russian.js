@@ -238,6 +238,10 @@ var TR = {
   sketchfabUploadProcessing: 'Обработка...\nВаша модель будет доступна после:',
 
   about: 'О программе',
+  measureTitle: 'Измерение отрезками',
+  measureEnable: 'Активно',
+  measureClear: 'Очистить все',
+  measureDistanceThickness: 'Толщина по дальности',
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',

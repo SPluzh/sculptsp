@@ -84,6 +84,8 @@ class SculptManager {
     case Enums.Tools.DRAG:
     case Enums.Tools.LOCALSCALE:
     case Enums.Tools.TRANSFORM:
+    case Enums.Tools.ZSPHERE:
+    case Enums.Tools.MEASURE:
       return false;
     default:
       return true;
@@ -123,6 +125,8 @@ class SculptManager {
   }
 
   postRender() {
+    if (this._main._measureTool && this._main._measureTool.isActive())
+      return;
     this.getCurrentTool().postRender(this._selection);
   }
 

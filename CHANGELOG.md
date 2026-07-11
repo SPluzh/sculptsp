@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.1]
+- **Segment Measurement Tool (Измерение отрезками)**: Added a precise, interactive segment-based measurement tool.
+- **Reference Segment (Эталонный отрезок)**: The first placed segment acts as the reference (unit of measurement), displaying exactly `1.0x` and colored in solid white (`#FFFFFF`). Subsequent segments measure length relative to this reference (e.g. `2.5x`) and are colored in slate-gray (`#B0BEC5`). If no reference exists, segments display absolute world units rounded to 1 decimal place.
+- **Camera-Plane Snapping**: Dragging/placing segment endpoints snaps to the closest mesh vertex in the camera projection plane. Supports adjusting existing segments by click-dragging their endpoints in screenspace, with active pointer-cursor feedback and visual node enlargement on hover.
+- **Persistent Rendering**: Placed measurements remain visible when switching to sculpting tools like `Move`, updating dynamically if the mesh vertices are moved. Overlapping endpoints deletes the segment, and references automatically re-assign to the first remaining segment.
+- **Interactive Overlay**: Implemented a responsive SVG overlay above the WebGL canvas, drawing clean glowing lines, vertex nodes, and semi-transparent text label pills with values rounded to 1 decimal place. Highlights hovered endpoints (enlarged point radius to 8px with a cyan highlight border). Projects 3D tick dots at integer multiples of the reference length along segments. Optionally scales segment line thickness and endpoint radii dynamically based on distance to the camera.
+- **UI Integration**: Integrated "Измерение отрезками" (Segment Measure) directly into the sidebar sculpting/painting tools dropdown list, keeping it unified with other tools (like Brush, Move, ZSphere). Added a parameter panel with a "Clear" button to clear all segments and a "Distance thickness" (Толщина по дальности) checkbox to toggle camera distance-based stroke scaling. Switching to other sculpting tools automatically disables the measurement interaction while keeping the lines visible.
+
 ## [0.9.0]
 - **ZSphere Tool**: Fixed a bug where child nodes and branches of a ZSphere symmetry partner disappeared or were lost when the partners were merged into a single sphere at the symmetry center. The merge operation now correctly preserves and re-parents the entire child hierarchy to the surviving central node.
 - **ZSphere Tool**: Implemented automatic purple coloring for ZSpheres that are positioned on the symmetry axis/plane, providing clear visual feedback when a node is in a merged/central state.

@@ -19,6 +19,7 @@ import ShaderLib from './render/ShaderLib.js';
 import WebGLCaps from './render/WebGLCaps.js';
 import ShaderVoxelChecker from './render/shaders/ShaderVoxelChecker.js';
 import SnapCube from './gui/SnapCube.js';
+import MeasureRenderer from './measure/MeasureRenderer.js';
 
 class Scene {
 
@@ -42,6 +43,8 @@ class Scene {
     // core of the app
     this._stateManager = new StateManager(this); // for undo-redo
     this._sculptManager = null;
+    this._measureTool = null;
+    this._measureRenderer = null;
     this._camera = new Camera(this);
     this._picking = new Picking(this); // the ray picking
     this._pickingSym = new Picking(this, true); // the symmetrical picking
@@ -87,6 +90,8 @@ class Scene {
       return;
 
     this._sculptManager = new SculptManager(this);
+    this._measureTool = this._sculptManager.getTool(Enums.Tools.MEASURE);
+    this._measureRenderer = new MeasureRenderer(this._viewport);
     this._background = new Background(this._gl, this);
 
     this._rttContour = new Rtt(this._gl, Enums.Shader.CONTOUR, null);
@@ -277,6 +282,22 @@ class Scene {
     gl.enable(gl.DEPTH_TEST);
 
     this._sculptManager.postRender(); // draw sculpting gizmo stuffs
+
+    if (this._measureTool && this._measureRenderer) {
+      this._measureRenderer.render(
+        this._measureTool.getSegments(),
+        this._measureTool.getReferenceLength(),
+        this._measureTool.getPendingA(),
+        this._measureTool.getPendingB(),
+        this._camera,
+        this._pixelRatio,
+        this._mouseX,
+        this._mouseY,
+        this._measureTool.getHoveredSegment(),
+        this._measureTool.getHoveredVertexKey(),
+        this._measureTool._useDistanceThickness
+      );
+    }
   }
 
   _drawScene() {
@@ -473,6 +494,10 @@ class Scene {
     this._rttOpaque.onResize(newWidth, newHeight);
     this._rttTransparent.onResize(newWidth, newHeight);
 
+    if (this._measureRenderer) {
+      this._measureRenderer.onResize(newWidth, newHeight, this._pixelRatio);
+    }
+
     this.render();
   }
 
@@ -616,6 +641,9 @@ class Scene {
     this.setMesh(null);
     this._action = Enums.Action.NOTHING;
     this._voxelPreview = null;
+    if (this._measureTool) {
+      this._measureTool.clear();
+    }
   }
 
   updateVoxelPreview(step, meshes) {

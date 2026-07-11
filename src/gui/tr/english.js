@@ -238,6 +238,10 @@ var TR = {
   sketchfabUploadProcessing: 'Processing...\nYour model will be available at :',
 
   about: 'About & Help',
+  measureTitle: 'Segment Measure',
+  measureEnable: 'Active',
+  measureClear: 'Clear All',
+  measureDistanceThickness: 'Distance thickness',
 
   alphaNone: 'None',
   alphaSquare: 'Square',

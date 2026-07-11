@@ -370,4 +370,12 @@ GuiTools[Enums.Tools.TOPOLOGY] = {
   }
 };
 
+GuiTools[Enums.Tools.MEASURE] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(fold.addCheckbox(TR('measureDistanceThickness'), tool, '_useDistanceThickness'));
+    this._ctrls.push(fold.addButton(TR('measureClear'), tool, 'clear'));
+  }
+};
+
 export default GuiSculptingTools;

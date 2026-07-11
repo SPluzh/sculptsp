@@ -13,6 +13,7 @@ Key Changes
 - **Focal Shift**: Added Focal Shift support for sculpting brushes.
 - **Voxel Remesh**: Visual size preview of target polygons during resolution adjustments.
 - **Dynamic Topology**: Added a topology modification brush when dynamic topology is enabled, supporting the `X` hotkey to adjust target polygon detail size with a visual preview.
+- **Tablet Support**: Added WinTab and Windows Ink API support for pen pressure in desktop standalone builds.
 - **Shortcuts**:
   - Brush settings: `A` for intensity, `S` for brush size, and `D` for focal shift.
   - Brush tools: `Q` for Move, `W` for Clay Buildup, `E` for Crease, and `R` for Pinch.

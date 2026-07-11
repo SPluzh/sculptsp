@@ -11,7 +11,8 @@ Enums.Action = {
   CAMERA_ZOOM: 3,
   CAMERA_ROTATE: 4,
   CAMERA_PAN: 5,
-  CAMERA_PAN_ZOOM_ALT: 6
+  CAMERA_PAN_ZOOM_ALT: 6,
+  MEASURE_EDIT: 7
 };
 
 // sculpt tools
@@ -31,7 +32,8 @@ Enums.Tools = {
   TRANSFORM: 12,
   CLAYBUILDUP: 13,
   ZSPHERE: 14,
-  TOPOLOGY: 15
+  TOPOLOGY: 15,
+  MEASURE: 16
 };
 
 // display shader type
