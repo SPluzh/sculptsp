@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.1]
+- **Segment Measurement Tool**: Redesigned the "Distance thickness" scaling to use the exact viewport projection factor (pixels per world unit), ensuring lines scale dynamically matching the 3D model size. Reduced default and distance-based measurement line thickness by 2 times to improve overall visual precision.
+- **UI**: Fixed an issue where keyboard hotkeys could trigger tool changes while the brush selection dropdown (combobox) had focus, and prevented arrow keys from changing the selection once a new tool is selected.
 - **Segment Measurement Tool (Измерение отрезками)**: Added a precise, interactive segment-based measurement tool.
 - **Reference Segment (Эталонный отрезок)**: The first placed segment acts as the reference (unit of measurement), displaying exactly `1.0x` and colored in solid white (`#FFFFFF`). Subsequent segments measure length relative to this reference (e.g. `2.5x`) and are colored in slate-gray (`#B0BEC5`). If no reference exists, segments display absolute world units rounded to 1 decimal place.
 - **Camera-Plane Snapping**: Dragging/placing segment endpoints snaps to the closest mesh vertex in the camera projection plane. Supports adjusting existing segments by click-dragging their endpoints in screenspace, with active pointer-cursor feedback and visual node enlargement on hover.

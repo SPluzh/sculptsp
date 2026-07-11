@@ -164,10 +164,16 @@ class SculptSP extends Scene {
   // KEY EVENTS
   ////////////////
   onKeyDown(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA')
+      return;
     this._gui.callFunc('onKeyDown', e);
   }
 
   onKeyUp(e) {
+    var tag = document.activeElement && document.activeElement.tagName;
+    if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA')
+      return;
     this._gui.callFunc('onKeyUp', e);
   }
 

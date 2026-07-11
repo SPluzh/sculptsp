@@ -48,6 +48,21 @@ class MeasureRenderer {
     return worldPos;
   }
 
+  _getPixelsPerUnit(worldPos, camera, pixelRatio) {
+    var view = camera.getView();
+    var right = vec3.fromValues(view[0], view[4], view[8]);
+
+    var offsetPos = vec3.create();
+    vec3.scaleAndAdd(offsetPos, worldPos, right, 1.0);
+
+    var screenPos = camera.project(worldPos);
+    var screenOffsetPos = camera.project(offsetPos);
+
+    var dx = (screenPos[0] - screenOffsetPos[0]) / pixelRatio;
+    var dy = (screenPos[1] - screenOffsetPos[1]) / pixelRatio;
+    return Math.hypot(dx, dy);
+  }
+
   render(segments, referenceLength, pendingA, pendingB, camera, pixelRatio, mouseX, mouseY, hoveredSegment, hoveredVertexKey, useDistanceThickness) {
     // Clear previous elements
     while (this._svg.firstChild) {
@@ -119,39 +134,26 @@ class MeasureRenderer {
       color = isReference ? 'rgba(255, 255, 255, 0.6)' : 'rgba(176, 190, 197, 0.6)';
     }
 
-    var strokeWidth = isReference ? 3 : 2;
+    var strokeWidth = isReference ? 1.5 : 1.0;
     var rA = isReference ? 5 : 4;
     var rB = isReference ? 5 : 4;
 
     if (useDistanceThickness && worldA && worldB && camera) {
-      var refDist = 80.0;
-
-      // Midpoint distance for line thickness
       var worldMid = vec3.create();
       vec3.add(worldMid, worldA, worldB);
       vec3.scale(worldMid, worldMid, 0.5);
-      var camPosMid = vec3.create();
-      vec3.transformMat4(camPosMid, worldMid, camera._view);
-      var distMid = vec3.length(camPosMid);
-      var ratioMid = refDist / Math.max(0.1, distMid);
-      strokeWidth = (isReference ? 3.0 : 2.0) * ratioMid;
-      strokeWidth = Math.max(0.8, Math.min(8.0, strokeWidth));
 
-      // Endpoint A distance for radius A
-      var camPosA = vec3.create();
-      vec3.transformMat4(camPosA, worldA, camera._view);
-      var distA = vec3.length(camPosA);
-      var ratioA = refDist / Math.max(0.1, distA);
-      rA = (isReference ? 5.0 : 4.0) * ratioA;
-      rA = Math.max(1.5, Math.min(12.0, rA));
+      var pixelsPerUnitMid = this._getPixelsPerUnit(worldMid, camera, pixelRatio);
+      strokeWidth = (isReference ? 0.11 : 0.075) * pixelsPerUnitMid;
+      strokeWidth = Math.max(0.25, Math.min(5.0, strokeWidth));
 
-      // Endpoint B distance for radius B
-      var camPosB = vec3.create();
-      vec3.transformMat4(camPosB, worldB, camera._view);
-      var distB = vec3.length(camPosB);
-      var ratioB = refDist / Math.max(0.1, distB);
-      rB = (isReference ? 5.0 : 4.0) * ratioB;
-      rB = Math.max(1.5, Math.min(12.0, rB));
+      var pixelsPerUnitA = this._getPixelsPerUnit(worldA, camera, pixelRatio);
+      rA = (isReference ? 0.35 : 0.28) * pixelsPerUnitA;
+      rA = Math.max(1.0, Math.min(15.0, rA));
+
+      var pixelsPerUnitB = this._getPixelsPerUnit(worldB, camera, pixelRatio);
+      rB = (isReference ? 0.35 : 0.28) * pixelsPerUnitB;
+      rB = Math.max(1.0, Math.min(15.0, rB));
     }
 
     if (isHoveredA) rA = Math.max(8.0, rA * 1.6);

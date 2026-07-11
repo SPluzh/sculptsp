@@ -343,6 +343,10 @@ class GuiSculpting {
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);
 
     this._main.getPicking().updateLocalAndWorldRadius2();
+
+    if (this._ctrlSculpt && this._ctrlSculpt.domSelect) {
+      this._ctrlSculpt.domSelect.blur();
+    }
   }
 
   loadAlpha(event) {
