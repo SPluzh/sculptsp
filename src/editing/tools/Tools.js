@@ -16,6 +16,7 @@ import ClayBuildup from './ClayBuildup.js';
 import ZSphereTool from './ZSphereTool.js';
 import Topology from './Topology.js';
 import MeasureTool from '../../measure/MeasureTool.js';
+import Elastic from './Elastic.js';
 
 var Tools = [];
 
@@ -36,6 +37,7 @@ Tools[Enums.Tools.CLAYBUILDUP] = ClayBuildup;
 Tools[Enums.Tools.ZSPHERE] = ZSphereTool;
 Tools[Enums.Tools.TOPOLOGY] = Topology;
 Tools[Enums.Tools.MEASURE] = MeasureTool;
+Tools[Enums.Tools.ELASTIC] = Elastic;
 
 Tools[Enums.Tools.BRUSH].uiName = 'sculptBrush';
 Tools[Enums.Tools.INFLATE].uiName = 'sculptInflate';
@@ -54,5 +56,6 @@ Tools[Enums.Tools.CLAYBUILDUP].uiName = 'sculptClayBuildup';
 Tools[Enums.Tools.ZSPHERE].uiName = 'sculptZSphere';
 Tools[Enums.Tools.TOPOLOGY].uiName = 'sculptTopology';
 Tools[Enums.Tools.MEASURE].uiName = 'measureTitle';
+Tools[Enums.Tools.ELASTIC].uiName = 'sculptElastic';
 
 export default Tools;

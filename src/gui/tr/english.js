@@ -239,6 +239,8 @@ var TR = {
 
   about: 'About & Help',
   measureTitle: 'Segment Measure',
+  sculptElastic: 'Elastic',
+  sculptElasticity: 'Elasticity',
   measureEnable: 'Active',
   measureClear: 'Clear All',
   measureDistanceThickness: 'Distance thickness',

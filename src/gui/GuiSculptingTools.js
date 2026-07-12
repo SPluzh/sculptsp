@@ -378,4 +378,18 @@ GuiTools[Enums.Tools.MEASURE] = {
   }
 };
 
+GuiTools[Enums.Tools.ELASTIC] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(addCtrlRadius(tool, fold, this, main));
+    this._ctrls.push(addCtrlIntensity(tool, fold, this));
+    this._ctrls.push(addCtrlFocalShift(tool, fold, this, main));
+    this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
+    this._ctrls.push(fold.addSlider(TR('sculptElasticity'), tool._elasticity * 100, setOnChange.bind(tool, '_elasticity', 100), 10, 300, 1));
+    this._ctrls.push(fold.addCheckbox(TR('sculptTopologicalCheck'), tool, '_topoCheck'));
+    this._ctrls.push(addCtrlNegative(tool, fold, this, TR('sculptMoveAlongNormal')));
+    addCtrlAlpha(this._ctrls, fold, tool, this);
+  }
+};
+
 export default GuiSculptingTools;

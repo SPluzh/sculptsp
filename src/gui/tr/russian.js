@@ -239,6 +239,8 @@ var TR = {
 
   about: 'О программе',
   measureTitle: 'Измерение отрезками',
+  sculptElastic: '3D Эластичный сдвиг',
+  sculptElasticity: 'Эластичность',
   measureEnable: 'Активно',
   measureClear: 'Очистить все',
   measureDistanceThickness: 'Толщина по дальности',

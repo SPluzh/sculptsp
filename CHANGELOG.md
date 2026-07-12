@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.1]
+- **Elastic Tool (Эластичный сдвиг)**: Upgraded the elastic deformation model to use Pixar's Regularized Kelvinlets algorithm (similar to Blender's Elastic Deform brush), providing physically realistic volume-preserving elasticity and lateral bulging. Supported symmetry, topological check, and directional normal offsets.
 - **Segment Measurement Tool**: Redesigned the "Distance thickness" scaling to use the exact viewport projection factor (pixels per world unit), ensuring lines scale dynamically matching the 3D model size. Reduced default and distance-based measurement line thickness by 2 times to improve overall visual precision.
 - **UI**: Fixed an issue where keyboard hotkeys could trigger tool changes while the brush selection dropdown (combobox) had focus, and prevented arrow keys from changing the selection once a new tool is selected.
 - **Segment Measurement Tool (Измерение отрезками)**: Added a precise, interactive segment-based measurement tool.

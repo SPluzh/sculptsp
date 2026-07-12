@@ -33,7 +33,8 @@ Enums.Tools = {
   CLAYBUILDUP: 13,
   ZSPHERE: 14,
   TOPOLOGY: 15,
-  MEASURE: 16
+  MEASURE: 16,
+  ELASTIC: 17
 };
 
 // display shader type
