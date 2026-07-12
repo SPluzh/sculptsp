@@ -20,6 +20,7 @@ import WebGLCaps from './render/WebGLCaps.js';
 import ShaderVoxelChecker from './render/shaders/ShaderVoxelChecker.js';
 import SnapCube from './gui/SnapCube.js';
 import MeasureRenderer from './measure/MeasureRenderer.js';
+import DividerRenderer from './measure/DividerRenderer.js';
 
 class Scene {
 
@@ -45,6 +46,8 @@ class Scene {
     this._sculptManager = null;
     this._measureTool = null;
     this._measureRenderer = null;
+    this._dividerTool = null;
+    this._dividerRenderer = null;
     this._camera = new Camera(this);
     this._picking = new Picking(this); // the ray picking
     this._pickingSym = new Picking(this, true); // the symmetrical picking
@@ -92,6 +95,8 @@ class Scene {
     this._sculptManager = new SculptManager(this);
     this._measureTool = this._sculptManager.getTool(Enums.Tools.MEASURE);
     this._measureRenderer = new MeasureRenderer(this._viewport);
+    this._dividerTool = this._sculptManager.getTool(Enums.Tools.DIVIDER);
+    this._dividerRenderer = new DividerRenderer(this._viewport);
     this._background = new Background(this._gl, this);
 
     this._rttContour = new Rtt(this._gl, Enums.Shader.CONTOUR, null);
@@ -298,6 +303,22 @@ class Scene {
         this._measureTool._useDistanceThickness
       );
     }
+
+    if (this._dividerTool && this._dividerRenderer) {
+      this._dividerRenderer.render(
+        this._dividerTool.getSegments(),
+        this._dividerTool.getPendingA(),
+        this._dividerTool.getPendingB(),
+        this._camera,
+        this._pixelRatio,
+        this._mouseX,
+        this._mouseY,
+        this._dividerTool.getHoveredSegment(),
+        this._dividerTool.getHoveredVertexKey(),
+        this._dividerTool.getDivisions(),
+        this._dividerTool._useDistanceThickness
+      );
+    }
   }
 
   _drawScene() {
@@ -498,6 +519,10 @@ class Scene {
       this._measureRenderer.onResize(newWidth, newHeight, this._pixelRatio);
     }
 
+    if (this._dividerRenderer) {
+      this._dividerRenderer.onResize(newWidth, newHeight, this._pixelRatio);
+    }
+
     this.render();
   }
 
@@ -643,6 +668,9 @@ class Scene {
     this._voxelPreview = null;
     if (this._measureTool) {
       this._measureTool.clear();
+    }
+    if (this._dividerTool) {
+      this._dividerTool.clear();
     }
   }
 

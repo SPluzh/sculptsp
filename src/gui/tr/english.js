@@ -248,6 +248,10 @@ var TR = {
   measureEnable: 'Active',
   measureClear: 'Clear All',
   measureDistanceThickness: 'Distance thickness',
+  dividerTitle: 'Segment Divider',
+  dividerDivisions: 'Divisions',
+  dividerClear: 'Clear All',
+  sculptDivider: 'Divider',
 
   alphaNone: 'None',
   alphaSquare: 'Square',

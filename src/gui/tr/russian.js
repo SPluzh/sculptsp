@@ -248,6 +248,10 @@ var TR = {
   measureEnable: 'Активно',
   measureClear: 'Очистить все',
   measureDistanceThickness: 'Толщина по дальности',
+  dividerTitle: 'Деление отрезков',
+  dividerDivisions: 'Частей деления',
+  dividerClear: 'Очистить все',
+  sculptDivider: 'Делитель отрезков',
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',

@@ -88,6 +88,7 @@ class SculptManager {
     case Enums.Tools.MEASURE:
     case Enums.Tools.ELASTIC:
     case Enums.Tools.CURVE_DEFORM:
+    case Enums.Tools.DIVIDER:
       return false;
     default:
       return true;
@@ -127,7 +128,7 @@ class SculptManager {
   }
 
   postRender() {
-    if (this._main._measureTool && this._main._measureTool.isActive())
+    if ((this._main._measureTool && this._main._measureTool.isActive()) || (this._main._dividerTool && this._main._dividerTool.isActive()))
       return;
     this.getCurrentTool().postRender(this._selection);
   }

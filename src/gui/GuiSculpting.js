@@ -337,7 +337,7 @@ class GuiSculpting {
     var showContinuous = this._sculptManager.canBeContinuous() === true;
     this._ctrlContinuous.setVisibility(showContinuous);
 
-    var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE;
+    var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
     this._ctrlSymmetry.setVisibility(showSym);
 
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);
@@ -397,7 +397,7 @@ class GuiSculpting {
 
   _checkModifierKey(event) {
     var selectedTool = this.getSelectedTool();
-    if (selectedTool === Enums.Tools.ZSPHERE || selectedTool === Enums.Tools.MEASURE || selectedTool === Enums.Tools.CURVE_DEFORM)
+    if (selectedTool === Enums.Tools.ZSPHERE || selectedTool === Enums.Tools.MEASURE || selectedTool === Enums.Tools.CURVE_DEFORM || selectedTool === Enums.Tools.DIVIDER)
       return false;
 
     if (this._main._action === Enums.Action.NOTHING) {

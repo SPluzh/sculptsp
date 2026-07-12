@@ -403,4 +403,15 @@ GuiTools[Enums.Tools.CURVE_DEFORM] = {
   }
 };
 
+GuiTools[Enums.Tools.DIVIDER] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(fold.addSlider(TR('dividerDivisions'), tool._divisions, function (val) {
+      tool.setDivisions(val);
+    }, 2, 6, 1));
+    this._ctrls.push(fold.addCheckbox(TR('measureDistanceThickness'), tool, '_useDistanceThickness'));
+    this._ctrls.push(fold.addButton(TR('dividerClear'), tool, 'clear'));
+  }
+};
+
 export default GuiSculptingTools;
