@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.3]
+- **Wet Clay Shader (Мокрая глина)**: Added a new clay rendering shader mimicking hand-sculpted, wet clay. Powered by low-complexity warped 3D noise (combining finger indentations with micro tool/scratch marks) using the GPU-independent sin-less Dave Hoskins hash to ensure stable performance and precise details. Implemented simulated subsurface scattering (SSS) for clay translucency, curvature-based saturation mapping (making valleys look wetter and ridges drier), and noise-driven specular gloss variations. Supported live customization parameters (Wetness, Bump Strength, Noise Scale, and SSS Intensity) directly inside the rendering controls sidebar.
+
 ## [0.9.2]
 - **Segment Divider Tool (Деление отрезков)**: Added a new interactive tool that allows drawing a segment from a mesh vertex to another mesh vertex or completely outside of the mesh (free space in camera-parallel projection plane). Placed segments are automatically divided into equal parts (from 2 to 6, configurable in settings). Supports click-dragging segment endpoints in screenspace, automatically maintaining the 3D depth relative to the camera or other endpoint for free anchors, and snapping to nearest mesh vertices when hovered.
 

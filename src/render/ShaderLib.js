@@ -7,6 +7,7 @@ import ShaderUV from './shaders/ShaderUV.js';
 import ShaderWireframe from './shaders/ShaderWireframe.js';
 import ShaderFlat from './shaders/ShaderFlat.js';
 import ShaderSelection from './shaders/ShaderSelection.js';
+import ShaderWetClay from './shaders/ShaderWetClay.js';
 
 import ShaderBackground from './shaders/ShaderBackground.js';
 import ShaderMerge from './shaders/ShaderMerge.js';
@@ -27,6 +28,7 @@ ShaderLib[Enums.Shader.UV] = ShaderUV;
 ShaderLib[Enums.Shader.WIREFRAME] = ShaderWireframe;
 ShaderLib[Enums.Shader.FLAT] = ShaderFlat;
 ShaderLib[Enums.Shader.SELECTION] = ShaderSelection;
+ShaderLib[Enums.Shader.WETCLAY] = ShaderWetClay;
 
 // 2D screen shaders
 ShaderLib[Enums.Shader.BACKGROUND] = ShaderBackground;

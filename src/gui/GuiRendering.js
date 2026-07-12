@@ -8,6 +8,7 @@ var ShaderMERGE = Shader[Enums.Shader.MERGE];
 var ShaderUV = Shader[Enums.Shader.UV];
 var ShaderPBR = Shader[Enums.Shader.PBR];
 var ShaderMatcap = Shader[Enums.Shader.MATCAP];
+var ShaderWetClay = Shader[Enums.Shader.WETCLAY];
 
 class GuiRendering {
 
@@ -35,6 +36,7 @@ class GuiRendering {
     optionsShaders[Enums.Shader.PBR] = TR('renderingPBR');
     optionsShaders[Enums.Shader.NORMAL] = TR('renderingNormal');
     optionsShaders[Enums.Shader.UV] = TR('renderingUV');
+    optionsShaders[Enums.Shader.WETCLAY] = TR('renderingWetClay');
     menu.addTitle(TR('renderingShader'));
     this._ctrlShaders = menu.addCombobox('', Enums.Shader.MATCAP, this.onShaderChanged.bind(this), optionsShaders);
 
@@ -63,6 +65,13 @@ class GuiRendering {
 
     // uv texture
     this._ctrlUV = menu.addButton(TR('renderingImportUV'), this, 'importTexture');
+
+    // wet clay parameters
+    this._ctrlWetClayTitle = menu.addTitle(TR('renderingWetClay'));
+    this._ctrlWetClayWetness = menu.addSlider(TR('renderingWetClayWetness'), ShaderWetClay.wetness, this.onWetClayWetnessChanged.bind(this), 0.0, 1.0, 0.01);
+    this._ctrlWetClayBump = menu.addSlider(TR('renderingWetClayBump'), ShaderWetClay.bumpStrength, this.onWetClayBumpChanged.bind(this), 0.0, 1.0, 0.01);
+    this._ctrlWetClayNoiseScale = menu.addSlider(TR('renderingWetClayNoiseScale'), ShaderWetClay.noiseScale, this.onWetClayNoiseScaleChanged.bind(this), 1.0, 30.0, 0.1);
+    this._ctrlWetClaySSS = menu.addSlider(TR('renderingWetClaySSS'), ShaderWetClay.sssIntensity, this.onWetClaySSSChanged.bind(this), 0.0, 1.0, 0.01);
 
     this._ctrlExposure = menu.addSlider(TR('renderingExposure'), 1, this.onExposureChanged.bind(this), 0, 5, 0.001);
     this.onUpdateCtrlExposure();
@@ -104,6 +113,26 @@ class GuiRendering {
 
   onExposureChanged(val) {
     ShaderPBR.exposure = val;
+    this._main.render();
+  }
+
+  onWetClayWetnessChanged(val) {
+    ShaderWetClay.wetness = val;
+    this._main.render();
+  }
+
+  onWetClayBumpChanged(val) {
+    ShaderWetClay.bumpStrength = val;
+    this._main.render();
+  }
+
+  onWetClayNoiseScaleChanged(val) {
+    ShaderWetClay.noiseScale = val;
+    this._main.render();
+  }
+
+  onWetClaySSSChanged(val) {
+    ShaderWetClay.sssIntensity = val;
     this._main.render();
   }
 
@@ -195,6 +224,12 @@ class GuiRendering {
     this._ctrlMatcap.setValue(mesh.getMatcap(), true);
     this._ctrlTransparency.setValue(100 - 100 * mesh.getOpacity(), true);
     this._ctrlCurvature.setValue(20 * mesh.getCurvature(), true);
+
+    this._ctrlWetClayWetness.setValue(ShaderWetClay.wetness, true);
+    this._ctrlWetClayBump.setValue(ShaderWetClay.bumpStrength, true);
+    this._ctrlWetClayNoiseScale.setValue(ShaderWetClay.noiseScale, true);
+    this._ctrlWetClaySSS.setValue(ShaderWetClay.sssIntensity, true);
+
     this.updateVisibility();
   }
 
@@ -211,6 +246,13 @@ class GuiRendering {
     this._ctrlEnv.setVisibility(val === Enums.Shader.PBR);
 
     this._ctrlUV.setVisibility(val === Enums.Shader.UV);
+
+    var isWetClay = (val === Enums.Shader.WETCLAY);
+    this._ctrlWetClayTitle.setVisibility(isWetClay);
+    this._ctrlWetClayWetness.setVisibility(isWetClay);
+    this._ctrlWetClayBump.setVisibility(isWetClay);
+    this._ctrlWetClayNoiseScale.setVisibility(isWetClay);
+    this._ctrlWetClaySSS.setVisibility(isWetClay);
   }
 
   getFlatShading() {
