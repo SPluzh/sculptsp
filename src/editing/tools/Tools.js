@@ -17,6 +17,7 @@ import ZSphereTool from './ZSphereTool.js';
 import Topology from './Topology.js';
 import MeasureTool from '../../measure/MeasureTool.js';
 import Elastic from './Elastic.js';
+import CurveDeformTool from './CurveDeformTool.js';
 
 var Tools = [];
 
@@ -38,6 +39,7 @@ Tools[Enums.Tools.ZSPHERE] = ZSphereTool;
 Tools[Enums.Tools.TOPOLOGY] = Topology;
 Tools[Enums.Tools.MEASURE] = MeasureTool;
 Tools[Enums.Tools.ELASTIC] = Elastic;
+Tools[Enums.Tools.CURVE_DEFORM] = CurveDeformTool;
 
 Tools[Enums.Tools.BRUSH].uiName = 'sculptBrush';
 Tools[Enums.Tools.INFLATE].uiName = 'sculptInflate';
@@ -57,5 +59,6 @@ Tools[Enums.Tools.ZSPHERE].uiName = 'sculptZSphere';
 Tools[Enums.Tools.TOPOLOGY].uiName = 'sculptTopology';
 Tools[Enums.Tools.MEASURE].uiName = 'measureTitle';
 Tools[Enums.Tools.ELASTIC].uiName = 'sculptElastic';
+Tools[Enums.Tools.CURVE_DEFORM].uiName = 'sculptCurveDeform';
 
 export default Tools;

@@ -392,4 +392,15 @@ GuiTools[Enums.Tools.ELASTIC] = {
   }
 };
 
+GuiTools[Enums.Tools.CURVE_DEFORM] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    tool._guiEditMode = fold.addCheckbox(TR('sculptCurveDeformEdit'), tool._mode === 'edit', tool.setEditMode.bind(tool));
+    this._ctrls.push(tool._guiEditMode);
+    this._ctrls.push(addCtrlRadius(tool, fold, this, main));
+    this._ctrls.push(addCtrlIntensity(tool, fold, this));
+    this._ctrls.push(fold.addButton(TR('sculptCurveDeformClear'), tool, 'clear'));
+  }
+};
+
 export default GuiSculptingTools;

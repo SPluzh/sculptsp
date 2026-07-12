@@ -87,6 +87,7 @@ class SculptManager {
     case Enums.Tools.ZSPHERE:
     case Enums.Tools.MEASURE:
     case Enums.Tools.ELASTIC:
+    case Enums.Tools.CURVE_DEFORM:
       return false;
     default:
       return true;

@@ -34,7 +34,8 @@ Enums.Tools = {
   ZSPHERE: 14,
   TOPOLOGY: 15,
   MEASURE: 16,
-  ELASTIC: 17
+  ELASTIC: 17,
+  CURVE_DEFORM: 18
 };
 
 // display shader type
