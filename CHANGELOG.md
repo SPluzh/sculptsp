@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.9]
+- **UI**: Replaced the traditional horizontal topbar menu and right sidebar with a sleek, vertical toolbar on the left side of the screen featuring modern floating panels.
+- **UI**: Converted the vertex and face count statistics panel into a transparent HUD overlay located in the bottom-right corner of the viewport.
+- **UI**: Removed the top command shelf toolbar and the "About" button to optimize the workspace area for sculpting.
 - **UI**: Extracted modal parameter adjustment overlays (brush intensity, focal shift, topology detail, camera FOV, and remeshing resolution) into a unified, reusable indicator component to streamline code structure and ensure visual consistency across all indicators.
 
 ## [0.9.8]

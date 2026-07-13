@@ -13,7 +13,8 @@ import GuiStates from './GuiStates.js';
 import GuiTablet from './GuiTablet.js';
 import ShaderContour from '../render/shaders/ShaderContour.js';
 import UIPopup from './UIPopup.js';
-import CommandShelf from './CommandShelf.js';
+import VerticalToolbar from './VerticalToolbar.js';
+import PanelContainer from './PanelContainer.js';
 
 import Export from '../files/Export.js';
 
@@ -48,6 +49,7 @@ class Gui {
     // Phase 4 & 5
     this._popup = null;
     this._shelf = null;
+    this._toolbar = null;
 
     this._onMouseMovePopup = null;
     this._onKeyDownPopup = null;
@@ -59,41 +61,73 @@ class Gui {
   initGui() {
     this.deleteGui();
 
-    this._guiMain = new yagui.GuiMain(this._main.getViewport(), this._main.onCanvasResize.bind(this._main));
+    var viewport = this._main.getViewport();
+    this._guiMain = new yagui.GuiMain(viewport, this._main.onCanvasResize.bind(this._main));
+
+    // Initialize VerticalToolbar first so it's available for eager panel creation
+    this._toolbar = new VerticalToolbar(viewport, this._main);
 
     var ctrls = this._ctrls;
     ctrls.length = 0;
     var idc = 0;
 
-    // Initialize the topbar
-    this._topbar = this._guiMain.addTopbar();
-    ctrls[idc++] = this._ctrlFiles = new GuiFiles(this._topbar, this);
-    // this.initPrint(this._topbar);
-    ctrls[idc++] = this._ctrlScene = new GuiScene(this._topbar, this);
-    ctrls[idc++] = this._ctrlStates = new GuiStates(this._topbar, this);
-    ctrls[idc++] = this._ctrlBackground = new GuiBackground(this._topbar, this);
-    ctrls[idc++] = this._ctrlCamera = new GuiCamera(this._topbar, this);
-    // TODO find a way to get pressure event
-    ctrls[idc++] = this._ctrlTablet = new GuiTablet(this._topbar, this);
-    ctrls[idc++] = this._ctrlConfig = new GuiConfig(this._topbar, this);
-    ctrls[idc++] = this._ctrlMesh = new GuiMesh(this._topbar, this);
+    // Eagerly initialize all panels as PanelContainers
+    var panelFiles = new PanelContainer('file', this._toolbar);
+    this._toolbar.registerPanel('file', panelFiles);
+    ctrls[idc++] = this._ctrlFiles = new GuiFiles(panelFiles, this);
 
-    // Initialize the sidebar
-    this._sidebar = this._guiMain.addRightSidebar();
-    ctrls[idc++] = this._ctrlRendering = new GuiRendering(this._sidebar, this);
-    ctrls[idc++] = this._ctrlTopology = new GuiTopology(this._sidebar, this);
-    ctrls[idc++] = this._ctrlSculpting = new GuiSculpting(this._sidebar, this);
+    var panelScene = new PanelContainer('scene', this._toolbar);
+    this._toolbar.registerPanel('scene', panelScene);
+    ctrls[idc++] = this._ctrlScene = new GuiScene(panelScene, this);
 
-    // gui extra
-    var extra = this._topbar.addExtra();
-    // Extra : Настройка интерфейса
-    extra.addTitle(TR('contour'));
-    extra.addColor(TR('contourColor'), ShaderContour.color, this.onContourColor.bind(this));
+    var panelStates = new PanelContainer('history', this._toolbar);
+    this._toolbar.registerPanel('history', panelStates);
+    ctrls[idc++] = this._ctrlStates = new GuiStates(panelStates, this);
 
-    extra.addTitle(TR('resolution'));
-    extra.addSlider('', this._main._pixelRatio, this.onPixelRatio.bind(this), 0.5, 2.0, 0.02);
+    var panelSculpting = new PanelContainer('sculpting', this._toolbar);
+    this._toolbar.registerPanel('sculpting', panelSculpting);
+    ctrls[idc++] = this._ctrlSculpting = new GuiSculpting(panelSculpting, this);
 
-    this.addAboutButton();
+    var panelTopology = new PanelContainer('topology', this._toolbar);
+    this._toolbar.registerPanel('topology', panelTopology);
+    ctrls[idc++] = this._ctrlTopology = new GuiTopology(panelTopology, this);
+
+    var panelRendering = new PanelContainer('rendering', this._toolbar);
+    this._toolbar.registerPanel('rendering', panelRendering);
+    ctrls[idc++] = this._ctrlRendering = new GuiRendering(panelRendering, this);
+
+    var panelCamera = new PanelContainer('camera', this._toolbar);
+    this._toolbar.registerPanel('camera', panelCamera);
+    ctrls[idc++] = this._ctrlCamera = new GuiCamera(panelCamera, this);
+
+    var panelBackground = new PanelContainer('background', this._toolbar);
+    this._toolbar.registerPanel('background', panelBackground);
+    ctrls[idc++] = this._ctrlBackground = new GuiBackground(panelBackground, this);
+
+    var panelTablet = new PanelContainer('tablet', this._toolbar);
+    this._toolbar.registerPanel('tablet', panelTablet);
+    ctrls[idc++] = this._ctrlTablet = new GuiTablet(panelTablet, this);
+
+    var panelConfig = new PanelContainer('settings', this._toolbar);
+    this._toolbar.registerPanel('settings', panelConfig);
+    ctrls[idc++] = this._ctrlConfig = new GuiConfig(panelConfig, this);
+
+    // Eagerly initialize mesh info panel as a HUD inside the viewport
+    ctrls[idc++] = this._ctrlMesh = new GuiMesh(viewport, this);
+
+    // Register all buttons on the VerticalToolbar in the correct order
+    this._toolbar.addButton('file', '📁', 'File');
+    this._toolbar.addButton('scene', '🌐', 'Scene');
+    this._toolbar.addButton('history', '↺', 'History');
+    this._toolbar.addSeparator();
+    this._toolbar.addButton('sculpting', '🎨', 'Sculpting');
+    this._toolbar.addButton('topology', '⬡', 'Topology');
+    this._toolbar.addButton('rendering', '💡', 'Rendering');
+    this._toolbar.addSeparator();
+    this._toolbar.addButton('camera', '📷', 'Camera');
+    this._toolbar.addButton('background', '🖼', 'Background');
+    this._toolbar.addButton('tablet', '🖊', 'Tablet');
+    this._toolbar.addButton('settings', '⚙', 'Settings');
 
     this.updateMesh();
     this.setVisibility(true);
@@ -121,17 +155,15 @@ class Gui {
     window.addEventListener('mousemove', this._onMouseMovePopup);
     window.addEventListener('keydown', this._onKeyDownPopup);
 
-    // Phase 5 — CommandShelf (persistent toolbar under topbar)
-    var viewport = this._main.getViewport();
-    this._shelf = new CommandShelf(viewport, this._main);
-
     if (window.postprocessGui) window.postprocessGui();
   }
 
   getNotification(notifName) {
     var notif = this._notifications[notifName];
     if (!notif) {
-      notif = this._topbar.addMenu();
+      // Create folder inside the Files panel
+      var parent = this._ctrlFiles ? this._ctrlFiles._parent : this._toolbar._panels.get('file');
+      notif = parent.addMenu();
       notif.isVisible = function () {
         return !this.domContainer.hidden;
       };
@@ -190,27 +222,6 @@ class Gui {
     this._xhrs[notifName] = Export[fName](this._main, notif);
   }
 
-  onPixelRatio(val) {
-    this._main._pixelRatio = val;
-    this._main.onCanvasResize();
-  }
-
-  onContourColor(col) {
-    ShaderContour.color[0] = col[0];
-    ShaderContour.color[1] = col[1];
-    ShaderContour.color[2] = col[2];
-    ShaderContour.color[3] = col[3];
-    this._main.render();
-  }
-
-  addAboutButton() {
-    var ctrlAbout = this._topbar.addMenu();
-    ctrlAbout.domContainer.innerHTML = TR('about');
-    ctrlAbout.domContainer.addEventListener('mousedown', function () {
-      window.open('http://stephaneginier.com', '_blank');
-    });
-  }
-
   updateMesh() {
     this._ctrlRendering.updateMesh();
     this._ctrlTopology.updateMesh();
@@ -247,6 +258,7 @@ class Gui {
     this._guiMain.domMain.parentNode.removeChild(this._guiMain.domMain);
     if (this._shelf) { this._shelf.destroy(); this._shelf = null; }
     if (this._popup) { this._popup.destroy(); this._popup = null; }
+    if (this._toolbar) { this._toolbar.destroy(); this._toolbar = null; }
 
     var canvas = this._main.getCanvas();
     if (this._onContextMenu) {

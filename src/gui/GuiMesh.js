@@ -12,21 +12,17 @@ class GuiMesh {
   }
 
   init(guiParent) {
-    this.domVerts = document.createElement('ul');
+    this.domVerts = document.createElement('div');
     this.domVerts.innerHTML = TR('meshNbVertices');
 
-    this.domFaces = document.createElement('ul');
+    this.domFaces = document.createElement('div');
     this.domFaces.innerHTML = TR('meshNbFaces');
 
-    this.domUl = document.createElement('span');
+    this.domUl = document.createElement('div');
+    this.domUl.className = 'viewport-hud-mesh';
     this.domUl.appendChild(this.domVerts);
     this.domUl.appendChild(this.domFaces);
-    var style = this.domUl.style;
-    style.cursor = 'default';
-    if (style.float === undefined) style.cssFloat = 'right';
-    else style.float = 'right';
-
-    guiParent.domTopbar.appendChild(this.domUl);
+    guiParent.appendChild(this.domUl);
   }
 
   updateMeshInfo() {
