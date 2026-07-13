@@ -5,9 +5,9 @@ import Utils from '../misc/Utils.js';
 class MeasureTool extends SculptBase {
   constructor(main) {
     super(main);
-    this._segments = [];        // Array of { mesh, vertA, vertB, isReference }
-    this._pendingA = null;      // { mesh, vertIdx }
-    this._pendingB = null;      // { mesh, vertIdx } for preview
+    this._segments = [];        // Array of { vertA, vertB, isReference } where vertA/B are { type: 'vertex'|'free', mesh?, vertIdx?, worldPos? }
+    this._pendingA = null;      // Anchor A for preview
+    this._pendingB = null;      // Anchor B for preview
     this._draggedSegment = null; // Segment currently being edited
     this._draggedVertexKey = ''; // 'vertA' or 'vertB'
     this._hoveredSegment = null; // Segment currently hovered
@@ -49,9 +49,12 @@ class MeasureTool extends SculptBase {
   }
 
   getSegments() {
-    // Filter out segments whose meshes are no longer in the scene
     var meshes = this._main.getMeshes();
-    this._segments = this._segments.filter(seg => meshes.indexOf(seg.mesh) !== -1);
+    this._segments = this._segments.filter(seg => {
+      if (seg.vertA.type === 'vertex' && meshes.indexOf(seg.vertA.mesh) === -1) return false;
+      if (seg.vertB.type === 'vertex' && meshes.indexOf(seg.vertB.mesh) === -1) return false;
+      return true;
+    });
     return this._segments;
   }
 
@@ -62,27 +65,30 @@ class MeasureTool extends SculptBase {
   }
 
   getSegmentWorldLength(seg) {
-    var posA = this.getVertexWorldPos(seg.mesh, seg.vertA);
-    var posB = this.getVertexWorldPos(seg.mesh, seg.vertB);
+    var posA = this._getAnchorWorldPos(seg.vertA);
+    var posB = this._getAnchorWorldPos(seg.vertB);
     return vec3.dist(posA, posB);
   }
 
-  getVertexWorldPos(mesh, vertIdx) {
-    var vAr = mesh.getVertices();
-    var idx = vertIdx * 3;
-    var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
-    var worldPos = vec3.create();
-    vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
-    return worldPos;
+  _getAnchorWorldPos(anchor) {
+    if (!anchor) return null;
+    if (anchor.type === 'vertex') {
+      var mesh = anchor.mesh;
+      var vertIdx = anchor.vertIdx;
+      var vAr = mesh.getVertices();
+      var idx = vertIdx * 3;
+      var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
+      var worldPos = vec3.create();
+      vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
+      return worldPos;
+    } else {
+      return vec3.clone(anchor.worldPos);
+    }
   }
 
-  _projectVertex(mesh, vertIdx, camera, pixelRatio) {
-    var vAr = mesh.getVertices();
-    var idx = vertIdx * 3;
-    var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
-    var worldPos = vec3.create();
-    vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
-
+  _projectAnchor(anchor, camera, pixelRatio) {
+    var worldPos = this._getAnchorWorldPos(anchor);
+    if (!worldPos) return null;
     var screenPos = camera.project(worldPos);
     return {
       x: screenPos[0] / pixelRatio,
@@ -123,6 +129,32 @@ class MeasureTool extends SculptBase {
     return null;
   }
 
+  _pickAnchor(mouseX, mouseY, referenceWorldPos) {
+    var pick = this._pickNearestVertex(mouseX, mouseY);
+    if (pick) {
+      return {
+        type: 'vertex',
+        mesh: pick.mesh,
+        vertIdx: pick.vertIdx
+      };
+    }
+
+    var camera = this._main.getCamera();
+    var depth = 0.5;
+    if (referenceWorldPos) {
+      var screenPivot = camera.project(referenceWorldPos);
+      depth = screenPivot[2];
+    } else {
+      var screenPivot = camera.project(camera._center);
+      depth = screenPivot[2];
+    }
+    var worldPos = camera.unproject(mouseX, mouseY, depth);
+    return {
+      type: 'free',
+      worldPos: worldPos
+    };
+  }
+
   getHoveredSegment() {
     return this._hoveredSegment;
   }
@@ -150,8 +182,9 @@ class MeasureTool extends SculptBase {
 
     for (var i = 0; i < segments.length; ++i) {
       var seg = segments[i];
-      var posA = this._projectVertex(seg.mesh, seg.vertA, camera, pixelRatio);
-      var posB = this._projectVertex(seg.mesh, seg.vertB, camera, pixelRatio);
+      var posA = this._projectAnchor(seg.vertA, camera, pixelRatio);
+      var posB = this._projectAnchor(seg.vertB, camera, pixelRatio);
+      if (!posA || !posB) continue;
 
       var distA = Math.hypot(cssMouseX - posA.x, cssMouseY - posA.y);
       var distB = Math.hypot(cssMouseX - posB.x, cssMouseY - posB.y);
@@ -193,8 +226,9 @@ class MeasureTool extends SculptBase {
 
     for (var i = 0; i < segments.length; ++i) {
       var seg = segments[i];
-      var posA = this._projectVertex(seg.mesh, seg.vertA, camera, pixelRatio);
-      var posB = this._projectVertex(seg.mesh, seg.vertB, camera, pixelRatio);
+      var posA = this._projectAnchor(seg.vertA, camera, pixelRatio);
+      var posB = this._projectAnchor(seg.vertB, camera, pixelRatio);
+      if (!posA || !posB) continue;
 
       var distA = Math.hypot(cssMouseX - posA.x, cssMouseY - posA.y);
       var distB = Math.hypot(cssMouseX - posB.x, cssMouseY - posB.y);
@@ -212,7 +246,7 @@ class MeasureTool extends SculptBase {
     }
 
     // Otherwise, draw a new segment
-    var pick = this._pickNearestVertex(mouseX, mouseY);
+    var pick = this._pickAnchor(mouseX, mouseY, null);
     if (pick) {
       this._pendingA = pick;
       this._pendingB = pick;
@@ -227,28 +261,32 @@ class MeasureTool extends SculptBase {
     var mouseY = this._main._mouseY;
 
     if (this._draggedSegment) {
-      var pick = this._pickNearestVertex(mouseX, mouseY);
+      var otherKey = this._draggedVertexKey === 'vertA' ? 'vertB' : 'vertA';
+      var refWorldPos = this._getAnchorWorldPos(this._draggedSegment[otherKey]);
+      var pick = this._pickAnchor(mouseX, mouseY, refWorldPos);
       if (pick) {
-        this._draggedSegment.mesh = pick.mesh;
-        this._draggedSegment[this._draggedVertexKey] = pick.vertIdx;
+        this._draggedSegment[this._draggedVertexKey] = pick;
       }
       this._main.render();
       return;
     }
 
-    var pick = this._pickNearestVertex(mouseX, mouseY);
-    if (pick && pick.mesh === this._pendingA.mesh) {
+    if (this._pendingA) {
+      var refWorldPos = this._getAnchorWorldPos(this._pendingA);
+      var pick = this._pickAnchor(mouseX, mouseY, refWorldPos);
       this._pendingB = pick;
-    } else {
-      this._pendingB = null;
+      this._main.render();
     }
-    this._main.render();
   }
 
   end() {
     if (this._draggedSegment) {
       // Clean up segments where both endpoints were dragged to the same vertex (allows deletion by overlapping endpoints)
-      this._segments = this._segments.filter(seg => seg.vertA !== seg.vertB);
+      this._segments = this._segments.filter(seg => {
+        var posA = this._getAnchorWorldPos(seg.vertA);
+        var posB = this._getAnchorWorldPos(seg.vertB);
+        return vec3.dist(posA, posB) > 1e-4;
+      });
       // If reference segment was deleted, make the first remaining one the new reference
       var hasReference = this._segments.some(seg => seg.isReference);
       if (!hasReference && this._segments.length > 0) {
@@ -260,13 +298,14 @@ class MeasureTool extends SculptBase {
       return;
     }
 
-    if (this._pendingA) {
-      if (this._pendingB && this._pendingB.vertIdx !== this._pendingA.vertIdx) {
+    if (this._pendingA && this._pendingB) {
+      var posA = this._getAnchorWorldPos(this._pendingA);
+      var posB = this._getAnchorWorldPos(this._pendingB);
+      if (vec3.dist(posA, posB) > 1e-4) {
         var hasReference = this._segments.some(seg => seg.isReference);
         this._segments.push({
-          mesh: this._pendingA.mesh,
-          vertA: this._pendingA.vertIdx,
-          vertB: this._pendingB.vertIdx,
+          vertA: this._pendingA,
+          vertB: this._pendingB,
           isReference: !hasReference
         });
       }

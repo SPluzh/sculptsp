@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.3]
+- **Segment Measurement Tool (Измерение отрезками)**: Allowed drawing and adjusting measurement segments outside the mesh (in empty/free space) in the camera projection plane, mirroring the behavior of the Segment Divider tool. The tool automatically detects whether endpoints snap to mesh vertices (represented by solid circle markers) or lie in free space (represented by diamond markers), calculating real-time 3D distances at the pivot/depth of the camera or existing points.
 - **Wet Clay Shader (Мокрая глина)**: Added a new clay rendering shader mimicking hand-sculpted, wet clay. Powered by low-complexity warped 3D noise (combining finger indentations with micro tool/scratch marks) using the GPU-independent sin-less Dave Hoskins hash to ensure stable performance and precise details. Implemented simulated subsurface scattering (SSS) for clay translucency, curvature-based saturation mapping (making valleys look wetter and ridges drier), and noise-driven specular gloss variations. Supported live customization parameters (Wetness, Bump Strength, Noise Scale, and SSS Intensity) directly inside the rendering controls sidebar.
 
 ## [0.9.2]

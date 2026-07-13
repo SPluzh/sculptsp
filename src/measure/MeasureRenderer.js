@@ -24,28 +24,31 @@ class MeasureRenderer {
     this._svg.setAttribute('height', cssHeight);
   }
 
-  _projectVertex(mesh, vertIdx, camera, pixelRatio) {
-    var vAr = mesh.getVertices();
-    var idx = vertIdx * 3;
-    var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
-    var worldPos = vec3.create();
-    vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
+  _getAnchorWorldPos(anchor) {
+    if (!anchor) return null;
+    if (anchor.type === 'vertex') {
+      var mesh = anchor.mesh;
+      var vertIdx = anchor.vertIdx;
+      var vAr = mesh.getVertices();
+      var idx = vertIdx * 3;
+      var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
+      var worldPos = vec3.create();
+      vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
+      return worldPos;
+    } else {
+      return vec3.clone(anchor.worldPos);
+    }
+  }
 
+  _projectAnchor(anchor, camera, pixelRatio) {
+    var worldPos = this._getAnchorWorldPos(anchor);
+    if (!worldPos) return null;
     var screenPos = camera.project(worldPos);
     // Convert from physical pixels to CSS pixels
     return {
       x: screenPos[0] / pixelRatio,
       y: screenPos[1] / pixelRatio
     };
-  }
-
-  _getVertexWorldPos(mesh, vertIdx) {
-    var vAr = mesh.getVertices();
-    var idx = vertIdx * 3;
-    var localPos = vec3.fromValues(vAr[idx], vAr[idx + 1], vAr[idx + 2]);
-    var worldPos = vec3.create();
-    vec3.transformMat4(worldPos, localPos, mesh.getMatrix());
-    return worldPos;
   }
 
   _getPixelsPerUnit(worldPos, camera, pixelRatio) {
@@ -74,31 +77,34 @@ class MeasureRenderer {
     // Draw existing segments
     for (var i = 0; i < segments.length; ++i) {
       var seg = segments[i];
-      var posA = this._projectVertex(seg.mesh, seg.vertA, camera, pixelRatio);
-      var posB = this._projectVertex(seg.mesh, seg.vertB, camera, pixelRatio);
+      var posA = this._projectAnchor(seg.vertA, camera, pixelRatio);
+      var posB = this._projectAnchor(seg.vertB, camera, pixelRatio);
 
-      var worldA = this._getVertexWorldPos(seg.mesh, seg.vertA);
-      var worldB = this._getVertexWorldPos(seg.mesh, seg.vertB);
+      var worldA = this._getAnchorWorldPos(seg.vertA);
+      var worldB = this._getAnchorWorldPos(seg.vertB);
       var dist = vec3.dist(worldA, worldB);
 
       var isHoveredA = (seg === hoveredSegment && hoveredVertexKey === 'vertA');
       var isHoveredB = (seg === hoveredSegment && hoveredVertexKey === 'vertB');
 
-      this._drawSegmentLine(posA, posB, seg.isReference, dist, referenceLength, false, worldA, worldB, camera, pixelRatio, isHoveredA, isHoveredB, useDistanceThickness);
+      var typeA = seg.vertA.type;
+      var typeB = seg.vertB.type;
+
+      this._drawSegmentLine(posA, posB, seg.isReference, dist, referenceLength, false, worldA, worldB, camera, pixelRatio, isHoveredA, isHoveredB, useDistanceThickness, typeA, typeB);
     }
 
     // Draw pending/preview segment
     if (pendingA) {
-      var pA = this._projectVertex(pendingA.mesh, pendingA.vertIdx, camera, pixelRatio);
+      var pA = this._projectAnchor(pendingA, camera, pixelRatio);
       var pB = null;
       var previewDist = 0.0;
 
-      var worldA = this._getVertexWorldPos(pendingA.mesh, pendingA.vertIdx);
+      var worldA = this._getAnchorWorldPos(pendingA);
       var worldB = vec3.create();
 
       if (pendingB) {
-        pB = this._projectVertex(pendingB.mesh, pendingB.vertIdx, camera, pixelRatio);
-        var wB = this._getVertexWorldPos(pendingB.mesh, pendingB.vertIdx);
+        pB = this._projectAnchor(pendingB, camera, pixelRatio);
+        var wB = this._getAnchorWorldPos(pendingB);
         vec3.copy(worldB, wB);
         previewDist = vec3.dist(worldA, worldB);
       } else {
@@ -122,11 +128,13 @@ class MeasureRenderer {
       }
 
       var isRef = !segments.some(s => s.isReference);
-      this._drawSegmentLine(pA, pB, isRef, previewDist, referenceLength, true, worldA, worldB, camera, pixelRatio, false, false, useDistanceThickness);
+      var typeA = pendingA.type;
+      var typeB = pendingB ? pendingB.type : 'free';
+      this._drawSegmentLine(pA, pB, isRef, previewDist, referenceLength, true, worldA, worldB, camera, pixelRatio, false, false, useDistanceThickness, typeA, typeB);
     }
   }
 
-  _drawSegmentLine(posA, posB, isReference, worldDist, referenceLength, isPreview, worldA, worldB, camera, pixelRatio, isHoveredA, isHoveredB, useDistanceThickness) {
+  _drawSegmentLine(posA, posB, isReference, worldDist, referenceLength, isPreview, worldA, worldB, camera, pixelRatio, isHoveredA, isHoveredB, useDistanceThickness, typeA, typeB) {
     var svgNS = 'http://www.w3.org/2000/svg';
 
     var color = isReference ? '#FFFFFF' : '#B0BEC5'; // White for Ref, Gray for Measure
@@ -172,24 +180,9 @@ class MeasureRenderer {
     }
     this._svg.appendChild(line);
 
-    // 2. Endpoint circles
-    var circleA = document.createElementNS(svgNS, 'circle');
-    circleA.setAttribute('cx', posA.x);
-    circleA.setAttribute('cy', posA.y);
-    circleA.setAttribute('r', rA);
-    circleA.setAttribute('fill', color);
-    circleA.setAttribute('stroke', isHoveredA ? '#00E5FF' : '#1A1A1A');
-    circleA.setAttribute('stroke-width', isHoveredA ? '2.5' : '1.2');
-    this._svg.appendChild(circleA);
-
-    var circleB = document.createElementNS(svgNS, 'circle');
-    circleB.setAttribute('cx', posB.x);
-    circleB.setAttribute('cy', posB.y);
-    circleB.setAttribute('r', rB);
-    circleB.setAttribute('fill', color);
-    circleB.setAttribute('stroke', isHoveredB ? '#00E5FF' : '#1A1A1A');
-    circleB.setAttribute('stroke-width', isHoveredB ? '2.5' : '1.2');
-    this._svg.appendChild(circleB);
+    // 2. Endpoint shapes
+    this._drawEndpointShape(posA.x, posA.y, rA, typeA, color, isHoveredA, isPreview);
+    this._drawEndpointShape(posB.x, posB.y, rB, typeB, color, isHoveredB, isPreview);
 
     // 3. Ticks along the segment line (for integer multiples of reference length)
     if (!isReference && referenceLength && referenceLength > 0 && worldA && worldB && camera && pixelRatio) {
@@ -221,13 +214,13 @@ class MeasureRenderer {
 
     var label = '';
     if (isReference) {
-      label = '1.0x';
+      label = '1.00x';
     } else {
       if (referenceLength && referenceLength > 0) {
         var ratio = worldDist / referenceLength;
-        label = ratio.toFixed(1) + 'x';
+        label = ratio.toFixed(2) + 'x';
       } else {
-        label = worldDist.toFixed(1);
+        label = worldDist.toFixed(2);
       }
     }
 
@@ -264,6 +257,38 @@ class MeasureRenderer {
     group.appendChild(rect);
     group.appendChild(text);
     this._svg.appendChild(group);
+  }
+
+  _drawEndpointShape(cx, cy, r, type, color, isHovered, isPreview) {
+    var svgNS = 'http://www.w3.org/2000/svg';
+    var strokeColor = isHovered ? '#00E5FF' : '#1A1A1A';
+    var strokeWidth = isHovered ? '2.5' : '1.2';
+
+    if (type === 'vertex') {
+      // Circle
+      var circle = document.createElementNS(svgNS, 'circle');
+      circle.setAttribute('cx', cx);
+      circle.setAttribute('cy', cy);
+      circle.setAttribute('r', r);
+      circle.setAttribute('fill', color);
+      circle.setAttribute('stroke', strokeColor);
+      circle.setAttribute('stroke-width', strokeWidth);
+      this._svg.appendChild(circle);
+    } else {
+      // Free: Diamond
+      var diamond = document.createElementNS(svgNS, 'polygon');
+      var pts = [
+        cx, cy - r,
+        cx + r, cy,
+        cx, cy + r,
+        cx - r, cy
+      ].join(',');
+      diamond.setAttribute('points', pts);
+      diamond.setAttribute('fill', color);
+      diamond.setAttribute('stroke', strokeColor);
+      diamond.setAttribute('stroke-width', strokeWidth);
+      this._svg.appendChild(diamond);
+    }
   }
 
   destroy() {
