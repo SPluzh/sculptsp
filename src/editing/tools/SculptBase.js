@@ -457,8 +457,8 @@ class SculptBase {
     return new Uint32Array(cleaned.subarray(0, acc));
   }
 
-  postRender(selection, camera) {
-    selection.render(this._main, camera);
+  postRender(selection, camera, vpX) {
+    selection.render(this._main, camera, vpX);
   }
 
   addSculptToScene() {}

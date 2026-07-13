@@ -399,8 +399,21 @@ class Masking extends SculptBase {
     this._svg.setAttribute('id', 'lasso-overlay');
     this._svg.style.position = 'absolute';
     this._svg.style.top = '0';
-    this._svg.style.left = '0';
-    this._svg.style.width = '100%';
+
+    var halfW = Math.floor(this._main._canvasWidth / 2);
+    var pixelRatio = this._main.getPixelRatio() || 1.0;
+
+    if (this._main._splitMode && this._main._activeViewport === 1) {
+      this._svg.style.left = (halfW / pixelRatio) + 'px';
+      this._svg.style.width = (halfW / pixelRatio) + 'px';
+    } else if (this._main._splitMode) {
+      this._svg.style.left = '0';
+      this._svg.style.width = (halfW / pixelRatio) + 'px';
+    } else {
+      this._svg.style.left = '0';
+      this._svg.style.width = '100%';
+    }
+
     this._svg.style.height = '100%';
     this._svg.style.pointerEvents = 'none';
     this._svg.style.zIndex = '101';

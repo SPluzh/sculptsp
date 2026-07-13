@@ -127,10 +127,10 @@ class SculptManager {
     this.getCurrentTool().update();
   }
 
-  postRender(camera) {
+  postRender(camera, vpX) {
     if ((this._main._measureTool && this._main._measureTool.isActive()) || (this._main._dividerTool && this._main._dividerTool.isActive()))
       return;
-    this.getCurrentTool().postRender(this._selection, camera);
+    this.getCurrentTool().postRender(this._selection, camera, vpX);
   }
 
   addSculptToScene(scene) {

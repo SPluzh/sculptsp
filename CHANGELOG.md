@@ -8,6 +8,7 @@ All notable changes to this project will be documented in this file.
 - **Split Viewport (Разделение экрана)**: Configured navigation cubes (SnapCube) to display for both viewports, correctly aligned to their respective panels and linked to the corresponding camera.
 - **Fix**: Resolved stretching and misalignment of the brush cursor (Selection) and 3D manipulator (Gizmo) in split viewport mode by applying correct WebGL viewports/scissors during the overlay render pass.
 - **Fix**: Fixed camera snapping on Shift key in Independent mode to dynamically target the active viewport's camera instead of the main camera.
+- **Fix**: Fixed a bug where interactive overlays (Lasso selection, Curve Deform overlay, Measure/Divider segments, and ticks) were only rendered in one viewport or displayed in the wrong screen half in split viewport mode. Created separate overlay instances for each viewport and dynamically aligned them to their respective panels.
 
 ## [0.9.4]
 - **Smooth Brush (Сглаживание)**: Changed the brush cursor circle color to blue when the Smooth brush is active, offering clear visual distinction from other brushes.

@@ -357,7 +357,7 @@ class Scene {
     }
     gl.viewport(vpX, 0, vpW, vpH);
 
-    this._sculptManager.postRender(camera); // draw sculpting gizmo stuffs
+    this._sculptManager.postRender(camera, vpX); // draw sculpting gizmo stuffs
 
     if (this._measureTool && this._measureRenderer) {
       this._measureRenderer.render(
@@ -371,7 +371,8 @@ class Scene {
         this._mouseY,
         this._measureTool.getHoveredSegment(),
         this._measureTool.getHoveredVertexKey(),
-        this._measureTool._useDistanceThickness
+        this._measureTool._useDistanceThickness,
+        vpX
       );
     }
 
@@ -387,7 +388,8 @@ class Scene {
         this._dividerTool.getHoveredSegment(),
         this._dividerTool.getHoveredVertexKey(),
         this._dividerTool.getDivisions(),
-        this._dividerTool._useDistanceThickness
+        this._dividerTool._useDistanceThickness,
+        vpX
       );
     }
 

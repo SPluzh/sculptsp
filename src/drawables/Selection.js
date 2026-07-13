@@ -181,7 +181,7 @@ class Selection {
     mat4.mul(this._cacheDotSymMVP, _TMP_MATPV, _TMP_MAT);
   }
 
-  render(main, camera) {
+  render(main, camera, vpX) {
     camera = camera || main.getCamera();
     // if there's an offset then it means we are editing the tool radius
     var pickedMesh = main.getPicking().getMesh() && !this._isEditMode;

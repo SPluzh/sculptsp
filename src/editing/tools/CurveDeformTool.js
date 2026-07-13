@@ -155,16 +155,24 @@ class CurveDeformTool extends SculptBase {
     this.clear();
 
     var viewport = this._main.getViewport();
-    this._svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
-    this._svg.setAttribute('id', 'curve-deform-overlay');
-    this._svg.style.position = 'absolute';
-    this._svg.style.top = '0';
-    this._svg.style.left = '0';
-    this._svg.style.width = '100%';
-    this._svg.style.height = '100%';
-    this._svg.style.pointerEvents = 'none';
-    this._svg.style.zIndex = '100';
-    viewport.appendChild(this._svg);
+    this._svgLeft = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this._svgLeft.setAttribute('id', 'curve-deform-overlay-left');
+    this._svgLeft.style.position = 'absolute';
+    this._svgLeft.style.top = '0';
+    this._svgLeft.style.pointerEvents = 'none';
+    this._svgLeft.style.zIndex = '100';
+    viewport.appendChild(this._svgLeft);
+
+    this._svgRight = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this._svgRight.setAttribute('id', 'curve-deform-overlay-right');
+    this._svgRight.style.position = 'absolute';
+    this._svgRight.style.top = '0';
+    this._svgRight.style.pointerEvents = 'none';
+    this._svgRight.style.zIndex = '100';
+    this._svgRight.style.display = 'none';
+    viewport.appendChild(this._svgRight);
+
+    this._svg = this._svgLeft;
 
     this._onKeyDown = this.onKeyDown.bind(this);
     window.addEventListener('keydown', this._onKeyDown);
@@ -172,9 +180,14 @@ class CurveDeformTool extends SculptBase {
 
   onDeactivate() {
     this.clear();
-    if (this._svg && this._svg.parentNode) {
-      this._svg.parentNode.removeChild(this._svg);
+    if (this._svgLeft && this._svgLeft.parentNode) {
+      this._svgLeft.parentNode.removeChild(this._svgLeft);
     }
+    this._svgLeft = null;
+    if (this._svgRight && this._svgRight.parentNode) {
+      this._svgRight.parentNode.removeChild(this._svgRight);
+    }
+    this._svgRight = null;
     this._svg = null;
 
     if (this._onKeyDown) {
@@ -711,20 +724,36 @@ class CurveDeformTool extends SculptBase {
     }
   }
 
-  postRender(selection) {
-    this.drawOverlay();
+  postRender(selection, camera, vpX) {
+    this.drawOverlay(camera, vpX);
   }
 
-  drawOverlay() {
-    if (!this._svg) return;
+  drawOverlay(camera, vpX = 0) {
+    if (!this._svgLeft) return;
 
     var main = this._main;
-    var camera = main.getCamera();
+    camera = camera || main.getCamera();
     var pixelRatio = main.getPixelRatio() || 1.0;
-    var svgNS = 'http://www.w3.org/2000/svg';
+    var halfW = Math.floor(main._canvasWidth / 2);
 
+    if (main._splitMode) {
+      var wStr = (halfW / pixelRatio) + 'px';
+      this._svgLeft.style.left = '0';
+      this._svgLeft.style.width = wStr;
+      this._svgRight.style.left = wStr;
+      this._svgRight.style.width = wStr;
+      this._svgRight.style.display = 'block';
+    } else {
+      this._svgLeft.style.left = '0';
+      this._svgLeft.style.width = '100%';
+      this._svgRight.style.display = 'none';
+    }
+
+    this._svg = (main._splitMode && vpX > 0) ? this._svgRight : this._svgLeft;
+
+    var svgNS = 'http://www.w3.org/2000/svg';
     var viewport = main.getViewport();
-    var width = viewport.clientWidth;
+    var width = main._splitMode ? (halfW / pixelRatio) : (viewport.clientWidth);
     var height = viewport.clientHeight;
     this._svg.setAttribute('width', width);
     this._svg.setAttribute('height', height);
