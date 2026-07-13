@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.9]
+- **UI**: Extracted modal parameter adjustment overlays (brush intensity, focal shift, topology detail, camera FOV, and remeshing resolution) into a unified, reusable indicator component to streamline code structure and ensure visual consistency across all indicators.
+
 ## [0.9.8]
 - **Navigation**: Added a camera navigation history (undo/redo) supporting up to 100 states. Pressing **Alt + Z** undoes the camera's view changes (orbit, pan, zoom, snap, projection, or FOV settings), while **Shift + Alt + Z** redoes them.
 - **Navigation**: Removed the vertical rotation clamping limit in Orbit camera mode, allowing the camera to rotate continuously over the top and bottom poles without hitting a limit.
