@@ -162,23 +162,39 @@ class GuiCamera {
 
   onCameraModeChange(value) {
     this._camera.setMode(value);
+    this._camera.pushState();
     this._main.render();
   }
 
   onCameraTypeChange(value) {
     this._camera.setProjectionType(value);
     this._ctrlFov.setVisibility(value === Enums.Projection.PERSPECTIVE);
+    this._camera.pushState();
     this._main.render();
   }
 
   onFovChange(value) {
     this._camera.setFov(value);
+    this._camera.pushStateDebounced();
     this._main.render();
   }
 
   onKeyDown(event) {
     if (event.handled === true)
       return;
+
+    var key = event.which;
+    if (event.altKey && !event.ctrlKey && key === 90) {
+      event.stopPropagation();
+      event.preventDefault();
+      event.handled = true;
+      if (event.shiftKey) {
+        this.cameraRedo();
+      } else {
+        this.cameraUndo();
+      }
+      return;
+    }
 
     var main = this._main;
     var shk = getOptionsURL.getShortKey(event.which);
@@ -238,6 +254,14 @@ class GuiCamera {
     if (event.handled === true)
       return;
 
+    var key = event.which;
+    if (event.altKey && !event.ctrlKey && key === 90) {
+      event.stopPropagation();
+      event.preventDefault();
+      event.handled = true;
+      return;
+    }
+
     event.stopPropagation();
     var shk = getOptionsURL.getShortKey(event.which);
     if (this._main._focusGui && shk !== Enums.KeyAction.CAMERA_FOV)
@@ -251,6 +275,7 @@ class GuiCamera {
     case Enums.KeyAction.CAMERA_FOV:
       this._modalFov = this._main._focusGui = false;
       this._updateFovIndicator();
+      camera.pushState();
       break;
     case Enums.KeyAction.STRIFE_LEFT:
     case Enums.KeyAction.STRIFE_RIGHT:
@@ -279,6 +304,7 @@ class GuiCamera {
     if (this._cameraTimer !== -1 && camera._moveX === 0 && camera._moveZ === 0) {
       clearInterval(this._cameraTimer);
       this._cameraTimer = -1;
+      camera.pushState();
     }
   }
 
@@ -322,6 +348,17 @@ class GuiCamera {
 
   onPivotChange() {
     this._camera.toggleUsePivot();
+    this._camera.pushState();
+    this._main.render();
+  }
+
+  cameraUndo() {
+    this._camera.undo();
+    this._main.render();
+  }
+
+  cameraRedo() {
+    this._camera.redo();
     this._main.render();
   }
 }

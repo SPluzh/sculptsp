@@ -92,6 +92,10 @@ class Camera {
     this._timers = {}; // animation timers
 
     this.resetView();
+
+    this._history = [];
+    this._historyIndex = -1;
+    this.pushState();
   }
 
   setProjectionType(type) {
@@ -455,8 +459,11 @@ class Camera {
     if (this._timers[nTimer])
       this.clearTimerN(nTimer);
 
-    if (duration === 0.0)
-      return cb(1.0);
+    if (duration === 0.0) {
+      var res = cb(1.0);
+      this.onAnimationEnd(nTimer);
+      return res;
+    }
     else if (duration < 0.0)
       return;
 
@@ -467,8 +474,10 @@ class Camera {
       r = easeOutQuart(r);
       cb(r - lastR, r);
       lastR = r;
-      if (r >= 1.0)
+      if (r >= 1.0) {
         this.clearTimerN(nTimer);
+        this.onAnimationEnd(nTimer);
+      }
     }.bind(this), 16.6);
   }
 
@@ -577,6 +586,11 @@ class Camera {
     mat4.copy(cam._viewport, this._viewport);
     cam.updateView();
     cam.updateProjection();
+
+    cam._history = [];
+    cam._historyIndex = -1;
+    cam.pushState();
+
     return cam;
   }
 
@@ -599,6 +613,110 @@ class Camera {
 
     x = Math.min(horizontal2, vertical2) / near * 0.5;
     return (this.getFovDegrees() / 45.0) * Math.sqrt(1.0 + x * x) / x;
+  }
+
+  pushState() {
+    var state = {
+      quatRot: quat.clone(this._quatRot),
+      trans: vec3.clone(this._trans),
+      center: vec3.clone(this._center),
+      offset: vec3.clone(this._offset),
+      rotX: this._rotX,
+      rotY: this._rotY,
+      fov: this._fov,
+      projectionType: this._projectionType,
+      mode: this._mode,
+      usePivot: this._usePivot
+    };
+    if (this._historyIndex >= 0) {
+      var prev = this._history[this._historyIndex];
+      var isArrEq = function(a, b) {
+        if (a.length !== b.length) return false;
+        for (var i = 0; i < a.length; i++) {
+          if (Math.abs(a[i] - b[i]) > 1e-5) return false;
+        }
+        return true;
+      };
+      var isSame = prev.mode === state.mode &&
+                   prev.projectionType === state.projectionType &&
+                   prev.fov === state.fov &&
+                   prev.usePivot === state.usePivot &&
+                   Math.abs(prev.rotX - state.rotX) < 1e-5 &&
+                   Math.abs(prev.rotY - state.rotY) < 1e-5 &&
+                   isArrEq(prev.trans, state.trans) &&
+                   isArrEq(prev.center, state.center) &&
+                   isArrEq(prev.offset, state.offset) &&
+                   isArrEq(prev.quatRot, state.quatRot);
+      if (isSame) return;
+    }
+    this._history.length = this._historyIndex + 1;
+    this._history.push(state);
+    this._historyIndex++;
+    if (this._history.length > 100) {
+      this._history.shift();
+      this._historyIndex--;
+    }
+  }
+
+  pushStateDebounced() {
+    if (this._debounceTimeout) {
+      window.clearTimeout(this._debounceTimeout);
+    }
+    this._debounceTimeout = window.setTimeout(function () {
+      this.pushState();
+      this._debounceTimeout = null;
+    }.bind(this), 400);
+  }
+
+  undo() {
+    if (this._historyIndex <= 0) return;
+    this._historyIndex--;
+    this.applyState(this._history[this._historyIndex]);
+  }
+
+  redo() {
+    if (this._historyIndex >= this._history.length - 1) return;
+    this._historyIndex++;
+    this.applyState(this._history[this._historyIndex]);
+  }
+
+  applyState(state) {
+    this._mode = state.mode;
+    this._projectionType = state.projectionType;
+    quat.copy(this._quatRot, state.quatRot);
+    vec3.copy(this._trans, state.trans);
+    vec3.copy(this._center, state.center);
+    vec3.copy(this._offset, state.offset);
+    this._rotX = state.rotX;
+    this._rotY = state.rotY;
+    this._fov = state.fov;
+    this._usePivot = state.usePivot;
+    this.updateView();
+    this.updateProjection();
+
+    var gui = this._main.getGui();
+    if (gui && gui._ctrlCamera) {
+      var ctrlCam = gui._ctrlCamera;
+      if (ctrlCam._ctrlProjection) ctrlCam._ctrlProjection.setValue(this._projectionType, true);
+      if (ctrlCam._ctrlFov) {
+        ctrlCam._ctrlFov.setValue(this._fov, true);
+        ctrlCam._ctrlFov.setVisibility(this._projectionType === Enums.Projection.PERSPECTIVE);
+      }
+      if (ctrlCam._ctrlPivot) ctrlCam._ctrlPivot.setValue(this._usePivot, true);
+    }
+  }
+
+  onAnimationEnd(name) {
+    var anyRunning = false;
+    for (var key in this._timers) {
+      if (this._timers[key]) {
+        anyRunning = true;
+        break;
+      }
+    }
+    if (!anyRunning) {
+      this.pushState();
+    }
   }
 }
 

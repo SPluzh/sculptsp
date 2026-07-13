@@ -427,6 +427,7 @@ class SculptSP extends Scene {
     this._action = Enums.Action.NOTHING;
     this.render();
     this._stateManager.cleanNoop();
+    this.getCamera().pushState();
   }
 
   onDeviceWheel(dir) {
@@ -447,6 +448,7 @@ class SculptSP extends Scene {
     Multimesh.RENDER_HINT = Multimesh.NONE;
     this._isWheelingIn = false;
     this.render();
+    this.getCamera().pushState();
   }
 
   _updateActiveViewport(rawMouseX) {
