@@ -3,6 +3,7 @@ import Enums from '../misc/Enums.js';
 import Tools from '../editing/tools/Tools.js';
 import getOptionsURL from '../misc/getOptionsURL.js';
 import GuiSculptingTools from './GuiSculptingTools.js';
+import Indicator from './Indicator.js';
 
 var GuiTools = GuiSculptingTools.tools;
 
@@ -41,9 +42,9 @@ class GuiSculpting {
     this._ctrlSymmetry = null;
     this._ctrlContinuous = null;
     this._ctrlTitleCommon = null;
-    this._initIntensityIndicator();
-    this._initFocalShiftIndicator();
-    this._initTopologyDetailIndicator();
+    this._intensityInd = new Indicator({ label: TR('sculptIntensity').split(' (')[0], unit: '%', min: 0, max: 100 });
+    this._focalShiftInd = new Indicator({ label: TR('sculptFocalShift').split(' (')[0], unit: '%', min: 0, max: 100 });
+    this._topologyDetailInd = new Indicator({ label: TR('sculptTopologyDetail'), unit: '', min: 0, max: 100 });
     this.init(guiParent);
   }
 
@@ -94,225 +95,39 @@ class GuiSculpting {
 
   removeEvents() {
     if (this.removeCallback) this.removeCallback();
-    if (this._intensityIndicator && this._intensityIndicator.parentNode) {
-      this._intensityIndicator.parentNode.removeChild(this._intensityIndicator);
-    }
-    if (this._focalShiftIndicator && this._focalShiftIndicator.parentNode) {
-      this._focalShiftIndicator.parentNode.removeChild(this._focalShiftIndicator);
-    }
-    if (this._topologyDetailIndicator && this._topologyDetailIndicator.parentNode) {
-      this._topologyDetailIndicator.parentNode.removeChild(this._topologyDetailIndicator);
-    }
-  }
-
-  _initIntensityIndicator() {
-    var indicator = this._intensityIndicator = document.createElement('div');
-    indicator.style.position = 'absolute';
-    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
-    indicator.style.backdropFilter = 'blur(6px)';
-    indicator.style.webkitBackdropFilter = 'blur(6px)';
-    indicator.style.color = '#ffffff';
-    indicator.style.padding = '8px 12px';
-    indicator.style.borderRadius = '6px';
-    indicator.style.fontFamily = "'Open Sans', sans-serif";
-    indicator.style.fontSize = '12px';
-    indicator.style.fontWeight = '600';
-    indicator.style.pointerEvents = 'none';
-    indicator.style.display = 'none';
-    indicator.style.zIndex = '99999';
-    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-    indicator.style.minWidth = '110px';
-    indicator.style.flexDirection = 'column';
-    indicator.style.gap = '6px';
-    indicator.style.transform = 'translate(-50%, -100%)';
-    indicator.style.webkitTransform = 'translate(-50%, -100%)';
-
-    var label = this._intensityIndicatorLabel = document.createElement('div');
-    label.style.display = 'flex';
-    label.style.justifyContent = 'space-between';
-    indicator.appendChild(label);
-
-    var labelText = this._intensityIndicatorLabelText = document.createElement('span');
-    var labelValue = this._intensityIndicatorLabelValue = document.createElement('span');
-    labelValue.style.color = '#3b97e3';
-    label.appendChild(labelText);
-    label.appendChild(labelValue);
-
-    var track = document.createElement('div');
-    track.style.width = '100%';
-    track.style.height = '5px';
-    track.style.background = 'rgba(255, 255, 255, 0.2)';
-    track.style.borderRadius = '3px';
-    track.style.overflow = 'hidden';
-
-    var fill = this._intensityIndicatorFill = document.createElement('div');
-    fill.style.width = '0%';
-    fill.style.height = '100%';
-    fill.style.background = '#3b97e3';
-    fill.style.borderRadius = '3px';
-    fill.style.transition = 'width 0.05s ease-out';
-
-    track.appendChild(fill);
-    indicator.appendChild(track);
-
-    document.body.appendChild(indicator);
+    this._intensityInd.destroy();
+    this._focalShiftInd.destroy();
+    this._topologyDetailInd.destroy();
   }
 
   _updateIntensityIndicator(x, y) {
     var wid = GuiTools[this.getSelectedTool()];
     if (this._modalBrushIntensity && wid && wid._ctrlIntensity) {
       var val = Math.round(wid._ctrlIntensity.getValue());
-      var name = TR('sculptIntensity').split(' (')[0];
-      this._intensityIndicatorLabelText.textContent = name;
-      this._intensityIndicatorLabelValue.textContent = val + '%';
-      this._intensityIndicatorFill.style.width = val + '%';
-      this._intensityIndicator.style.left = x + 'px';
-      this._intensityIndicator.style.top = (y - 25) + 'px';
-      this._intensityIndicator.style.display = 'flex';
+      this._intensityInd.show(x, y, val);
     } else {
-      this._intensityIndicator.style.display = 'none';
+      this._intensityInd.hide();
     }
-  }
-
-  _initFocalShiftIndicator() {
-    var indicator = this._focalShiftIndicator = document.createElement('div');
-    indicator.style.position = 'absolute';
-    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
-    indicator.style.backdropFilter = 'blur(6px)';
-    indicator.style.webkitBackdropFilter = 'blur(6px)';
-    indicator.style.color = '#ffffff';
-    indicator.style.padding = '8px 12px';
-    indicator.style.borderRadius = '6px';
-    indicator.style.fontFamily = "'Open Sans', sans-serif";
-    indicator.style.fontSize = '12px';
-    indicator.style.fontWeight = '600';
-    indicator.style.pointerEvents = 'none';
-    indicator.style.display = 'none';
-    indicator.style.zIndex = '99999';
-    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-    indicator.style.minWidth = '110px';
-    indicator.style.flexDirection = 'column';
-    indicator.style.gap = '6px';
-    indicator.style.transform = 'translate(-50%, -100%)';
-    indicator.style.webkitTransform = 'translate(-50%, -100%)';
-
-    var label = this._focalShiftIndicatorLabel = document.createElement('div');
-    label.style.display = 'flex';
-    label.style.justifyContent = 'space-between';
-    indicator.appendChild(label);
-
-    var labelText = this._focalShiftIndicatorLabelText = document.createElement('span');
-    var labelValue = this._focalShiftIndicatorLabelValue = document.createElement('span');
-    labelValue.style.color = '#3b97e3';
-    label.appendChild(labelText);
-    label.appendChild(labelValue);
-
-    var track = document.createElement('div');
-    track.style.width = '100%';
-    track.style.height = '5px';
-    track.style.background = 'rgba(255, 255, 255, 0.2)';
-    track.style.borderRadius = '3px';
-    track.style.overflow = 'hidden';
-
-    var fill = this._focalShiftIndicatorFill = document.createElement('div');
-    fill.style.width = '0%';
-    fill.style.height = '100%';
-    fill.style.background = '#3b97e3';
-    fill.style.borderRadius = '3px';
-    fill.style.transition = 'width 0.05s ease-out';
-
-    track.appendChild(fill);
-    indicator.appendChild(track);
-
-    document.body.appendChild(indicator);
   }
 
   _updateFocalShiftIndicator(x, y) {
     var wid = GuiTools[this.getSelectedTool()];
     if (this._modalBrushFocalShift && wid && wid._ctrlFocalShift) {
       var val = Math.round(wid._ctrlFocalShift.getValue());
-      var name = TR('sculptFocalShift').split(' (')[0];
-      this._focalShiftIndicatorLabelText.textContent = name;
-      this._focalShiftIndicatorLabelValue.textContent = val + '%';
-      
       var fillPercent = Math.max(0, Math.min(100, (val + 100) / 2));
-      this._focalShiftIndicatorFill.style.width = fillPercent + '%';
-      this._focalShiftIndicator.style.left = x + 'px';
-      this._focalShiftIndicator.style.top = (y - 25) + 'px';
-      this._focalShiftIndicator.style.display = 'flex';
+      this._focalShiftInd.show(x, y, val, fillPercent);
     } else {
-      this._focalShiftIndicator.style.display = 'none';
+      this._focalShiftInd.hide();
     }
-  }
-
-  _initTopologyDetailIndicator() {
-    var indicator = this._topologyDetailIndicator = document.createElement('div');
-    indicator.style.position = 'absolute';
-    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
-    indicator.style.backdropFilter = 'blur(6px)';
-    indicator.style.webkitBackdropFilter = 'blur(6px)';
-    indicator.style.color = '#ffffff';
-    indicator.style.padding = '8px 12px';
-    indicator.style.borderRadius = '6px';
-    indicator.style.fontFamily = "'Open Sans', sans-serif";
-    indicator.style.fontSize = '12px';
-    indicator.style.fontWeight = '600';
-    indicator.style.pointerEvents = 'none';
-    indicator.style.display = 'none';
-    indicator.style.zIndex = '99999';
-    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-    indicator.style.minWidth = '110px';
-    indicator.style.flexDirection = 'column';
-    indicator.style.gap = '6px';
-    indicator.style.transform = 'translate(-50%, -100%)';
-    indicator.style.webkitTransform = 'translate(-50%, -100%)';
-
-    var label = this._topologyDetailIndicatorLabel = document.createElement('div');
-    label.style.display = 'flex';
-    label.style.justifyContent = 'space-between';
-    indicator.appendChild(label);
-
-    var labelText = this._topologyDetailIndicatorLabelText = document.createElement('span');
-    var labelValue = this._topologyDetailIndicatorLabelValue = document.createElement('span');
-    labelValue.style.color = '#3b97e3';
-    label.appendChild(labelText);
-    label.appendChild(labelValue);
-
-    var track = document.createElement('div');
-    track.style.width = '100%';
-    track.style.height = '5px';
-    track.style.background = 'rgba(255, 255, 255, 0.2)';
-    track.style.borderRadius = '3px';
-    track.style.overflow = 'hidden';
-
-    var fill = this._topologyDetailIndicatorFill = document.createElement('div');
-    fill.style.width = '0%';
-    fill.style.height = '100%';
-    fill.style.background = '#3b97e3';
-    fill.style.borderRadius = '3px';
-    fill.style.transition = 'width 0.05s ease-out';
-
-    track.appendChild(fill);
-    indicator.appendChild(track);
-
-    document.body.appendChild(indicator);
   }
 
   _updateTopologyDetailIndicator(x, y) {
     var wid = GuiTools[this.getSelectedTool()];
     if (this._modalTopologyDetail && wid && wid._ctrlDetail) {
       var val = Math.round(wid._ctrlDetail.getValue());
-      this._topologyDetailIndicatorLabelText.textContent = TR('sculptTopologyDetail');
-      this._topologyDetailIndicatorLabelValue.textContent = val;
-      this._topologyDetailIndicatorFill.style.width = val + '%';
-      this._topologyDetailIndicator.style.left = x + 'px';
-      this._topologyDetailIndicator.style.top = (y - 25) + 'px';
-      this._topologyDetailIndicator.style.display = 'flex';
+      this._topologyDetailInd.show(x, y, val);
     } else {
-      this._topologyDetailIndicator.style.display = 'none';
+      this._topologyDetailInd.hide();
     }
   }
 

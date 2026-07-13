@@ -1,6 +1,7 @@
 import TR from './GuiTR.js';
 import getOptionsURL from '../misc/getOptionsURL.js';
 import Enums from '../misc/Enums.js';
+import Indicator from './Indicator.js';
 
 class GuiCamera {
 
@@ -15,7 +16,7 @@ class GuiCamera {
     this._lastPageY = 0;
     this._fovRefX = 0;
     this._fovRefY = 0;
-    this._initFovIndicator();
+    this._initFovInd();
 
     this.init(guiParent);
   }
@@ -24,80 +25,27 @@ class GuiCamera {
     return this._main.getCamera();
   }
 
-  _initFovIndicator() {
-    var indicator = this._fovIndicator = document.createElement('div');
-    indicator.style.position = 'absolute';
-    indicator.style.background = 'rgba(20, 20, 20, 0.85)';
-    indicator.style.backdropFilter = 'blur(6px)';
-    indicator.style.webkitBackdropFilter = 'blur(6px)';
-    indicator.style.color = '#ffffff';
-    indicator.style.padding = '8px 12px';
-    indicator.style.borderRadius = '6px';
-    indicator.style.fontFamily = "'Open Sans', sans-serif";
-    indicator.style.fontSize = '12px';
-    indicator.style.fontWeight = '600';
-    indicator.style.pointerEvents = 'none';
-    indicator.style.display = 'none';
-    indicator.style.zIndex = '99999';
-    indicator.style.border = '1px solid rgba(255, 255, 255, 0.15)';
-    indicator.style.boxShadow = '0 6px 20px rgba(0, 0, 0, 0.4)';
-    indicator.style.minWidth = '110px';
-    indicator.style.flexDirection = 'column';
-    indicator.style.gap = '6px';
-    indicator.style.transform = 'translate(-50%, -100%)';
-    indicator.style.webkitTransform = 'translate(-50%, -100%)';
-
-    var label = this._fovIndicatorLabel = document.createElement('div');
-    label.style.display = 'flex';
-    label.style.justifyContent = 'space-between';
-    indicator.appendChild(label);
-
-    var labelText = this._fovIndicatorLabelText = document.createElement('span');
-    var labelValue = this._fovIndicatorLabelValue = document.createElement('span');
-    labelValue.style.color = '#3b97e3';
-    label.appendChild(labelText);
-    label.appendChild(labelValue);
-
-    var track = document.createElement('div');
-    track.style.width = '100%';
-    track.style.height = '5px';
-    track.style.background = 'rgba(255, 255, 255, 0.2)';
-    track.style.borderRadius = '3px';
-    track.style.overflow = 'hidden';
-
-    var fill = this._fovIndicatorFill = document.createElement('div');
-    fill.style.width = '0%';
-    fill.style.height = '100%';
-    fill.style.background = '#3b97e3';
-    fill.style.borderRadius = '3px';
-    fill.style.transition = 'width 0.05s ease-out';
-
-    track.appendChild(fill);
-    indicator.appendChild(track);
-
-    document.body.appendChild(indicator);
+  _initFovInd() {
+    this._fovInd = new Indicator({
+      label: TR('cameraFov').split(' (')[0],
+      unit: ' mm',
+      min: 10,
+      max: 200
+    });
   }
 
   _updateFovIndicator(x, y) {
     if (this._modalFov) {
       var val = Math.round(this._camera.getFov());
-      var name = TR('cameraFov').split(' (')[0];
-      this._fovIndicatorLabelText.textContent = name;
-      this._fovIndicatorLabelValue.textContent = val + ' mm';
       var fillPercent = Math.max(0, Math.min(100, Math.round((val - 10) / 190 * 100)));
-      this._fovIndicatorFill.style.width = fillPercent + '%';
-      this._fovIndicator.style.left = x + 'px';
-      this._fovIndicator.style.top = (y - 25) + 'px';
-      this._fovIndicator.style.display = 'flex';
+      this._fovInd.show(x, y, val, fillPercent);
     } else {
-      this._fovIndicator.style.display = 'none';
+      this._fovInd.hide();
     }
   }
 
   removeEvents() {
-    if (this._fovIndicator && this._fovIndicator.parentNode) {
-      this._fovIndicator.parentNode.removeChild(this._fovIndicator);
-    }
+    this._fovInd.destroy();
   }
 
   init(guiParent) {
