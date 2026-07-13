@@ -1,6 +1,51 @@
+:root {
+  /* Palette */
+  --color-bg-sidebar:     #3c3c3c;
+  --color-bg-topbar:      #20211d;
+  --color-bg-control:     rgba(0, 0, 0, 0.30);
+  --color-bg-control-hov: rgba(0, 0, 0, 0.40);
+  --color-bg-button:      #525f63;
+  --color-accent:         #3b97e3;
+  --color-accent-hover:   #529fcc;
+  --color-text-primary:   #bbb;
+  --color-text-muted:     #999;
+  --color-text-white:     #ffffff;
+  --color-border:         rgba(255, 255, 255, 0.15);
+  --color-border-strong:  rgba(255, 255, 255, 0.30);
+  --color-border-mid:     rgba(255, 255, 255, 0.20);
+  --color-bg-black-dim:   rgba(0, 0, 0, 0.20);
+  --color-topbar-submenu: #222;
+  --color-group-title:    #999;
+  --color-group-border:   #444444;
+  --color-scrollbar-bg:   rgba(0, 0, 0, 0.30);
+  --color-scrollbar-thumb: rgba(255, 255, 255, 0.20);
+  --color-btn-disabled:   #444;
+  --color-btn-disabled-text: #555;
+  --color-color-saturation-border: #555;
+  --color-color-picker-bg: #111;
+
+  /* Indicator */
+  --color-indicator-bg:   rgba(20, 20, 20, 0.85);
+  --color-indicator-fill: var(--color-accent);
+  --indicator-min-width:  110px;
+  --indicator-padding:    8px 12px;
+  --indicator-radius:     6px;
+
+  /* Typography */
+  --font-family:   'Inter', 'Open Sans', sans-serif;
+  --font-size-sm:  11px;
+  --font-size-md:  13px;
+  --font-size-lg:  15px;
+
+  /* Spacing / Radii */
+  --radius-sm:  4px;
+  --radius-md:  6px;
+  --radius-lg:  12px;
+}
+
 * {
-  font: 13px 'Open Sans', sans-serif;
-  color: #bbb;
+  font: var(--font-size-md) var(--font-family);
+  color: var(--color-text-primary);
   font-weight: 400;
   box-sizing: border-box;
   border: 0;
@@ -42,24 +87,25 @@ body {
   position: absolute;
   bottom: 0;
   top: 0;
+  padding-top: 32px;  /* leave room for .command-shelf */
   padding-bottom: 20px;
   width: 310px;
-  background: #3c3c3c;
+  background: var(--color-bg-sidebar);
   overflow-x: hidden;
   overflow-y: auto;
   border-right: double;
   border-width: 4px;
-  border-color: rgba(255, 255, 255, 0.3);
+  border-color: var(--color-border-strong);
 }
 
 .gui-sidebar::-webkit-scrollbar {
   width: 7px;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-scrollbar-bg);
 }
 
 .gui-sidebar::-webkit-scrollbar-thumb {
   border-radius: 2px;
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--color-scrollbar-thumb);
 }
 
 .gui-sidebar::-webkit-scrollbar-corner {
@@ -83,9 +129,9 @@ body {
 /****** folder ******/
 
 .gui-sidebar > ul > label {
-  font-size: 15px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
-  color: #999;
+  color: var(--color-text-muted);
   position: relative;
   display: block;
   line-height: 30px;
@@ -94,7 +140,7 @@ body {
   cursor: pointer;
   vertical-align: middle;
   text-align: center;
-  background: rgba(0, 0, 0, 0.3);
+  background: var(--color-bg-control);
 }
 
 .gui-sidebar > ul[opened=true] > label:before {
@@ -135,7 +181,7 @@ body {
 }
 
 .gui-glowOnHover:hover {
-  background: rgba(0, 0, 0, 0.2);
+  background: var(--color-bg-black-dim);
 }
 
 .gui-pointerOnHover:hover {
@@ -167,7 +213,7 @@ body {
   cursor: pointer;
   position: relative;
   border: 1px solid;
-  border-radius: 4px;
+  border-radius: var(--radius-sm);
   margin-top: 2px;
   width: 18px;
   height: 18px;
@@ -203,8 +249,8 @@ body {
   text-align: center;
   outline: none;
   font-size: 10px;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-control);
 }
 
 .gui-widget-color > input::-webkit-inner-spin-button,
@@ -220,7 +266,7 @@ body {
 
 .gui-slider:hover,
 .gui-input-number:hover {
-  background: rgba(0, 0, 0, 0.4);
+  background: var(--color-bg-control-hov);
 }
 
 
@@ -233,14 +279,14 @@ body {
   width: 52%;
   height: 100%;
   overflow: hidden;
-  border-radius: 4px;
-  background: rgba(0, 0, 0, 0.3);
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-control);
   touch-action: none;
 }
 
 .gui-slider > div {
   height: 100%;
-  background: #525f63;
+  background: var(--color-bg-button);
 }
 
 
@@ -256,8 +302,8 @@ body {
   width: 100%;
   height: 100%;
   outline: none;
-  border-radius: 4px;
-  background: #525f63;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-button);
 }
 
 .gui-button::-moz-focus-inner {
@@ -266,7 +312,7 @@ body {
 }
 
 .gui-button:enabled:hover {
-  color: #fff;
+  color: var(--color-text-white);
 }
 
 .gui-button:active {
@@ -274,8 +320,8 @@ body {
 }
 
 .gui-button:disabled {
-  background: #444;
-  color: #555;
+  background: var(--color-btn-disabled);
+  color: var(--color-btn-disabled-text);
 }
 
 
@@ -296,8 +342,8 @@ body {
   height: 100%;
   text-align: center;
   outline: none;
-  border-radius: 4px;
-  font-size: 13px;
+  border-radius: var(--radius-sm);
+  font-size: var(--font-size-md);
   background: #f00;
 }
 
@@ -315,7 +361,7 @@ body {
   width: 125px;
   height: 105px;
   z-index: 2;
-  background: #111;
+  background: var(--color-color-picker-bg);
 }
 
 
@@ -326,7 +372,7 @@ body {
   width: 100px;
   height: 100px;
   margin-right: 3px;
-  border: 1px solid #555;
+  border: 1px solid var(--color-color-saturation-border);
   cursor: pointer;
 }
 
@@ -356,7 +402,7 @@ body {
   display: inline-block;
   width: 15px;
   height: 100px;
-  border: 1px solid #555;
+  border: 1px solid var(--color-color-saturation-border);
   cursor: ns-resize;
 }
 
@@ -376,7 +422,7 @@ body {
   margin-left: 3px;
   height: 100px;
   width: 15px;
-  border: 1px solid #555;
+  border: 1px solid var(--color-color-saturation-border);
   cursor: ns-resize;
 }
 
@@ -400,12 +446,12 @@ body {
   height: 100%;
   padding-left: 1%;
   outline: none;
-  background: #525f63;
-  border-radius: 4px;
+  background: var(--color-bg-button);
+  border-radius: var(--radius-sm);
 }
 
 .gui-select:hover {
-  color: #fff;
+  color: var(--color-text-white);
 }
 
 
@@ -413,7 +459,7 @@ body {
 
 .gui-topbar {
   position: absolute;
-  background: #20211d;
+  background: var(--color-bg-topbar);
   width: 100%;
   padding-right: 10px;
   padding-left: 10px;
@@ -442,7 +488,7 @@ body {
 }
 
 .gui-topbar ul > li:hover {
-  color: #fff;
+  color: var(--color-text-white);
 }
 
 .gui-topbar ul > li:hover > ul {
@@ -456,10 +502,10 @@ body {
   position: absolute;
   top: 20px;
   left: 10px;
-  background: #222;
+  background: var(--color-topbar-submenu);
   width: 220px;
   padding: 8px;
-  border-radius: 0 4px 4px 0;
+  border-radius: 0 var(--radius-sm) var(--radius-sm) 0;
   pointer-events: none;
   opacity: 0;
   -webkit-transition: 0.15s all ease;
@@ -480,18 +526,91 @@ body {
 .group-title {
   font-size: 14px;
   font-weight: 600;
-  color: #999 !important;
+  color: var(--color-group-title) !important;
   cursor: default !important;
   text-align: center;
-  border-bottom: 1px solid #444444;
+  border-bottom: 1px solid var(--color-group-border);
   padding-bottom: 5px;
   margin: 10px 0 10px 0;
 }
 
+/* Indicator HUD */
+.indicator {
+  position: absolute;
+  background: var(--color-indicator-bg);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  color: var(--color-text-white);
+  padding: var(--indicator-padding);
+  border-radius: var(--indicator-radius);
+  font-family: var(--font-family);
+  font-size: var(--font-size-md);
+  font-weight: 600;
+  pointer-events: none;
+  display: none;
+  z-index: 99999;
+  border: 1px solid var(--color-border);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+  min-width: var(--indicator-min-width);
+  flex-direction: column;
+  gap: 6px;
+  transform: translate(-50%, -100%);
+  -webkit-transform: translate(-50%, -100%);
+}
+
+/* UI Popup */
+.ui-popup {
+  position: fixed;
+  z-index: 99998;
+  background: var(--color-indicator-bg);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 8px;
+  min-width: 200px;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+}
+
+/* Command Shelf */
+.command-shelf {
+  position: absolute;
+  top: 0;            /* #viewport already starts below the topbar */
+  left: 0;
+  right: 0;
+  height: 32px;
+  background: rgba(26, 27, 23, 0.95);
+  border-bottom: 1px solid var(--color-border);
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  padding: 0 8px;
+  z-index: 2;        /* above sidebar (z-index:1) */
+}
+
+.shelf-btn {
+  height: 26px;
+  min-width: 52px;
+  padding: 0 8px;
+  border-radius: var(--radius-sm);
+  background: var(--color-bg-control);
+  cursor: pointer;
+  font-size: var(--font-size-sm);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  transition: background 0.12s ease;
+  color: var(--color-text-primary);
+  border: none;
+  outline: none;
+}
+
+.shelf-btn:hover { background: var(--color-bg-button); }
+
 /* Контейнер куба навигации */
 .snap-cube-container {
   position: absolute;
-  top: 60px;
+  top: 40px;   /* 32px shelf + 8px gap (inside #viewport which starts below topbar) */
   right: 20px;
   width: 80px;
   height: 80px;
@@ -519,7 +638,7 @@ body {
   box-sizing: border-box;
   cursor: pointer;
   transition: background 0.15s ease, border-color 0.15s ease, color 0.15s ease;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-border);
 }
 
 .cube-face, .cube-edge, .cube-corner {
@@ -535,9 +654,9 @@ body {
   top: 15px;
   line-height: 48px;
   text-align: center;
-  font-size: 11px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
-  color: #ffffff;
+  color: var(--color-text-white);
   border: 1px solid rgba(255, 255, 255, 0.25);
   box-shadow: inset 0 0 8px rgba(255, 255, 255, 0.1);
   text-transform: uppercase;
@@ -568,7 +687,7 @@ body {
 
 /* Ребра */
 .cube-edge {
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  border: 1px solid var(--color-border);
 }
 /* Горизонтальные ребра */
 .cube-edge-h {
@@ -590,7 +709,7 @@ body {
   width: 22px;
   height: 19.5px;
   left: 29px;
-  background: rgba(255, 255, 255, 0.15);
+  background: var(--color-border);
   transition: background 0.15s ease;
 }
 
@@ -626,15 +745,15 @@ body {
 
 /* Наведение на элементы (активный цвет) */
 .cube-face:hover, .cube-edge:hover {
-  background: #529fcc !important;
-  border-color: #ffffff !important;
-  color: #ffffff;
+  background: var(--color-accent-hover) !important;
+  border-color: var(--color-text-white) !important;
+  color: var(--color-text-white);
 }
 
 .cube-corner:hover {
-  background: #ffffff !important;
+  background: var(--color-text-white) !important;
 }
 
 .cube-corner:hover::before {
-  background: #529fcc !important;
+  background: var(--color-accent-hover) !important;
 }

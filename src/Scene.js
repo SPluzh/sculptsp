@@ -206,6 +206,11 @@ class Scene {
     return this._gui;
   }
 
+  /** Alias used by CommandRegistry / CommandShelf */
+  getCtrlGui() {
+    return this._gui;
+  }
+
   getMeshes() {
     return this._meshes;
   }

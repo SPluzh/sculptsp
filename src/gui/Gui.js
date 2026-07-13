@@ -1,4 +1,4 @@
-import yagui from 'yagui';
+import yagui from './ui/UIAdapter.js';
 import TR from './GuiTR.js';
 import GuiBackground from './GuiBackground.js';
 import GuiCamera from './GuiCamera.js';
@@ -12,6 +12,8 @@ import GuiSculpting from './GuiSculpting.js';
 import GuiStates from './GuiStates.js';
 import GuiTablet from './GuiTablet.js';
 import ShaderContour from '../render/shaders/ShaderContour.js';
+import UIPopup from './UIPopup.js';
+import CommandShelf from './CommandShelf.js';
 
 import Export from '../files/Export.js';
 
@@ -42,6 +44,16 @@ class Gui {
     // upload
     this._notifications = {};
     this._xhrs = {};
+
+    // Phase 4 & 5
+    this._popup = null;
+    this._shelf = null;
+
+    this._onMouseMovePopup = null;
+    this._onKeyDownPopup = null;
+    this._onContextMenu = null;
+    this._lastMouseX = 0;
+    this._lastMouseY = 0;
   }
 
   initGui() {
@@ -85,6 +97,33 @@ class Gui {
 
     this.updateMesh();
     this.setVisibility(true);
+
+    // Phase 4 — UIPopup (bound to F1, contextmenu is prevented for RMB camera control)
+    this._popup = new UIPopup();
+    var canvas = this._main.getCanvas();
+    this._onContextMenu = (e) => {
+      e.preventDefault();
+    };
+    canvas.addEventListener('contextmenu', this._onContextMenu);
+
+    this._onMouseMovePopup = (e) => {
+      this._lastMouseX = e.pageX;
+      this._lastMouseY = e.pageY;
+    };
+    this._onKeyDownPopup = (e) => {
+      if (e.key === 'F1') {
+        e.preventDefault();
+        var x = this._lastMouseX || window.innerWidth / 2;
+        var y = this._lastMouseY || window.innerHeight / 2;
+        this._openContextPopup(x, y);
+      }
+    };
+    window.addEventListener('mousemove', this._onMouseMovePopup);
+    window.addEventListener('keydown', this._onKeyDownPopup);
+
+    // Phase 5 — CommandShelf (persistent toolbar under topbar)
+    var viewport = this._main.getViewport();
+    this._shelf = new CommandShelf(viewport, this._main);
 
     if (window.postprocessGui) window.postprocessGui();
   }
@@ -206,6 +245,60 @@ class Gui {
     this.callFunc('removeEvents');
     this.setVisibility(false);
     this._guiMain.domMain.parentNode.removeChild(this._guiMain.domMain);
+    if (this._shelf) { this._shelf.destroy(); this._shelf = null; }
+    if (this._popup) { this._popup.destroy(); this._popup = null; }
+
+    var canvas = this._main.getCanvas();
+    if (this._onContextMenu) {
+      canvas.removeEventListener('contextmenu', this._onContextMenu);
+      this._onContextMenu = null;
+    }
+    if (this._onMouseMovePopup) {
+      window.removeEventListener('mousemove', this._onMouseMovePopup);
+      this._onMouseMovePopup = null;
+    }
+    if (this._onKeyDownPopup) {
+      window.removeEventListener('keydown', this._onKeyDownPopup);
+      this._onKeyDownPopup = null;
+    }
+  }
+
+  /** Build context-menu items and open the popup */
+  _openContextPopup(x, y) {
+    if (!this._popup) return;
+    var self = this;
+    this._popup.open(x, y, function (container) {
+      var items = [
+        { label: '↺  Undo',       action: function () { self._main.getStateManager().undo(); self._main.render(); } },
+        { label: '↻  Redo',       action: function () { self._main.getStateManager().redo(); self._main.render(); } },
+        { label: '⬡  Subdivide',  action: function () { var t = self._ctrlTopology;  if (t && t.subdivide) t.subdivide(); } },
+        { label: '◈  Remesh',     action: function () { var t = self._ctrlTopology;  if (t && t.remesh) t.remesh(); } },
+        { label: '◻  Flat shade', action: function () {
+          var r = self._ctrlRendering;
+          if (r && r._ctrlFlat) r._ctrlFlat.setValue(!r._ctrlFlat.getValue());
+        }},
+        { label: '⬡  Wireframe',  action: function () {
+          var r = self._ctrlRendering;
+          if (r && r._ctrlWireframe) r._ctrlWireframe.setValue(!r._ctrlWireframe.getValue());
+        }},
+      ];
+      items.forEach(function (item) {
+        var btn = document.createElement('button');
+        btn.textContent = item.label;
+        btn.className = 'shelf-btn';
+        btn.style.cssText = 'display:block;width:100%;margin:2px 0;text-align:left;';
+        btn.addEventListener('click', function () {
+          self._popup.close();
+          item.action();
+        });
+        container.appendChild(btn);
+      });
+    });
+  }
+
+  /** Returns this Gui instance (used by CommandRegistry) */
+  getCtrlGui() {
+    return this;
   }
 
   setVisibility(bool) {
