@@ -182,6 +182,15 @@ class Selection {
   }
 
   render(main, camera, vpX) {
+    if (main.getSplitMode()) {
+      var isRightPanel = (vpX > 0);
+      var panelIndex = isRightPanel ? 1 : 0;
+      if (panelIndex !== main._activeViewport && !main._splitShowInactiveCursor) {
+        this._isEditMode = false;
+        return;
+      }
+    }
+
     camera = camera || main.getCamera();
     // if there's an offset then it means we are editing the tool radius
     var pickedMesh = main.getPicking().getMesh() && !this._isEditMode;

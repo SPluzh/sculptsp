@@ -32,6 +32,7 @@ var TR = {
   splitViewportOff: 'Off',
   splitViewportMirror: 'Mirror (same camera)',
   splitViewportIndependent: 'Independent cameras',
+  splitViewportShowInactiveCursor: 'Show cursor in inactive viewport',
 
   // file
   fileTitle: 'Files (import/export)',

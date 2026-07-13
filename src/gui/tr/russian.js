@@ -32,6 +32,7 @@ var TR = {
   splitViewportOff: 'Выкл',
   splitViewportMirror: 'Зеркало (одна камера)',
   splitViewportIndependent: 'Независимые камеры',
+  splitViewportShowInactiveCursor: 'Показывать курсор в неактивном вьюпорте',
 
   // file
   fileTitle: 'Файл',

@@ -147,7 +147,17 @@ class GuiCamera {
     this._ctrlSplitViewport = menu.addCombobox('', 0, function(val) {
       var modes = [null, 'mirror', 'independent'];
       this._main.setSplitMode(modes[val]);
+      if (this._ctrlSplitShowInactiveCursor) {
+        this._ctrlSplitShowInactiveCursor.setVisibility(val > 0);
+      }
     }.bind(this), splitOptions);
+    this._ctrlSplitShowInactiveCursor = menu.addCheckbox(TR('splitViewportShowInactiveCursor'), this._main._splitShowInactiveCursor, this.onSplitShowInactiveCursorChange.bind(this));
+    this._ctrlSplitShowInactiveCursor.setVisibility(false);
+  }
+
+  onSplitShowInactiveCursorChange(value) {
+    this._main._splitShowInactiveCursor = value;
+    this._main.render();
   }
 
   onCameraModeChange(value) {

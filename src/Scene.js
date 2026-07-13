@@ -56,6 +56,7 @@ class Scene {
     this._splitMode = null;      // null | 'mirror' | 'independent'
     this._activeViewport = 0;    // 0 = left/only, 1 = right
     this._cameraRight = null;    // Camera, used only in 'independent' mode
+    this._splitShowInactiveCursor = false;
 
     // TODO primitive builder
     this._meshPreview = null;
