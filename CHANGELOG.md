@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.7]
+- **Fix**: Resolved camera flips and rotation/zoom instability in Split Viewport mode. The active viewport is now locked during navigation (rotate, zoom, pan) and sculpting actions to prevent mouse coordinate jumps when crossing the vertical split divider.
+
 ## [0.9.6]
 - **Fix**: Resolved an issue where turning off Split Viewport mode left the second navigation cube (SnapCube) visible on the screen. The right navigation cube is now correctly hidden when single viewport mode is active.
 - **Fix**: Fixed a bug where interactive overlays (Lasso selection, Curve Deform overlay, Measure/Divider segments, and ticks) were only rendered in one viewport or displayed in the wrong screen half in split viewport mode. Created separate overlay instances for each viewport and dynamically aligned them to their respective panels.

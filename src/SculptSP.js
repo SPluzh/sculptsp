@@ -474,6 +474,9 @@ class SculptSP extends Scene {
   }
 
   _updateActiveViewport(rawMouseX) {
+    if (this._action !== Enums.Action.NOTHING || this._isWheelingIn) {
+      return;
+    }
     if (!this._splitMode) {
       this._activeViewport = 0;
       return;
