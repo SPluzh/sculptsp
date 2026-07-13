@@ -188,7 +188,14 @@ class Selection {
     else this._updateMatricesBackground(main.getCamera(), main);
 
     var drawCircle = main._action === Enums.Action.NOTHING;
-    vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.0 : 0.4, 0.0);
+    var toolIndex = main.getSculptManager().getToolIndex();
+    if (toolIndex === Enums.Tools.SMOOTH) {
+      vec3.set(this._color, 0.0, drawCircle && pickedMesh ? 0.4 : 0.6, 0.8);
+    } else if (toolIndex === Enums.Tools.MASKING) {
+      vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.8 : 0.9, 0.0);
+    } else {
+      vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.0 : 0.4, 0.0);
+    }
     ShaderLib[Enums.Shader.SELECTION].getOrCreate(this._gl).draw(this, drawCircle, main.getSculptManager().getSymmetry());
 
     this._isEditMode = false;

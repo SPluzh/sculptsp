@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.4]
+- **Smooth Brush (Сглаживание)**: Changed the brush cursor circle color to blue when the Smooth brush is active, offering clear visual distinction from other brushes.
+- **Smooth Brush (Сглаживание)**: Configured the Smooth brush to inherit its size (radius) from the previously active tool upon selection (including during temporary activation via holding the Shift key), enabling a seamless transition when smoothing.
+- **Masking Tool (Выделение маской)**: Changed the brush cursor circle color to yellow when the Masking brush is active (including during temporary activation via holding the Ctrl key), and configured it to inherit its size (radius) from the previously active tool upon selection.
 - **Fix**: Fixed a bug where the brush cursor stopped tracking and moving with the mouse pointer, updating only on click, by allowing the pointing device input manager to emit move events during hover states.
 - **Fix**: Resolved an issue where mask selection sometimes reset/cleared instead of inverting when clicking the empty canvas using a pen stylus. Implemented a centralized pointing device input manager with a coordinate movement/jitter threshold to accurately differentiate click events from lasso drag events.
 - **Masking Tool (Выделение маской)**: Added a "Lasso Selection" (Выделение лассо) checkbox toggle to the tool settings. When Lasso Selection is enabled, holding Ctrl and dragging anywhere (including on the mesh) draws a lasso. When disabled, lasso selection is only activated if dragging starts outside the mesh, while dragging on the mesh uses the standard masking brush. Displays a dynamic dashed SVG polygon overlay (which changes to white when Alt is held for unmasking) and projects vertices (including symmetrical counterparts) to screen coordinates to select all vertices inside the lasso.

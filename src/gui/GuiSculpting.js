@@ -331,7 +331,21 @@ class GuiSculpting {
 
   onChangeTool(newValue) {
     GuiSculptingTools.hide(this._sculptManager.getToolIndex());
+
+    var oldTool = this._sculptManager.getCurrentTool();
+    var oldRadius = oldTool ? oldTool._radius : null;
+
     this._sculptManager.setToolIndex(newValue);
+
+    if ((newValue === Enums.Tools.SMOOTH || newValue === Enums.Tools.MASKING) && oldRadius !== null) {
+      var targetTool = this._sculptManager.getTool(newValue);
+      targetTool._radius = oldRadius;
+      var targetGui = GuiSculptingTools.tools[newValue];
+      if (targetGui && targetGui._ctrlRadius) {
+        targetGui._ctrlRadius.setValue(oldRadius, true);
+      }
+    }
+
     GuiSculptingTools.show(newValue);
 
     var showContinuous = this._sculptManager.canBeContinuous() === true;
@@ -343,6 +357,7 @@ class GuiSculpting {
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);
 
     this._main.getPicking().updateLocalAndWorldRadius2();
+    this._main.renderSelectOverRtt();
 
     if (this._ctrlSculpt && this._ctrlSculpt.domSelect) {
       this._ctrlSculpt.domSelect.blur();
