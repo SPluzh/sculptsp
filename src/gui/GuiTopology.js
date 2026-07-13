@@ -31,7 +31,6 @@ class GuiMultiresolution {
 
   init(guiParent) {
     var menu = this._menu = guiParent.addMenu(TR('topologyTitle'));
-    menu.close();
 
     // multires
     menu.addTitle(TR('multiresTitle'));

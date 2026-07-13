@@ -137,22 +137,19 @@ body {
   line-height: 30px;
   margin: 5px 0 5px 0;
   text-transform: uppercase;
-  cursor: pointer;
+  cursor: default;
+  pointer-events: none;
   vertical-align: middle;
   text-align: center;
   background: var(--color-bg-control) !important;
 }
 
 .gui-sidebar > ul[opened=true] > label:before {
-  content: '▼';
-  text-indent: 1em;
-  float: left;
+  display: none;
 }
 
 .gui-sidebar > ul[opened=false] > label:before {
-  content: '►';
-  text-indent: 1em;
-  float: left;
+  display: none;
 }
 
 .gui-sidebar > ul {

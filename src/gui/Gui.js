@@ -72,43 +72,55 @@ class Gui {
     var idc = 0;
 
     // Eagerly initialize all panels as PanelContainers
+    var main = this._main;
+
     var panelFiles = new PanelContainer('file', this._toolbar);
+    panelFiles.setMain(main);
     this._toolbar.registerPanel('file', panelFiles);
     ctrls[idc++] = this._ctrlFiles = new GuiFiles(panelFiles, this);
 
     var panelScene = new PanelContainer('scene', this._toolbar);
+    panelScene.setMain(main);
     this._toolbar.registerPanel('scene', panelScene);
     ctrls[idc++] = this._ctrlScene = new GuiScene(panelScene, this);
 
     var panelStates = new PanelContainer('history', this._toolbar);
+    panelStates.setMain(main);
     this._toolbar.registerPanel('history', panelStates);
     ctrls[idc++] = this._ctrlStates = new GuiStates(panelStates, this);
 
     var panelSculpting = new PanelContainer('sculpting', this._toolbar);
+    panelSculpting.setMain(main);
     this._toolbar.registerPanel('sculpting', panelSculpting);
     ctrls[idc++] = this._ctrlSculpting = new GuiSculpting(panelSculpting, this);
 
     var panelTopology = new PanelContainer('topology', this._toolbar);
+    panelTopology.setMain(main);
     this._toolbar.registerPanel('topology', panelTopology);
     ctrls[idc++] = this._ctrlTopology = new GuiTopology(panelTopology, this);
 
     var panelRendering = new PanelContainer('rendering', this._toolbar);
+    panelRendering.setMain(main);
     this._toolbar.registerPanel('rendering', panelRendering);
     ctrls[idc++] = this._ctrlRendering = new GuiRendering(panelRendering, this);
 
     var panelCamera = new PanelContainer('camera', this._toolbar);
+    panelCamera.setMain(main);
     this._toolbar.registerPanel('camera', panelCamera);
     ctrls[idc++] = this._ctrlCamera = new GuiCamera(panelCamera, this);
 
     var panelBackground = new PanelContainer('background', this._toolbar);
+    panelBackground.setMain(main);
     this._toolbar.registerPanel('background', panelBackground);
     ctrls[idc++] = this._ctrlBackground = new GuiBackground(panelBackground, this);
 
     var panelTablet = new PanelContainer('tablet', this._toolbar);
+    panelTablet.setMain(main);
     this._toolbar.registerPanel('tablet', panelTablet);
     ctrls[idc++] = this._ctrlTablet = new GuiTablet(panelTablet, this);
 
     var panelConfig = new PanelContainer('settings', this._toolbar);
+    panelConfig.setMain(main);
     this._toolbar.registerPanel('settings', panelConfig);
     ctrls[idc++] = this._ctrlConfig = new GuiConfig(panelConfig, this);
 

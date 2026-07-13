@@ -15,6 +15,13 @@ class VerticalToolbar {
   _buildToolbar() {
     var bar = document.createElement('div');
     bar.className = 'vtoolbar';
+    // Block hotkeys while mouse is over the toolbar
+    bar.addEventListener('mouseenter', () => {
+      if (this._main) this._main._focusGui = true;
+    });
+    bar.addEventListener('mouseleave', () => {
+      if (this._main) this._main._focusGui = false;
+    });
     return bar;
   }
 
@@ -30,7 +37,13 @@ class VerticalToolbar {
     btn.className = 'vtb-btn';
     btn.setAttribute('data-tooltip', tooltip);
     btn.innerHTML = icon;
-    btn.addEventListener('click', () => this._toggle(id, buildFn));
+    btn.addEventListener('click', () => {
+      this._toggle(id, buildFn);
+      // Return focus to document so hotkeys keep working
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
     this._buttons.set(id, btn);
     this._dom.appendChild(btn);
     return btn;

@@ -265,6 +265,11 @@ class GuiSculpting {
     if (event.handled === true)
       return;
 
+    var key = event.which;
+    // Do not intercept camera undo/redo (Alt+Z / Alt+Shift+Z)
+    if (event.altKey && !event.ctrlKey && key === 90)
+      return;
+
     var main = this._main;
     var shk = getOptionsURL.getShortKey(event.which);
     event.stopPropagation();
@@ -331,6 +336,14 @@ class GuiSculpting {
   }
 
   onKeyUp(event) {
+    if (event.handled === true)
+      return;
+
+    var key = event.which;
+    // Do not intercept camera undo/redo (Alt+Z / Alt+Shift+Z)
+    if (event.altKey && !event.ctrlKey && key === 90)
+      return;
+
     var releaseTool = this._main._action === Enums.Action.NOTHING && this._toolOnRelease !== -1 && !event.ctrlKey && !event.shiftKey;
     if (!event.altKey || releaseTool)
       this.releaseInvertSign();

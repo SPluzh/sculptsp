@@ -28,7 +28,6 @@ class GuiRendering {
 
   init(guiParent) {
     var menu = this._menu = guiParent.addMenu(TR('renderingTitle'));
-    menu.close();
 
     // shader selection
     var optionsShaders = [];

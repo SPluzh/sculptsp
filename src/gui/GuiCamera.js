@@ -156,10 +156,6 @@ class GuiCamera {
     if (main._focusGui && shk !== Enums.KeyAction.CAMERA_FOV)
       return;
 
-    if (event.shiftKey && main._action === Enums.Action.CAMERA_ROTATE) {
-      this._camera.snapClosestRotation();
-      main.render();
-    }
 
     switch (shk) {
     case Enums.KeyAction.CAMERA_FOV:

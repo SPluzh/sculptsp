@@ -122,6 +122,13 @@ class SculptSP extends Scene {
     window.addEventListener('dragover', cbStopAndPrevent, false);
     window.addEventListener('drop', cbLoadFiles, false);
     document.getElementById('fileopen').addEventListener('change', cbLoadFiles, false);
+
+    // Automatically blur SELECT elements on change so they don't capture focus and block hotkeys
+    window.addEventListener('change', function (e) {
+      if (e.target && e.target.tagName === 'SELECT') {
+        e.target.blur();
+      }
+    }, true);
   }
 
   initHammer() {
@@ -406,6 +413,13 @@ class SculptSP extends Scene {
     Multimesh.RENDER_HINT = Multimesh.NONE;
     this._sculptManager.end();
 
+    // Cancel any pending snap debounce
+    if (this._snapDebounce) {
+      window.clearTimeout(this._snapDebounce);
+      this._snapDebounce = null;
+    }
+    this._snapTriggered = false;
+
     if (this._action === Enums.Action.MASK_EDIT) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
       if (this._mesh) {
@@ -632,8 +646,21 @@ class SculptSP extends Scene {
     } else if (action === Enums.Action.CAMERA_ROTATE) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      if (!data.shiftKey)
+      if (data.shiftKey) {
+        // Snap once the moment Shift is first pressed during rotation.
+        // Repeated calls each mousemove would reset the 200ms quatDelay
+        // animation every frame — causing visible jerks.
+        if (!this._snapTriggered) {
+          this._snapTriggered = true;
+          this.getCamera().snapClosestRotation();
+        }
+        // Keep lastNormalizedMouseXY up to date so rotation resumes
+        // from the current mouse position when Shift is released.
+        this.getCamera().start(mouseX, mouseY);
+      } else {
+        this._snapTriggered = false;
         this.getCamera().rotate(mouseX, mouseY, this._cameraSpeedRotate);
+      }
       this.render();
 
     } else {
