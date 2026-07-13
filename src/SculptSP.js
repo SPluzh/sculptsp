@@ -456,9 +456,9 @@ class SculptSP extends Scene {
   onDeviceWheel(dir) {
     if (dir > 0.0 && !this._isWheelingIn) {
       this._isWheelingIn = true;
-      this._camera.start(this._mouseX, this._mouseY);
+      this.getCamera().start(this._mouseX, this._mouseY);
     }
-    this._camera.zoom(dir * 0.02 * (this._cameraSpeedZoom / 0.25));
+    this.getCamera().zoom(dir * 0.02 * (this._cameraSpeedZoom / 0.25));
     Multimesh.RENDER_HINT = Multimesh.CAMERA;
     this.render();
     // workaround for "end mouse wheel" event
@@ -473,9 +473,33 @@ class SculptSP extends Scene {
     this.render();
   }
 
+  _updateActiveViewport(rawMouseX) {
+    if (!this._splitMode) {
+      this._activeViewport = 0;
+      return;
+    }
+    var halfW = Math.floor(this._canvasWidth / 2);
+    this._activeViewport = rawMouseX >= halfW ? 1 : 0;
+    // Update active indicator
+    var ind = document.getElementById('split-active-indicator');
+    if (ind) {
+      ind.style.left = this._activeViewport === 1 ? '50%' : '0';
+      ind.style.width = '50%';
+      ind.style.height = '100%';
+    }
+  }
+
   setMousePosition(event) {
-    this._mouseX = this._pixelRatio * (event.pageX - this._canvasOffsetLeft);
-    this._mouseY = this._pixelRatio * (event.pageY - this._canvasOffsetTop);
+    var rawX = this._pixelRatio * (event.pageX - this._canvasOffsetLeft);
+    var rawY = this._pixelRatio * (event.pageY - this._canvasOffsetTop);
+    this._updateActiveViewport(rawX);
+    // Normalize X into active viewport's local coordinate space
+    if (this._activeViewport === 1 && this._splitMode) {
+      this._mouseX = rawX - Math.floor(this._canvasWidth / 2);
+    } else {
+      this._mouseX = rawX;
+    }
+    this._mouseY = rawY;
   }
 
   onDeviceDown(data) {
@@ -486,7 +510,12 @@ class SculptSP extends Scene {
     this._isCtrlDown = data.ctrlKey;
 
     if (data.x !== undefined) {
-      this._mouseX = data.x;
+      // Input from InputManager — correct for split viewport
+      var rawX = data.x;
+      this._updateActiveViewport(rawX);
+      this._mouseX = (this._activeViewport === 1 && this._splitMode)
+        ? rawX - Math.floor(this._canvasWidth / 2)
+        : rawX;
       this._mouseY = data.y;
     } else {
       this.setMousePosition(data);
@@ -570,7 +599,7 @@ class SculptSP extends Scene {
     }
 
     if (this._action === Enums.Action.CAMERA_ROTATE || this._action === Enums.Action.CAMERA_ZOOM)
-      this._camera.start(mouseX, mouseY);
+      this.getCamera().start(mouseX, mouseY);
 
     this._lastMouseX = mouseX;
     this._lastMouseY = mouseY;
@@ -592,7 +621,12 @@ class SculptSP extends Scene {
     this._isCtrlDown = data.ctrlKey;
 
     if (data.x !== undefined) {
-      this._mouseX = data.x;
+      // Input from InputManager — correct for split viewport
+      var rawX = data.x;
+      this._updateActiveViewport(rawX);
+      this._mouseX = (this._activeViewport === 1 && this._splitMode)
+        ? rawX - Math.floor(this._canvasWidth / 2)
+        : rawX;
       this._mouseY = data.y;
     } else {
       this.setMousePosition(data);
@@ -605,20 +639,20 @@ class SculptSP extends Scene {
     if (action === Enums.Action.CAMERA_ZOOM) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      this._camera.zoom((mouseX - this._lastMouseX + mouseY - this._lastMouseY) * this.getSpeedZoomFactor());
+      this.getCamera().zoom((mouseX - this._lastMouseX + mouseY - this._lastMouseY) * this.getSpeedZoomFactor());
       this.render();
 
     } else if (action === Enums.Action.CAMERA_PAN_ZOOM_ALT || action === Enums.Action.CAMERA_PAN) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      this._camera.translate((mouseX - this._lastMouseX) * this.getSpeedTranslateFactor(), (mouseY - this._lastMouseY) * this.getSpeedTranslateFactor());
+      this.getCamera().translate((mouseX - this._lastMouseX) * this.getSpeedTranslateFactor(), (mouseY - this._lastMouseY) * this.getSpeedTranslateFactor());
       this.render();
 
     } else if (action === Enums.Action.CAMERA_ROTATE) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
       if (!data.shiftKey)
-        this._camera.rotate(mouseX, mouseY, this._cameraSpeedRotate);
+        this.getCamera().rotate(mouseX, mouseY, this._cameraSpeedRotate);
       this.render();
 
     } else {

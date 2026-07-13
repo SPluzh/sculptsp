@@ -7,7 +7,6 @@ class GuiCamera {
   constructor(guiParent, ctrlGui) {
     this._main = ctrlGui._main; // main application
     this._menu = null; // ui menu
-    this._camera = this._main.getCamera(); // the camera
     this._cameraTimer = -1; // interval id (used for zqsd/wasd/arrow moves)
     this._cbTranslation = this.cbOnTranslation.bind(this);
 
@@ -19,6 +18,10 @@ class GuiCamera {
     this._initFovIndicator();
 
     this.init(guiParent);
+  }
+
+  get _camera() {
+    return this._main.getCamera();
   }
 
   _initFovIndicator() {
@@ -134,6 +137,17 @@ class GuiCamera {
     menu.addSlider(TR('cameraSpeedTranslate'), this._main, '_cameraSpeedTranslate', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedZoom'), this._main, '_cameraSpeedZoom', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedRotate'), this._main, '_cameraSpeedRotate', 0.05, 5.0, 0.001);
+
+    // split viewport
+    menu.addTitle(TR('splitViewportTitle'));
+    var splitOptions = {};
+    splitOptions[0] = TR('splitViewportOff');
+    splitOptions[1] = TR('splitViewportMirror');
+    splitOptions[2] = TR('splitViewportIndependent');
+    this._ctrlSplitViewport = menu.addCombobox('', 0, function(val) {
+      var modes = [null, 'mirror', 'independent'];
+      this._main.setSplitMode(modes[val]);
+    }.bind(this), splitOptions);
   }
 
   onCameraModeChange(value) {

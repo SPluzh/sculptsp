@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.5]
+- **Split Viewport (Разделение экрана)**: Implemented horizontal split viewport mode supporting both Mirror (synchronized camera) and Independent camera modes.
+- **Split Viewport (Разделение экрана)**: Added visual split divider line and active viewport highlight frame (blue border) indicating which viewport is receiving input.
+- **Split Viewport (Разделение экрана)**: Configured navigation cubes (SnapCube) to display for both viewports, correctly aligned to their respective panels and linked to the corresponding camera.
+- **Fix**: Resolved stretching and misalignment of the brush cursor (Selection) and 3D manipulator (Gizmo) in split viewport mode by applying correct WebGL viewports/scissors during the overlay render pass.
+- **Fix**: Fixed camera snapping on Shift key in Independent mode to dynamically target the active viewport's camera instead of the main camera.
+
 ## [0.9.4]
 - **Smooth Brush (Сглаживание)**: Changed the brush cursor circle color to blue when the Smooth brush is active, offering clear visual distinction from other brushes.
 - **Smooth Brush (Сглаживание)**: Configured the Smooth brush to inherit its size (radius) from the previously active tool upon selection (including during temporary activation via holding the Shift key), enabling a seamless transition when smoothing.

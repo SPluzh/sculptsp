@@ -52,6 +52,11 @@ class Scene {
     this._picking = new Picking(this); // the ray picking
     this._pickingSym = new Picking(this, true); // the symmetrical picking
 
+    // split viewport
+    this._splitMode = null;      // null | 'mirror' | 'independent'
+    this._activeViewport = 0;    // 0 = left/only, 1 = right
+    this._cameraRight = null;    // Camera, used only in 'independent' mode
+
     // TODO primitive builder
     this._meshPreview = null;
     this._torusLength = 0.5;
@@ -84,7 +89,8 @@ class Scene {
     this._drawFullScene = false; // render everything on the rtt
     this._autoMatrix = opts.scalecenter; // scale and center the imported meshes
     this._vertexSRGB = true; // srgb vs linear colorspace for vertex color
-    this._snapCube = null;
+    this._snapCubeLeft = null;
+    this._snapCubeRight = null;
   }
 
   start() {
@@ -109,7 +115,8 @@ class Scene {
 
     this.loadTextures();
     this._gui.initGui();
-    this._snapCube = new SnapCube(this);
+    this._snapCubeLeft = new SnapCube(this, 'left');
+    this._snapCubeRight = new SnapCube(this, 'right');
     this.onCanvasResize();
 
     var modelURL = getOptionsURL().modelurl;
@@ -164,7 +171,34 @@ class Scene {
   }
 
   getCamera() {
+    if (this._splitMode === 'independent' && this._activeViewport === 1 && this._cameraRight) {
+      return this._cameraRight;
+    }
     return this._camera;
+  }
+
+  // Returns camera by viewport index, regardless of activeViewport (used for rendering)
+  getCameraByIndex(idx) {
+    return (idx === 1 && this._cameraRight) ? this._cameraRight : this._camera;
+  }
+
+  getSplitMode() {
+    return this._splitMode;
+  }
+
+  setSplitMode(mode) {
+    this._splitMode = mode;
+    if (mode === 'independent' && !this._cameraRight) {
+      this._cameraRight = this._camera.clone();
+      this._cameraRight.resetViewRight();
+    }
+    var divider = document.getElementById('split-divider');
+    if (divider) divider.style.display = mode ? 'block' : 'none';
+    var indicator = document.getElementById('split-active-indicator');
+    if (indicator) indicator.style.display = mode ? 'block' : 'none';
+    this._activeViewport = 0;
+    this.onCanvasResize();
+    this.render();
   }
 
   getGui() {
@@ -263,16 +297,42 @@ class Scene {
 
   applyRender() {
     this._preventRender = false;
-    this.updateMatricesAndSort();
-
-    if (this._snapCube) {
-      this._snapCube.update(this._camera);
-    }
-
     var gl = this._gl;
     if (!gl) return;
 
-    if (this._drawFullScene) this._drawScene();
+    if (this._splitMode) {
+      this._applyRenderSplit();
+    } else {
+      this._applyRenderSingle(this._camera, 0, this._canvasWidth, this._canvasHeight);
+    }
+  }
+
+  _applyRenderSingle(camera, vpX, vpW, vpH) {
+    this.updateMatricesAndSort(camera);
+
+    var isSplit = this._splitMode && vpW < this._canvasWidth;
+    if (vpX === 0) {
+      if (this._snapCubeLeft) {
+        this._snapCubeLeft.update(camera, isSplit);
+      }
+    } else {
+      if (this._snapCubeRight) {
+        this._snapCubeRight.update(camera, isSplit);
+      }
+    }
+
+    var gl = this._gl;
+
+    if (this._drawFullScene) this._drawScene(camera, vpX, vpW, vpH);
+
+    // After _drawScene, viewport is restored to full canvas size.
+    // Use scissor for RTT post-processing so each split viewport's output
+    // doesn't overwrite the other half.
+    var isSplit = this._splitMode && vpW < this._canvasWidth;
+    if (isSplit) {
+      gl.enable(gl.SCISSOR_TEST);
+      gl.scissor(vpX, 0, vpW, vpH);
+    }
 
     gl.disable(gl.DEPTH_TEST);
 
@@ -286,7 +346,18 @@ class Scene {
 
     gl.enable(gl.DEPTH_TEST);
 
-    this._sculptManager.postRender(); // draw sculpting gizmo stuffs
+    if (isSplit) {
+      gl.disable(gl.SCISSOR_TEST);
+    }
+
+    // Set viewport to this panel's dimensions before drawing UI/Gizmo/Selection overlays
+    if (isSplit) {
+      gl.enable(gl.SCISSOR_TEST);
+      gl.scissor(vpX, 0, vpW, vpH);
+    }
+    gl.viewport(vpX, 0, vpW, vpH);
+
+    this._sculptManager.postRender(camera); // draw sculpting gizmo stuffs
 
     if (this._measureTool && this._measureRenderer) {
       this._measureRenderer.render(
@@ -294,7 +365,7 @@ class Scene {
         this._measureTool.getReferenceLength(),
         this._measureTool.getPendingA(),
         this._measureTool.getPendingB(),
-        this._camera,
+        camera,
         this._pixelRatio,
         this._mouseX,
         this._mouseY,
@@ -309,7 +380,7 @@ class Scene {
         this._dividerTool.getSegments(),
         this._dividerTool.getPendingA(),
         this._dividerTool.getPendingB(),
-        this._camera,
+        camera,
         this._pixelRatio,
         this._mouseX,
         this._mouseY,
@@ -319,14 +390,38 @@ class Scene {
         this._dividerTool._useDistanceThickness
       );
     }
+
+    if (isSplit) {
+      gl.disable(gl.SCISSOR_TEST);
+    }
+    gl.viewport(0, 0, this._canvasWidth, this._canvasHeight);
   }
 
-  _drawScene() {
+  _applyRenderSplit() {
+    var halfW = Math.floor(this._canvasWidth / 2);
+    var H = this._canvasHeight;
+
+    // Left viewport — always main camera
+    this._applyRenderSingle(this._camera, 0, halfW, H);
+
+    // Right viewport — mirror = same camera, independent = _cameraRight
+    var camRight = (this._splitMode === 'independent' && this._cameraRight)
+      ? this._cameraRight
+      : this._camera;
+    this._applyRenderSingle(camRight, halfW, halfW, H);
+  }
+
+  _drawScene(camera, vpX, vpW, vpH) {
     var gl = this._gl;
     var i = 0;
     var meshes = this._meshes.slice();
     this._sculptManager.addSculptToScene(meshes);
     var nbMeshes = meshes.length;
+
+    // Scissor restricts rendering to this viewport's half
+    gl.enable(gl.SCISSOR_TEST);
+    gl.scissor(vpX, 0, vpW, vpH);
+    gl.viewport(vpX, 0, vpW, vpH);
 
     ///////////////
     // CONTOUR 1/2
@@ -403,12 +498,16 @@ class Scene {
 
     gl.depthMask(true);
     gl.disable(gl.BLEND);
+
+    gl.disable(gl.SCISSOR_TEST);
+    // Restore full viewport for RTT post-processing
+    gl.viewport(0, 0, this._canvasWidth, this._canvasHeight);
   }
 
   /** Pre compute matrices and sort meshes */
-  updateMatricesAndSort() {
+  updateMatricesAndSort(camera) {
     var meshes = this._meshes;
-    var cam = this._camera;
+    var cam = camera || this._camera;
     var bbox = this.computeBoundingBoxScene();
     if (bbox[0] !== Infinity) {
       cam.optimizeNearFar(bbox);
@@ -506,14 +605,23 @@ class Scene {
     this._canvas.width = newWidth;
     this._canvas.height = newHeight;
 
+    // RTT textures always use full canvas size
     this._gl.viewport(0, 0, newWidth, newHeight);
-    this._camera.onResize(newWidth, newHeight);
-    this._background.onResize(newWidth, newHeight);
 
-    this._rttContour.onResize(newWidth, newHeight);
-    this._rttMerge.onResize(newWidth, newHeight);
-    this._rttOpaque.onResize(newWidth, newHeight);
-    this._rttTransparent.onResize(newWidth, newHeight);
+    if (this._splitMode) {
+      var halfW = Math.floor(newWidth / 2);
+      this._camera.onResize(halfW, newHeight);
+      if (this._cameraRight) this._cameraRight.onResize(halfW, newHeight);
+    } else {
+      this._camera.onResize(newWidth, newHeight);
+    }
+
+    if (this._background) this._background.onResize(newWidth, newHeight);
+
+    if (this._rttContour) this._rttContour.onResize(newWidth, newHeight);
+    if (this._rttMerge) this._rttMerge.onResize(newWidth, newHeight);
+    if (this._rttOpaque) this._rttOpaque.onResize(newWidth, newHeight);
+    if (this._rttTransparent) this._rttTransparent.onResize(newWidth, newHeight);
 
     if (this._measureRenderer) {
       this._measureRenderer.onResize(newWidth, newHeight, this._pixelRatio);

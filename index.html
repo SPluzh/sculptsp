@@ -7,6 +7,8 @@
 <body>
     <div id="viewport">
         <canvas id="canvas"></canvas>
+        <div id="split-divider" style="display:none; position:absolute; left:50%; top:0; width:2px; height:100%; background:rgba(60,60,60,0.9); pointer-events:none; z-index:10; transform:translateX(-50%);"></div>
+        <div id="split-active-indicator" style="display:none; position:absolute; top:0; height:100%; left:0; width:50%; border:2px solid rgba(80,160,255,0.45); pointer-events:none; z-index:10; box-sizing:border-box; transition:left 0.08s ease;"></div>
     </div>
     <script type="module" src="/main.js"></script>
 </body>

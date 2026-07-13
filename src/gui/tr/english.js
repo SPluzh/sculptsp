@@ -27,6 +27,12 @@ var TR = {
   cameraSpeedZoom: 'Zoom speed',
   cameraSpeedRotate: 'Rotation speed',
 
+  // split viewport
+  splitViewportTitle: 'Split Viewport',
+  splitViewportOff: 'Off',
+  splitViewportMirror: 'Mirror (same camera)',
+  splitViewportIndependent: 'Independent cameras',
+
   // file
   fileTitle: 'Files (import/export)',
   fileImportTitle: 'Import',

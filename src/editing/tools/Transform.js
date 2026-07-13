@@ -98,9 +98,9 @@ class Transform extends SculptBase {
 
   update() {}
 
-  postRender() {
+  postRender(selection, camera) {
     if (this.getMesh())
-      this._gizmo.render();
+      this._gizmo.render(camera);
   }
 
   addSculptToScene(scene) {

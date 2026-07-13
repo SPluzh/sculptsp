@@ -27,6 +27,12 @@ var TR = {
   cameraSpeedZoom: 'Скорость зума',
   cameraSpeedRotate: 'Скорость вращения',
 
+  // split viewport
+  splitViewportTitle: 'Разделить экран',
+  splitViewportOff: 'Выкл',
+  splitViewportMirror: 'Зеркало (одна камера)',
+  splitViewportIndependent: 'Независимые камеры',
+
   // file
   fileTitle: 'Файл',
   fileImportTitle: 'Импорт',

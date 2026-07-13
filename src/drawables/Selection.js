@@ -181,11 +181,12 @@ class Selection {
     mat4.mul(this._cacheDotSymMVP, _TMP_MATPV, _TMP_MAT);
   }
 
-  render(main) {
+  render(main, camera) {
+    camera = camera || main.getCamera();
     // if there's an offset then it means we are editing the tool radius
     var pickedMesh = main.getPicking().getMesh() && !this._isEditMode;
-    if (pickedMesh) this._updateMatricesMesh(main.getCamera(), main);
-    else this._updateMatricesBackground(main.getCamera(), main);
+    if (pickedMesh) this._updateMatricesMesh(camera, main);
+    else this._updateMatricesBackground(camera, main);
 
     var drawCircle = main._action === Enums.Action.NOTHING;
     var toolIndex = main.getSculptManager().getToolIndex();

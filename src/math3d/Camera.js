@@ -558,6 +558,29 @@ class Camera {
     this.delay(cb, duration, 'offset');
   }
 
+  clone() {
+    var cam = new Camera(this._main);
+    cam._mode = this._mode;
+    cam._projectionType = this._projectionType;
+    quat.copy(cam._quatRot, this._quatRot);
+    vec3.copy(cam._trans, this._trans);
+    vec3.copy(cam._center, this._center);
+    vec3.copy(cam._offset, this._offset);
+    cam._rotX = this._rotX;
+    cam._rotY = this._rotY;
+    cam._fov = this._fov;
+    cam._usePivot = this._usePivot;
+    cam._speed = this._speed;
+    cam._near = this._near;
+    cam._far = this._far;
+    cam._width = this._width;
+    cam._height = this._height;
+    mat4.copy(cam._viewport, this._viewport);
+    cam.updateView();
+    cam.updateProjection();
+    return cam;
+  }
+
   computeFrustumFit() {
     var near = this._near;
     var x;

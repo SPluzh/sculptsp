@@ -2,10 +2,12 @@ import { quat } from 'gl-matrix';
 
 class SnapCube {
 
-  constructor(main) {
+  constructor(main, side = 'left') {
     this._main = main;
+    this._side = side;
     this._domContainer = null;
     this._domCube = null;
+    this._currentCamera = null;
 
     this.initDOM();
   }
@@ -72,7 +74,7 @@ class SnapCube {
       el.addEventListener('click', function (e) {
         e.stopPropagation();
         e.preventDefault();
-        var camera = self._main.getCamera();
+        var camera = self._currentCamera || self._main.getCamera();
         if (camera) {
           var q_target = quat.create();
           quat.rotateX(q_target, q_target, part.rotX);
@@ -106,8 +108,27 @@ class SnapCube {
     viewport.appendChild(container);
   }
 
-  update(camera) {
+  update(camera, isSplit = false) {
     if (!this._domCube || !camera) return;
+
+    this._currentCamera = camera;
+
+    if (!isSplit && this._side === 'right') {
+      this._domContainer.style.display = 'none';
+      return;
+    }
+    this._domContainer.style.display = 'block';
+
+    var cssWidth = this._main._canvas.clientWidth;
+    if (isSplit) {
+      if (this._side === 'left') {
+        this._domContainer.style.right = (cssWidth / 2 + 20) + 'px';
+      } else {
+        this._domContainer.style.right = '20px';
+      }
+    } else {
+      this._domContainer.style.right = '20px';
+    }
 
     var V = camera.getView();
     if (!V) return;
