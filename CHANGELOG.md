@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.9]
+- **UI**: Unified all settings buttons, dropdowns, and checkboxes to use a dark-gray (#2e2e2e) style, and added subtle hover animations to enhance responsiveness.
 - **UI**: Replaced the traditional horizontal topbar menu and right sidebar with a sleek, vertical toolbar on the left side of the screen featuring modern floating panels.
 - **UI**: Converted the vertex and face count statistics panel into a transparent HUD overlay located in the bottom-right corner of the viewport.
 - **UI**: Removed the top command shelf toolbar and the "About" button to optimize the workspace area for sculpting.

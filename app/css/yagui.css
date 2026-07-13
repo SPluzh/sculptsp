@@ -1,31 +1,31 @@
 :root {
   /* Palette */
-  --color-bg-sidebar:     #3c3c3c;
-  --color-bg-topbar:      #20211d;
+  --color-bg-sidebar:     #444444;
+  --color-bg-topbar:      #373737;
   --color-bg-control:     rgba(0, 0, 0, 0.30);
   --color-bg-control-hov: rgba(0, 0, 0, 0.40);
-  --color-bg-button:      #525f63;
-  --color-accent:         #3b97e3;
-  --color-accent-hover:   #529fcc;
-  --color-text-primary:   #bbb;
-  --color-text-muted:     #999;
+  --color-bg-button:      #018574;
+  --color-accent:         #018574;
+  --color-accent-hover:   #02a892;
+  --color-text-primary:   #EAEAEA;
+  --color-text-muted:     #a6a6a6;
   --color-text-white:     #ffffff;
   --color-border:         rgba(255, 255, 255, 0.15);
   --color-border-strong:  rgba(255, 255, 255, 0.30);
   --color-border-mid:     rgba(255, 255, 255, 0.20);
   --color-bg-black-dim:   rgba(0, 0, 0, 0.20);
-  --color-topbar-submenu: #222;
-  --color-group-title:    #999;
+  --color-topbar-submenu: #444444;
+  --color-group-title:    #a6a6a6;
   --color-group-border:   #444444;
   --color-scrollbar-bg:   rgba(0, 0, 0, 0.30);
   --color-scrollbar-thumb: rgba(255, 255, 255, 0.20);
-  --color-btn-disabled:   #444;
-  --color-btn-disabled-text: #555;
+  --color-btn-disabled:   #2e2e2e;
+  --color-btn-disabled-text: #4d4d4d;
   --color-color-saturation-border: #555;
   --color-color-picker-bg: #111;
 
   /* Indicator */
-  --color-indicator-bg:   rgba(20, 20, 20, 0.85);
+  --color-indicator-bg:   rgba(68, 68, 68, 0.85);
   --color-indicator-fill: var(--color-accent);
   --indicator-min-width:  110px;
   --indicator-padding:    8px 12px;
@@ -131,7 +131,7 @@ body {
 .gui-sidebar > ul > label {
   font-size: var(--font-size-lg);
   font-weight: 600;
-  color: var(--color-text-muted);
+  color: var(--color-text-muted) !important;
   position: relative;
   display: block;
   line-height: 30px;
@@ -140,7 +140,7 @@ body {
   cursor: pointer;
   vertical-align: middle;
   text-align: center;
-  background: var(--color-bg-control);
+  background: var(--color-bg-control) !important;
 }
 
 .gui-sidebar > ul[opened=true] > label:before {
@@ -212,11 +212,18 @@ body {
   float: right;
   cursor: pointer;
   position: relative;
-  border: 1px solid;
+  border: 1px solid var(--color-border-strong);
   border-radius: var(--radius-sm);
   margin-top: 2px;
   width: 18px;
   height: 18px;
+  background: #2e2e2e;
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.gui-input-checkbox + label:hover {
+  background: #3e3e3e;
+  border-color: var(--color-text-white);
 }
 
 .gui-input-checkbox + label::before {
@@ -234,6 +241,7 @@ body {
 
 .gui-input-checkbox:checked + label::before {
   content: '';
+  border-color: var(--color-accent);
 }
 
 
@@ -284,15 +292,15 @@ body {
   touch-action: none;
 }
 
-.gui-slider > div {
+.gui-slider > div:first-child {
   height: 100%;
-  background: var(--color-bg-button);
+  background: var(--color-accent) !important;
 }
 
 
 /****** button ******/
 
-.gui-button {
+.gui-button.gui-button {
   -webkit-appearance: none;
   float: right;
   cursor: pointer;
@@ -303,7 +311,8 @@ body {
   height: 100%;
   outline: none;
   border-radius: var(--radius-sm);
-  background: var(--color-bg-button);
+  background: var(--color-bg-button) !important;
+  transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .gui-button::-moz-focus-inner {
@@ -312,15 +321,17 @@ body {
 }
 
 .gui-button:enabled:hover {
+  background: var(--color-accent-hover) !important;
   color: var(--color-text-white);
 }
 
 .gui-button:active {
+  background: #015e52 !important;
   box-shadow: 0 1px 0 hsla(0, 0%, 100%, .1), inset 0 1px 4px hsla(0, 0%, 0%, .8);
 }
 
 .gui-button:disabled {
-  background: var(--color-btn-disabled);
+  background: var(--color-btn-disabled) !important;
   color: var(--color-btn-disabled-text);
 }
 
@@ -437,7 +448,7 @@ body {
 
 /****** select ******/
 
-.gui-select {
+.gui-select.gui-select {
   float: right;
   cursor: pointer;
   position: relative;
@@ -446,12 +457,19 @@ body {
   height: 100%;
   padding-left: 1%;
   outline: none;
-  background: var(--color-bg-button);
+  background: var(--color-bg-button) !important;
   border-radius: var(--radius-sm);
+  transition: background 0.15s ease, color 0.15s ease;
 }
 
 .gui-select:hover {
+  background: #018574 !important;
   color: var(--color-text-white);
+}
+
+.gui-select option {
+  background: #2e2e2e;
+  color: var(--color-text-primary);
 }
 
 
@@ -579,7 +597,7 @@ body {
   left: 0;
   right: 0;
   height: 32px;
-  background: rgba(26, 27, 23, 0.95);
+  background: rgba(68, 68, 68, 0.95);
   border-bottom: 1px solid var(--color-border);
   display: flex;
   align-items: center;
@@ -593,7 +611,7 @@ body {
   min-width: 52px;
   padding: 0 8px;
   border-radius: var(--radius-sm);
-  background: var(--color-bg-control);
+  background: var(--color-bg-button);
   cursor: pointer;
   font-size: var(--font-size-sm);
   display: flex;
@@ -605,7 +623,7 @@ body {
   outline: none;
 }
 
-.shelf-btn:hover { background: var(--color-bg-button); }
+.shelf-btn:hover { background: var(--color-accent-hover); }
 
 /* Контейнер куба навигации */
 .snap-cube-container {
@@ -768,7 +786,7 @@ body {
   left: 0;
   top: 20px;
   width: 48px;
-  background: rgba(20, 21, 18, 0.95);
+  background: rgba(68, 68, 68, 0.95);
   border-top: 1px solid var(--color-border);
   border-right: 1px solid var(--color-border);
   border-bottom: 1px solid var(--color-border);
@@ -809,7 +827,7 @@ body {
   left: 44px;
   top: 50%;
   transform: translateY(-50%);
-  background: rgba(20, 21, 18, 0.95);
+  background: rgba(68, 68, 68, 0.95);
   color: var(--color-text-primary);
   padding: 4px 8px;
   border-radius: var(--radius-sm);
@@ -845,7 +863,7 @@ body {
   top: 20px;
   width: 260px;
   max-height: calc(100vh - 40px);
-  background: rgba(26, 27, 23, 0.96);
+  background: rgba(68, 68, 68, 0.96);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow-y: auto;
@@ -886,7 +904,7 @@ body {
   font-family: 'Inter', sans-serif;
   font-size: 11px;
   color: var(--color-text-muted);
-  background: rgba(20, 21, 18, 0.7);
+  background: rgba(68, 68, 68, 0.75);
   padding: 6px 10px;
   border-radius: var(--radius-md);
   border: 1px solid var(--color-border);

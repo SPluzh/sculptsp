@@ -517,14 +517,14 @@ class GuiMultiresolution {
     modal.style.pointerEvents = 'all';
 
     var container = document.createElement('div');
-    container.style.background = 'rgba(30, 30, 30, 0.95)';
+    container.style.background = 'rgba(68, 68, 68, 0.95)';
     container.style.border = '1px solid rgba(255, 255, 255, 0.2)';
     container.style.borderRadius = '12px';
     container.style.padding = '24px 32px';
     container.style.minWidth = '320px';
     container.style.boxShadow = '0 10px 40px rgba(0, 0, 0, 0.5)';
     container.style.fontFamily = "'Open Sans', sans-serif";
-    container.style.color = '#ffffff';
+    container.style.color = '#EAEAEA';
 
     var title = document.createElement('div');
     title.style.fontSize = '18px';
@@ -536,7 +536,7 @@ class GuiMultiresolution {
 
     var message = this._remeshProgressMessage = document.createElement('div');
     message.style.fontSize = '13px';
-    message.style.color = '#aaa';
+    message.style.color = '#a6a6a6';
     message.style.marginBottom = '16px';
     message.style.textAlign = 'center';
     message.style.minHeight = '18px';
@@ -554,7 +554,7 @@ class GuiMultiresolution {
     var progressBar = this._remeshProgressBar = document.createElement('div');
     progressBar.style.width = '0%';
     progressBar.style.height = '100%';
-    progressBar.style.background = 'linear-gradient(90deg, #3b97e3, #5fbef5)';
+    progressBar.style.background = 'linear-gradient(90deg, #018574, #02b09a)';
     progressBar.style.borderRadius = '4px';
     progressBar.style.transition = 'width 0.3s ease-out';
     progressTrack.appendChild(progressBar);
@@ -562,7 +562,7 @@ class GuiMultiresolution {
 
     var percentText = this._remeshProgressPercent = document.createElement('div');
     percentText.style.fontSize = '12px';
-    percentText.style.color = '#888';
+    percentText.style.color = '#a6a6a6';
     percentText.style.textAlign = 'center';
     percentText.textContent = '0%';
     container.appendChild(percentText);
