@@ -123,8 +123,8 @@ class InputManager {
           this._isDragged = true;
         }
       }
-      this._emit('move', this._snapshot());
     }
+    this._emit('move', this._snapshot());
   }
 
   _onUp(e) {
