@@ -159,6 +159,7 @@ var TR = {
   sculptMaskingInvert: 'Инверсия (-Ctrl + Click)',
   sculptMaskingBlur: 'Сгладить',
   sculptMaskingSharpen: 'Резко',
+  sculptMaskingLasso: 'Выделение лассо',
   sculptPBRTitle: 'PBR материал',
   sculptPaintAll: 'Краска',
   sculptExtractTitle: 'Извлечь',

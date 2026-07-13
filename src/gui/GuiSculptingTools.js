@@ -314,6 +314,7 @@ GuiTools[Enums.Tools.MASKING] = {
     this._ctrls.push(addCtrlNegative(tool, fold, this));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(fold.addCheckbox(TR('sculptMaskingLasso'), tool, '_useLasso'));
     this._main = main;
     this._tool = tool;
     var bci = fold.addDualButton(TR('sculptMaskingClear'), TR('sculptMaskingInvert'), tool, tool, 'clear', 'invert');

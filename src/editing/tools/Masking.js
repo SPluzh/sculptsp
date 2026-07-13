@@ -1,4 +1,5 @@
-import { vec3, mat3 } from 'gl-matrix';
+import { vec3, mat3, mat4 } from 'gl-matrix';
+import Geometry from '../../math3d/Geometry.js';
 import Utils from '../../misc/Utils.js';
 import SculptBase from './SculptBase.js';
 import Paint from './Paint.js';
@@ -19,6 +20,10 @@ class Masking extends SculptBase {
     this._lockPosition = false;
 
     this._thickness = 1.0;
+    this._lassoPoints = [];
+    this._svg = null;
+    this._svgPath = null;
+    this._useLasso = false;
   }
 
   pushState() {
@@ -355,6 +360,197 @@ class Masking extends SculptBase {
     var main = this._main;
     main.addNewMesh(newMesh);
     main.setMesh(mesh);
+  }
+
+  startLasso(mouseX, mouseY, isAlt) {
+    this._lassoPoints = [[mouseX, mouseY]];
+    this.createLassoOverlay(isAlt);
+    this.updateLassoOverlay();
+  }
+
+  addLassoPoint(mouseX, mouseY, isAlt) {
+    if (!this._lassoPoints) {
+      this._lassoPoints = [];
+    }
+    var len = this._lassoPoints.length;
+    if (len > 0) {
+      var last = this._lassoPoints[len - 1];
+      if (last[0] === mouseX && last[1] === mouseY) return;
+    }
+    this._lassoPoints.push([mouseX, mouseY]);
+    this.updateLassoColor(isAlt);
+    this.updateLassoOverlay();
+  }
+
+  endLasso(altKey) {
+    if (!this._lassoPoints || this._lassoPoints.length < 3) {
+      this._lassoPoints = [];
+      return false;
+    }
+    var result = this.applyLasso(this._lassoPoints, altKey);
+    this._lassoPoints = [];
+    return result;
+  }
+
+  createLassoOverlay(isAlt) {
+    if (this._svg) return;
+    var viewport = this._main.getViewport();
+    this._svg = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    this._svg.setAttribute('id', 'lasso-overlay');
+    this._svg.style.position = 'absolute';
+    this._svg.style.top = '0';
+    this._svg.style.left = '0';
+    this._svg.style.width = '100%';
+    this._svg.style.height = '100%';
+    this._svg.style.pointerEvents = 'none';
+    this._svg.style.zIndex = '101';
+    viewport.appendChild(this._svg);
+
+    this._svgPath = document.createElementNS('http://www.w3.org/2000/svg', 'polygon');
+    this._svgPath.setAttribute('stroke-width', '1.5');
+    this._svgPath.setAttribute('stroke-dasharray', '4,3');
+    this._svg.appendChild(this._svgPath);
+
+    this.updateLassoColor(isAlt);
+
+    this._onLassoKeyDown = (e) => {
+      if (e.key === 'Alt') {
+        this.updateLassoColor(true);
+      }
+    };
+    this._onLassoKeyUp = (e) => {
+      if (e.key === 'Alt') {
+        this.updateLassoColor(false);
+      }
+    };
+    window.addEventListener('keydown', this._onLassoKeyDown);
+    window.addEventListener('keyup', this._onLassoKeyUp);
+  }
+
+  updateLassoColor(isAlt) {
+    if (!this._svgPath) return;
+    if (isAlt) {
+      this._svgPath.setAttribute('stroke', '#FFFFFF');
+      this._svgPath.setAttribute('fill', 'rgba(255, 255, 255, 0.15)');
+    } else {
+      this._svgPath.setAttribute('stroke', '#00E5FF');
+      this._svgPath.setAttribute('fill', 'rgba(0, 229, 255, 0.15)');
+    }
+  }
+
+  updateLassoOverlay() {
+    if (!this._svgPath) return;
+    var pixelRatio = this._main.getPixelRatio();
+    var pointsStr = this._lassoPoints.map(p => {
+      return (p[0] / pixelRatio) + ',' + (p[1] / pixelRatio);
+    }).join(' ');
+    this._svgPath.setAttribute('points', pointsStr);
+  }
+
+  destroyLassoOverlay() {
+    if (this._svg) {
+      if (this._svg.parentNode) {
+        this._svg.parentNode.removeChild(this._svg);
+      }
+      this._svg = null;
+      this._svgPath = null;
+    }
+    if (this._onLassoKeyDown) {
+      window.removeEventListener('keydown', this._onLassoKeyDown);
+      this._onLassoKeyDown = null;
+    }
+    if (this._onLassoKeyUp) {
+      window.removeEventListener('keyup', this._onLassoKeyUp);
+      this._onLassoKeyUp = null;
+    }
+  }
+
+  isPointInPolygon(p, polygon) {
+    var x = p[0], y = p[1];
+    var inside = false;
+    for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+      var xi = polygon[i][0], yi = polygon[i][1];
+      var xj = polygon[j][0], yj = polygon[j][1];
+
+      var intersect = ((yi > y) !== (yj > y))
+          && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+      if (intersect) inside = !inside;
+    }
+    return inside;
+  }
+
+  applyLasso(points, altKey) {
+    var mesh = this.getMesh();
+    if (!mesh) return false;
+
+    var vAr = mesh.getVertices();
+    var nbVertices = mesh.getNbVertices();
+    var camera = this._main.getCamera();
+    var mat = mesh.getMatrix();
+
+    var localToScreen = mat4.create();
+    mat4.mul(localToScreen, camera.computeWorldToScreenMatrix(), mat);
+
+    var m = localToScreen;
+    var m0 = m[0], m4 = m[4], m8 = m[8], m12 = m[12];
+    var m1 = m[1], m5 = m[5], m9 = m[9], m13 = m[13];
+    var m3 = m[3], m7 = m[7], m11 = m[11], m15 = m[15];
+    var height = camera._height;
+
+    var symmetry = this._main.getSculptManager().getSymmetry();
+    var ptPlane, nPlane;
+    if (symmetry) {
+      ptPlane = mesh.getSymmetryOrigin();
+      nPlane = mesh.getSymmetryNormal();
+    }
+
+    var selectedVertices = [];
+
+    for (var i = 0; i < nbVertices; ++i) {
+      var ind = i * 3;
+      var vx = vAr[ind];
+      var vy = vAr[ind + 1];
+      var vz = vAr[ind + 2];
+
+      var w = m3 * vx + m7 * vy + m11 * vz + m15;
+      w = w || 1.0;
+      var x_screen = (m0 * vx + m4 * vy + m8 * vz + m12) / w;
+      var y_screen = height - (m1 * vx + m5 * vy + m9 * vz + m13) / w;
+
+      var inside = this.isPointInPolygon([x_screen, y_screen], points);
+
+      if (!inside && symmetry) {
+        var symV = [vx, vy, vz];
+        Geometry.mirrorPoint(symV, ptPlane, nPlane);
+        var svx = symV[0], svy = symV[1], svz = symV[2];
+        var sw = m3 * svx + m7 * svy + m11 * svz + m15;
+        sw = sw || 1.0;
+        x_screen = (m0 * svx + m4 * svy + m8 * svz + m12) / sw;
+        y_screen = height - (m1 * svx + m5 * svy + m9 * svz + m13) / sw;
+        inside = this.isPointInPolygon([x_screen, y_screen], points);
+      }
+
+      if (inside) {
+        selectedVertices.push(i);
+      }
+    }
+
+    if (selectedVertices.length === 0) {
+      return false;
+    }
+
+    this.pushState();
+    var iVerts = new Uint32Array(selectedVertices);
+    this._main.getStateManager().pushVertices(iVerts);
+
+    var mAr = mesh.getMaterials();
+    var maskVal = altKey ? 1.0 : 0.0;
+    for (var j = 0; j < iVerts.length; ++j) {
+      mAr[iVerts[j] * 3 + 2] = maskVal;
+    }
+
+    this.updateAndRenderMask();
+    return true;
   }
 }
 

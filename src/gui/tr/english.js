@@ -159,6 +159,7 @@ var TR = {
   sculptMaskingInvert: 'Invert (-Ctrl + Click)',
   sculptMaskingBlur: 'Blur',
   sculptMaskingSharpen: 'Sharpen',
+  sculptMaskingLasso: 'Lasso Selection',
   sculptPBRTitle: 'PBR materials',
   sculptPaintAll: 'Paint all',
   sculptExtractTitle: 'Extract',

@@ -388,19 +388,28 @@ class SculptSP extends Scene {
   // HANDLES EVENTS
   ////////////////
   onDeviceUp() {
+    var altKey = this._isAltDown;
     this._isAltDown = false;
     this._isCtrlDown = false;
     this.setCanvasCursor('default');
     Multimesh.RENDER_HINT = Multimesh.NONE;
     this._sculptManager.end();
 
-    if (this._action === Enums.Action.MASK_EDIT && this._mesh) {
-
-      if (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY)
-        this.getSculptManager().getTool(Enums.Tools.MASKING).invert();
-      else
-        this.getSculptManager().getTool(Enums.Tools.MASKING).clear();
-
+    if (this._action === Enums.Action.MASK_EDIT) {
+      var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+      if (this._mesh) {
+        if (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY) {
+          maskingTool.invert();
+        } else {
+          var applied = maskingTool.endLasso(altKey);
+          if (!applied) {
+            maskingTool.clear();
+          }
+        }
+      } else {
+        maskingTool.endLasso(altKey);
+      }
+      maskingTool.destroyLassoOverlay();
     }
 
     this._action = Enums.Action.NOTHING;
@@ -464,8 +473,14 @@ class SculptSP extends Scene {
       console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
     }
 
-    if (button === MOUSE_LEFT && canEdit)
-      this.setCanvasCursor('none');
+    if (button === MOUSE_LEFT && canEdit) {
+      var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+      if (event.ctrlKey && maskingTool._useLasso) {
+        this.setCanvasCursor('default');
+      } else {
+        this.setCanvasCursor('none');
+      }
+    }
 
     if (this._cameraRmbOnly) {
       if (button === MOUSE_RIGHT) {
@@ -475,10 +490,16 @@ class SculptSP extends Scene {
           this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
         else
           this._action = Enums.Action.CAMERA_ROTATE;
-      } else if (button === MOUSE_LEFT && !canEdit && event.ctrlKey) {
-        this._maskX = mouseX;
-        this._maskY = mouseY;
-        this._action = Enums.Action.MASK_EDIT;
+      } else if (button === MOUSE_LEFT && event.ctrlKey) {
+        var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+        if (maskingTool._useLasso || !canEdit) {
+          this._maskX = mouseX;
+          this._maskY = mouseY;
+          this._action = Enums.Action.MASK_EDIT;
+          maskingTool.startLasso(mouseX, mouseY, event.altKey);
+        } else {
+          this._action = Enums.Action.SCULPT_EDIT;
+        }
       } else if (button === MOUSE_LEFT && canEdit) {
         this._action = Enums.Action.SCULPT_EDIT;
       } else {
@@ -489,10 +510,16 @@ class SculptSP extends Scene {
         this._action = Enums.Action.CAMERA_ZOOM;
       else if (button === MOUSE_MIDDLE)
         this._action = Enums.Action.CAMERA_PAN;
-      else if (!canEdit && event.ctrlKey) {
-        this._maskX = mouseX;
-        this._maskY = mouseY;
-        this._action = Enums.Action.MASK_EDIT;
+      else if (event.ctrlKey) {
+        var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+        if (maskingTool._useLasso || !canEdit) {
+          this._maskX = mouseX;
+          this._maskY = mouseY;
+          this._action = Enums.Action.MASK_EDIT;
+          maskingTool.startLasso(mouseX, mouseY, event.altKey);
+        } else {
+          this._action = Enums.Action.SCULPT_EDIT;
+        }
       } else if ((!canEdit || button === MOUSE_RIGHT) && event.altKey)
         this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
       else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit && !this._cameraRmbOnly))
@@ -559,6 +586,9 @@ class SculptSP extends Scene {
         var mesh = this.getMesh();
         if (mesh && mesh.isDynamic)
           this._gui.updateMeshInfo();
+      } else if (action === Enums.Action.MASK_EDIT) {
+        var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+        maskingTool.addLassoPoint(mouseX, mouseY, event.altKey);
       }
     }
 
