@@ -315,6 +315,9 @@ class Scene {
       if (this._snapCubeLeft) {
         this._snapCubeLeft.update(camera, isSplit);
       }
+      if (!isSplit && this._snapCubeRight) {
+        this._snapCubeRight.update(camera, isSplit);
+      }
     } else {
       if (this._snapCubeRight) {
         this._snapCubeRight.update(camera, isSplit);

@@ -1,7 +1,7 @@
 {
   "name": "SculptSP",
   "homepage": "https://github.com/SPluzh/sculptsp",
-  "version": "0.9.5",
+  "version": "0.9.6",
   "description": "A WebGL digital sculpting app",
   "author": "Stéphane GINIER",
   "license": "MIT",
