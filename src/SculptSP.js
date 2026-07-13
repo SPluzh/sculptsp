@@ -272,31 +272,7 @@ class SculptSP extends Scene {
   }
 
   onDoubleTap(e) {
-    if (this._focusGui) {
-      return;
-    }
-
-    var evProxy = this._eventProxy;
-    evProxy.pageX = e.center.x;
-    evProxy.pageY = e.center.y;
-    this.setMousePosition(evProxy);
-
-    var picking = this._picking;
-    var res = picking.intersectionMouseMeshes();
-    var cam = this._camera;
-    var pivot = [0.0, 0.0, 0.0];
-    if (!res) {
-      return this.resetCameraMeshes();
-    }
-
-    vec3.transformMat4(pivot, picking.getIntersectionPoint(), picking.getMesh().getMatrix());
-    var zoom = cam._trans[2];
-    if (!cam.isOrthographic()) {
-      zoom = Math.min(zoom, vec3.dist(pivot, cam.computePosition()));
-    }
-
-    cam.setAndFocusOnPivot(pivot, zoom);
-    this.render();
+    // Disabled double tap on object and empty viewport
   }
 
   onDoubleTap2Fingers() {

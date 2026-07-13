@@ -4,6 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.9.8]
 - **Split Viewport**: Added a "Show cursor in inactive viewport" checkbox settings toggle. When disabled, the 3D brush cursor is hidden in the inactive viewport.
+- **Navigation**: Disabled double-tap and double-click shortcuts on the sculpting mesh and empty viewport to prevent accidental camera focusing or viewport resets.
 
 ## [0.9.7]
 - **Fix**: Resolved camera flips and rotation/zoom instability in Split Viewport mode. The active viewport is now locked during navigation (rotate, zoom, pan) and sculpting actions to prevent mouse coordinate jumps when crossing the vertical split divider.
