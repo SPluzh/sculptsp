@@ -2,9 +2,12 @@
 
 All notable changes to this project will be documented in this file.
 
-## [0.9.3]
+## [0.9.4]
+- **Fix**: Resolved an issue where mask selection sometimes reset/cleared instead of inverting when clicking the empty canvas using a pen stylus. Implemented a centralized pointing device input manager with a coordinate movement/jitter threshold to accurately differentiate click events from lasso drag events.
 - **Masking Tool (Выделение маской)**: Added a "Lasso Selection" (Выделение лассо) checkbox toggle to the tool settings. When Lasso Selection is enabled, holding Ctrl and dragging anywhere (including on the mesh) draws a lasso. When disabled, lasso selection is only activated if dragging starts outside the mesh, while dragging on the mesh uses the standard masking brush. Displays a dynamic dashed SVG polygon overlay (which changes to white when Alt is held for unmasking) and projects vertices (including symmetrical counterparts) to screen coordinates to select all vertices inside the lasso.
 - **Segment Measurement Tool (Измерение отрезками)**: Allowed drawing and adjusting measurement segments outside the mesh (in empty/free space) in the camera projection plane, mirroring the behavior of the Segment Divider tool. The tool automatically detects whether endpoints snap to mesh vertices (represented by solid circle markers) or lie in free space (represented by diamond markers), calculating real-time 3D distances at the pivot/depth of the camera or existing points.
+
+## [0.9.3]
 - **Wet Clay Shader (Мокрая глина)**: Added a new clay rendering shader mimicking hand-sculpted, wet clay. Powered by low-complexity warped 3D noise (combining finger indentations with micro tool/scratch marks) using the GPU-independent sin-less Dave Hoskins hash to ensure stable performance and precise details. Implemented simulated subsurface scattering (SSS) for clay translucency, curvature-based saturation mapping (making valleys look wetter and ridges drier), and noise-driven specular gloss variations. Supported live customization parameters (Wetness, Bump Strength, Noise Scale, and SSS Intensity) directly inside the rendering controls sidebar.
 
 ## [0.9.2]

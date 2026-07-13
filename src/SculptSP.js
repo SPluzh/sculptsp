@@ -6,6 +6,7 @@ import Enums from './misc/Enums.js';
 import Utils from './misc/Utils.js';
 import Scene from './Scene.js';
 import Multimesh from './mesh/multiresolution/Multimesh.js';
+import InputManager from './misc/InputManager.js';
 
 var MOUSE_LEFT = 1;
 var MOUSE_MIDDLE = 2;
@@ -38,28 +39,73 @@ class SculptSP extends Scene {
 
     this._eventProxy = {};
 
+    this._input = new InputManager(
+      this._canvas,
+      () => this._pixelRatio,
+      () => this._canvasOffsetLeft,
+      () => this._canvasOffsetTop
+    );
+
     this.initHammer();
     this.addEvents();
+    this.initInputCallbacks();
+  }
+
+  initInputCallbacks() {
+    this._input.on('down', (data) => {
+      var event = {
+        pageX: data.pageX,
+        pageY: data.pageY,
+        which: data.which,
+        ctrlKey: data.ctrlKey,
+        altKey: data.altKey,
+        shiftKey: data.shiftKey,
+        stopPropagation: () => {},
+        preventDefault: () => {}
+      };
+      this._gui.callFunc('onMouseDown', event);
+      this.onDeviceDown(data);
+    });
+
+    this._input.on('move', (data) => {
+      var event = {
+        pageX: data.pageX,
+        pageY: data.pageY,
+        which: data.which,
+        ctrlKey: data.ctrlKey,
+        altKey: data.altKey,
+        shiftKey: data.shiftKey,
+        stopPropagation: () => {},
+        preventDefault: () => {}
+      };
+      this._gui.callFunc('onMouseMove', event);
+      this.onDeviceMove(data);
+    });
+
+    this._input.on('up', (data) => {
+      var event = {
+        pageX: data.pageX,
+        pageY: data.pageY,
+        which: data.which,
+        ctrlKey: data.ctrlKey,
+        altKey: data.altKey,
+        shiftKey: data.shiftKey,
+        stopPropagation: () => {},
+        preventDefault: () => {}
+      };
+      this._gui.callFunc('onMouseUp', event);
+      this.onDeviceUp(data);
+    });
   }
 
   addEvents() {
     var canvas = this._canvas;
 
     var cbMouseWheel = this.onMouseWheel.bind(this);
-    var cbOnPointer = this.onPointer.bind(this);
 
-    // pointer
-    window.addEventListener('pointerdown', cbOnPointer, false);
-    window.addEventListener('pointermove', cbOnPointer, false);
-    window.addEventListener('pointerup', cbOnPointer, false);
-    window.addEventListener('pointercancel', cbOnPointer, false);
-
-    // mouse
-    canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-    canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
+    // mouse (focus and wheel only, button/move events are in InputManager)
     canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
     canvas.addEventListener('mouseover', this.onMouseOver.bind(this), false);
-    canvas.addEventListener('mousemove', Utils.throttle(this.onMouseMove.bind(this), 16.66), false);
     canvas.addEventListener('mousewheel', cbMouseWheel, false);
     canvas.addEventListener('DOMMouseScroll', cbMouseWheel, false);
 
@@ -76,17 +122,6 @@ class SculptSP extends Scene {
     window.addEventListener('dragover', cbStopAndPrevent, false);
     window.addEventListener('drop', cbLoadFiles, false);
     document.getElementById('fileopen').addEventListener('change', cbLoadFiles, false);
-  }
-
-  onPointer(event) {
-    if (!(Tablet.isWintabActive && Tablet.useWintab)) {
-      if (event.type === 'pointerup' || event.type === 'pointercancel') {
-        Tablet.pressure = 0.0;
-      } else {
-        Tablet.pressure = event.pressure;
-      }
-      console.log('[WinInk] pointer event: pressure = ' + event.pressure.toFixed(3) + ', type = ' + event.type + ', pointerType = ' + event.pointerType);
-    }
   }
 
   initHammer() {
@@ -181,7 +216,7 @@ class SculptSP extends Scene {
   // MOBILE EVENTS
   ////////////////
   onPanStart(e) {
-    if (e.pointerType === 'mouse')
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen')
       return;
     this._focusGui = false;
     var evProxy = this._eventProxy;
@@ -191,7 +226,7 @@ class SculptSP extends Scene {
   }
 
   onPanMove(e) {
-    if (e.pointerType === 'mouse')
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen')
       return;
     var evProxy = this._eventProxy;
     evProxy.pageX = e.center.x;
@@ -227,7 +262,7 @@ class SculptSP extends Scene {
   }
 
   onPanEnd(e) {
-    if (e.pointerType === 'mouse')
+    if (e.pointerType === 'mouse' || e.pointerType === 'pen')
       return;
     this.onDeviceUp();
     // we need to detect when all fingers are released
@@ -387,8 +422,8 @@ class SculptSP extends Scene {
   ////////////////
   // HANDLES EVENTS
   ////////////////
-  onDeviceUp() {
-    var altKey = this._isAltDown;
+  onDeviceUp(data) {
+    var altKey = data ? data.altKey : this._isAltDown;
     this._isAltDown = false;
     this._isCtrlDown = false;
     this.setCanvasCursor('default');
@@ -398,7 +433,8 @@ class SculptSP extends Scene {
     if (this._action === Enums.Action.MASK_EDIT) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
       if (this._mesh) {
-        if (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY) {
+        var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
+        if (wasClick) {
           maskingTool.invert();
         } else {
           var applied = maskingTool.endLasso(altKey);
@@ -442,18 +478,23 @@ class SculptSP extends Scene {
     this._mouseY = this._pixelRatio * (event.pageY - this._canvasOffsetTop);
   }
 
-  onDeviceDown(event) {
+  onDeviceDown(data) {
     if (this._focusGui)
       return;
 
-    this._isAltDown = event.altKey;
-    this._isCtrlDown = event.ctrlKey;
+    this._isAltDown = data.altKey;
+    this._isCtrlDown = data.ctrlKey;
 
-    this.setMousePosition(event);
+    if (data.x !== undefined) {
+      this._mouseX = data.x;
+      this._mouseY = data.y;
+    } else {
+      this.setMousePosition(data);
+    }
 
     var mouseX = this._mouseX;
     var mouseY = this._mouseY;
-    var button = event.which;
+    var button = data.which;
 
     // Clear ZSphere hover/selected states on right/middle click
     if (button !== MOUSE_LEFT) {
@@ -469,13 +510,13 @@ class SculptSP extends Scene {
     var canEdit = false;
     if (button === MOUSE_LEFT) {
       console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
-      canEdit = this._sculptManager.start(event.shiftKey);
+      canEdit = this._sculptManager.start(data.shiftKey);
       console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
     }
 
     if (button === MOUSE_LEFT && canEdit) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
-      if (event.ctrlKey && maskingTool._useLasso) {
+      if (data.ctrlKey && maskingTool._useLasso) {
         this.setCanvasCursor('default');
       } else {
         this.setCanvasCursor('none');
@@ -484,19 +525,19 @@ class SculptSP extends Scene {
 
     if (this._cameraRmbOnly) {
       if (button === MOUSE_RIGHT) {
-        if (event.ctrlKey)
+        if (data.ctrlKey)
           this._action = Enums.Action.CAMERA_ZOOM;
-        else if (event.altKey)
+        else if (data.altKey)
           this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
         else
           this._action = Enums.Action.CAMERA_ROTATE;
-      } else if (button === MOUSE_LEFT && event.ctrlKey) {
+      } else if (button === MOUSE_LEFT && data.ctrlKey) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
         if (maskingTool._useLasso || !canEdit) {
           this._maskX = mouseX;
           this._maskY = mouseY;
           this._action = Enums.Action.MASK_EDIT;
-          maskingTool.startLasso(mouseX, mouseY, event.altKey);
+          maskingTool.startLasso(mouseX, mouseY, data.altKey);
         } else {
           this._action = Enums.Action.SCULPT_EDIT;
         }
@@ -506,21 +547,21 @@ class SculptSP extends Scene {
         this._action = Enums.Action.NOTHING;
       }
     } else {
-      if (button === MOUSE_RIGHT && event.ctrlKey)
+      if (button === MOUSE_RIGHT && data.ctrlKey)
         this._action = Enums.Action.CAMERA_ZOOM;
       else if (button === MOUSE_MIDDLE)
         this._action = Enums.Action.CAMERA_PAN;
-      else if (event.ctrlKey) {
+      else if (data.ctrlKey) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
         if (maskingTool._useLasso || !canEdit) {
           this._maskX = mouseX;
           this._maskY = mouseY;
           this._action = Enums.Action.MASK_EDIT;
-          maskingTool.startLasso(mouseX, mouseY, event.altKey);
+          maskingTool.startLasso(mouseX, mouseY, data.altKey);
         } else {
           this._action = Enums.Action.SCULPT_EDIT;
         }
-      } else if ((!canEdit || button === MOUSE_RIGHT) && event.altKey)
+      } else if ((!canEdit || button === MOUSE_RIGHT) && data.altKey)
         this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
       else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit && !this._cameraRmbOnly))
         this._action = Enums.Action.CAMERA_ROTATE;
@@ -543,14 +584,19 @@ class SculptSP extends Scene {
     return this._cameraSpeedZoom / (this._canvasHeight * this.getPixelRatio());
   }
 
-  onDeviceMove(event) {
+  onDeviceMove(data) {
     if (this._focusGui)
       return;
 
-    this._isAltDown = event.altKey;
-    this._isCtrlDown = event.ctrlKey;
+    this._isAltDown = data.altKey;
+    this._isCtrlDown = data.ctrlKey;
 
-    this.setMousePosition(event);
+    if (data.x !== undefined) {
+      this._mouseX = data.x;
+      this._mouseY = data.y;
+    } else {
+      this.setMousePosition(data);
+    }
 
     var mouseX = this._mouseX;
     var mouseY = this._mouseY;
@@ -571,7 +617,7 @@ class SculptSP extends Scene {
     } else if (action === Enums.Action.CAMERA_ROTATE) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      if (!event.shiftKey)
+      if (!data.shiftKey)
         this._camera.rotate(mouseX, mouseY, this._cameraSpeedRotate);
       this.render();
 
@@ -588,7 +634,7 @@ class SculptSP extends Scene {
           this._gui.updateMeshInfo();
       } else if (action === Enums.Action.MASK_EDIT) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
-        maskingTool.addLassoPoint(mouseX, mouseY, event.altKey);
+        maskingTool.addLassoPoint(mouseX, mouseY, data.altKey);
       }
     }
 
