@@ -226,8 +226,7 @@ class Camera {
   }
 
   setOrbit(rx, ry) {
-    var radLimit = Math.PI * 0.49;
-    this._rotX = Math.max(Math.min(rx, radLimit), -radLimit);
+    this._rotX = rx;
     this._rotY = ry;
     var qrt = this._quatRot;
     quat.identity(qrt);

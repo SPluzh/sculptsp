@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.8]
+- **Navigation**: Removed the vertical rotation clamping limit in Orbit camera mode, allowing the camera to rotate continuously over the top and bottom poles without hitting a limit.
 - **Split Viewport**: Added a "Show cursor in inactive viewport" checkbox settings toggle. When disabled, the 3D brush cursor is hidden in the inactive viewport.
 - **Navigation**: Disabled double-tap and double-click shortcuts on the sculpting mesh and empty viewport to prevent accidental camera focusing or viewport resets.
 
