@@ -1,3 +1,5 @@
+import { createIcons, Undo2, Redo2, ChevronsUpDown, Sparkles, Square, Grid } from 'lucide';
+
 /**
  * CommandShelf — горизонтальная панель избранных команд.
  *
@@ -78,12 +80,12 @@ class CommandRegistry {
 
 /** @type {Array<{id: string, label: string, icon: string, action: string}>} */
 var DEFAULT_SHELF = [
-  { id: 'undo',      label: 'Undo',    icon: '↺', action: 'states.undo' },
-  { id: 'redo',      label: 'Redo',    icon: '↻', action: 'states.redo' },
-  { id: 'subdivide', label: 'Subdiv',  icon: '⬡', action: 'topology.subdivide' },
-  { id: 'remesh',    label: 'Remesh',  icon: '◈', action: 'topology.remesh' },
-  { id: 'flat',      label: 'Flat',    icon: '◻', action: 'rendering.toggleFlat' },
-  { id: 'wire',      label: 'Wire',    icon: '⬡', action: 'rendering.toggleWireframe' },
+  { id: 'undo',      label: 'Undo',    icon: 'undo-2',            action: 'states.undo' },
+  { id: 'redo',      label: 'Redo',    icon: 'redo-2',            action: 'states.redo' },
+  { id: 'subdivide', label: 'Subdiv',  icon: 'chevrons-up-down',  action: 'topology.subdivide' },
+  { id: 'remesh',    label: 'Remesh',  icon: 'sparkles',          action: 'topology.remesh' },
+  { id: 'flat',      label: 'Flat',    icon: 'square',            action: 'rendering.toggleFlat' },
+  { id: 'wire',      label: 'Wire',    icon: 'grid',              action: 'rendering.toggleWireframe' },
 ];
 
 var STORAGE_KEY = 'sculptsp.shelf';
@@ -133,6 +135,18 @@ class CommandShelf {
     this._items.forEach(item => this._addButton(shelf, item));
 
     container.appendChild(shelf);
+
+    createIcons({
+      icons: {
+        Undo2,
+        Redo2,
+        ChevronsUpDown,
+        Sparkles,
+        Square,
+        Grid
+      },
+      root: shelf
+    });
   }
 
   _addButton(shelf, item) {
@@ -141,8 +155,18 @@ class CommandShelf {
     btn.title = item.label;
     btn.setAttribute('data-shelf-id', item.id);
 
+    var iconMap = {
+      'undo': 'undo-2',
+      'redo': 'redo-2',
+      'subdivide': 'chevrons-up-down',
+      'remesh': 'sparkles',
+      'flat': 'square',
+      'wire': 'grid'
+    };
+    var iconName = iconMap[item.id] || 'help-circle';
+
     var icon = document.createElement('span');
-    icon.textContent = item.icon;
+    icon.innerHTML = `<i data-lucide="${iconName}"></i>`;
     icon.style.fontSize = '14px';
     icon.style.lineHeight = '1';
 

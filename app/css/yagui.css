@@ -622,6 +622,13 @@ body {
 
 .shelf-btn:hover { background: var(--color-accent-hover); }
 
+.shelf-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke-width: 2px;
+  display: block;
+}
+
 /* Контейнер куба навигации */
 .snap-cube-container {
   position: absolute;
@@ -836,6 +843,13 @@ body {
   border: 1px solid var(--color-border);
 }
 .vtb-btn:hover::before { opacity: 1; }
+
+.vtb-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke-width: 1.75px;
+  display: block;
+}
 
 .vtb-sep {
   width: 28px;

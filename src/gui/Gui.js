@@ -18,6 +18,25 @@ import PanelContainer from './PanelContainer.js';
 
 import Export from '../files/Export.js';
 
+import {
+  createIcons,
+  FolderOpen,
+  Globe,
+  Undo2,
+  Palette,
+  Hexagon,
+  Lightbulb,
+  Camera,
+  Image,
+  PenTool,
+  Settings,
+  Redo2,
+  ChevronsUpDown,
+  Sparkles,
+  Square,
+  Grid
+} from 'lucide';
+
 class Gui {
 
   constructor(main) {
@@ -128,21 +147,37 @@ class Gui {
     ctrls[idc++] = this._ctrlMesh = new GuiMesh(viewport, this);
 
     // Register all buttons on the VerticalToolbar in the correct order
-    this._toolbar.addButton('file', '📁', 'File');
-    this._toolbar.addButton('scene', '🌐', 'Scene');
-    this._toolbar.addButton('history', '↺', 'History');
+    this._toolbar.addButton('file', '<i data-lucide="folder-open"></i>', 'File');
+    this._toolbar.addButton('scene', '<i data-lucide="globe"></i>', 'Scene');
+    this._toolbar.addButton('history', '<i data-lucide="undo-2"></i>', 'History');
     this._toolbar.addSeparator();
-    this._toolbar.addButton('sculpting', '🎨', 'Sculpting');
-    this._toolbar.addButton('topology', '⬡', 'Topology');
-    this._toolbar.addButton('rendering', '💡', 'Rendering');
+    this._toolbar.addButton('sculpting', '<i data-lucide="palette"></i>', 'Sculpting');
+    this._toolbar.addButton('topology', '<i data-lucide="hexagon"></i>', 'Topology');
+    this._toolbar.addButton('rendering', '<i data-lucide="lightbulb"></i>', 'Rendering');
     this._toolbar.addSeparator();
-    this._toolbar.addButton('camera', '📷', 'Camera');
-    this._toolbar.addButton('background', '🖼', 'Background');
-    this._toolbar.addButton('tablet', '🖊', 'Tablet');
-    this._toolbar.addButton('settings', '⚙', 'Settings');
+    this._toolbar.addButton('camera', '<i data-lucide="camera"></i>', 'Camera');
+    this._toolbar.addButton('background', '<i data-lucide="image"></i>', 'Background');
+    this._toolbar.addButton('tablet', '<i data-lucide="pen-tool"></i>', 'Tablet');
+    this._toolbar.addButton('settings', '<i data-lucide="settings"></i>', 'Settings');
 
     this.updateMesh();
     this.setVisibility(true);
+
+    createIcons({
+      icons: {
+        FolderOpen,
+        Globe,
+        Undo2,
+        Palette,
+        Hexagon,
+        Lightbulb,
+        Camera,
+        Image,
+        PenTool,
+        Settings
+      },
+      root: this._toolbar._dom
+    });
 
     // Phase 4 — UIPopup (bound to F1, contextmenu is prevented for RMB camera control)
     this._popup = new UIPopup();
@@ -293,29 +328,49 @@ class Gui {
     var self = this;
     this._popup.open(x, y, function (container) {
       var items = [
-        { label: '↺  Undo',       action: function () { self._main.getStateManager().undo(); self._main.render(); } },
-        { label: '↻  Redo',       action: function () { self._main.getStateManager().redo(); self._main.render(); } },
-        { label: '⬡  Subdivide',  action: function () { var t = self._ctrlTopology;  if (t && t.subdivide) t.subdivide(); } },
-        { label: '◈  Remesh',     action: function () { var t = self._ctrlTopology;  if (t && t.remesh) t.remesh(); } },
-        { label: '◻  Flat shade', action: function () {
+        { id: 'undo',      icon: 'undo-2',            label: 'Undo',       action: function () { self._main.getStateManager().undo(); self._main.render(); } },
+        { id: 'redo',      icon: 'redo-2',            label: 'Redo',       action: function () { self._main.getStateManager().redo(); self._main.render(); } },
+        { id: 'subdivide', icon: 'chevrons-up-down',  label: 'Subdivide',  action: function () { var t = self._ctrlTopology;  if (t && t.subdivide) t.subdivide(); } },
+        { id: 'remesh',    icon: 'sparkles',          label: 'Remesh',     action: function () { var t = self._ctrlTopology;  if (t && t.remesh) t.remesh(); } },
+        { id: 'flat',      icon: 'square',            label: 'Flat shade', action: function () {
           var r = self._ctrlRendering;
           if (r && r._ctrlFlat) r._ctrlFlat.setValue(!r._ctrlFlat.getValue());
         }},
-        { label: '⬡  Wireframe',  action: function () {
+        { id: 'wire',      icon: 'grid',              label: 'Wireframe',  action: function () {
           var r = self._ctrlRendering;
           if (r && r._ctrlWireframe) r._ctrlWireframe.setValue(!r._ctrlWireframe.getValue());
         }},
       ];
       items.forEach(function (item) {
         var btn = document.createElement('button');
-        btn.textContent = item.label;
         btn.className = 'shelf-btn';
-        btn.style.cssText = 'display:block;width:100%;margin:2px 0;text-align:left;';
+        btn.style.cssText = 'display:flex;align-items:center;gap:6px;width:100%;margin:2px 0;text-align:left;';
+        
+        var icon = document.createElement('span');
+        icon.innerHTML = `<i data-lucide="${item.icon}"></i>`;
+        
+        var text = document.createElement('span');
+        text.textContent = item.label;
+        
+        btn.appendChild(icon);
+        btn.appendChild(text);
+        
         btn.addEventListener('click', function () {
           self._popup.close();
           item.action();
         });
         container.appendChild(btn);
+      });
+      createIcons({
+        icons: {
+          Undo2,
+          Redo2,
+          ChevronsUpDown,
+          Sparkles,
+          Square,
+          Grid
+        },
+        root: container
       });
     });
   }

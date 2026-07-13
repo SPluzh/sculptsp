@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.9]
+- **UI**: Replaced all old Unicode and emoji icons in the vertical toolbar, command shelf, and context popup menu with high-quality, modern vector icons from Lucide.
 - **Fix**: Resolved an issue where the camera navigation undo (**Alt + Z**) and redo (**Alt + Shift + Z**) hotkeys were blocked by the sculpting panel's keyboard handler.
 - **Fix**: Resolved an issue where dropdown lists (comboboxes) and input fields inside floating panels captured keyboard focus and blocked hotkeys. Dropdowns now release focus immediately upon option selection, and all active panel inputs automatically blur when the mouse cursor leaves the panel area.
 - **Fix**: Resolved an issue where holding the Shift key during camera rotation caused jerky, stuttering movements. The camera now snaps smoothly to the closest orthographic view once upon pressing Shift.
