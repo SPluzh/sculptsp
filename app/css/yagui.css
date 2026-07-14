@@ -930,11 +930,11 @@ body {
   -webkit-backdrop-filter: blur(4px);
 }
 
-/* HUD-подсказка горячих клавиш справа снизу */
+/* HUD-подсказка горячих клавиш слева снизу */
 .viewport-hud-hotkeys {
   position: absolute;
-  right: 20px;
-  bottom: 75px; /* Размещается над индикатором количества вертексов */
+  left: 60px; /* Размещается справа от вертикального тулбара */
+  bottom: 20px;
   pointer-events: none;
   font-family: 'Inter', sans-serif;
   font-size: 11px;

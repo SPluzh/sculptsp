@@ -290,7 +290,10 @@ var TR = {
   hudBrushIntensity: 'brush intensity',
   hudBrushSize: 'brush size',
   hudRemeshResolution: 'remesh resolution',
-  hudQuadVoxelRemesh: 'quad voxel remesh'
+  hudQuadVoxelRemesh: 'quad voxel remesh',
+  hudFocalShift: 'focal shift',
+  hudSmooth: 'smooth',
+  hudMask: 'mask'
 };
 
 export default TR;
