@@ -2,7 +2,7 @@ import TR from './GuiTR.js';
 import Enums from '../misc/Enums.js';
 import StateManager from '../states/StateManager.js';
 
-class GuiTablet {
+class GuiStates {
 
   constructor(guiParent, ctrlGui) {
     this._ctrlGui = ctrlGui; // main gui controller
@@ -56,4 +56,4 @@ class GuiTablet {
   }
 }
 
-export default GuiTablet;
+export default GuiStates;

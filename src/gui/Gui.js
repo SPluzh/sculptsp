@@ -28,7 +28,6 @@ import {
   Lightbulb,
   Camera,
   Image,
-  PenTool,
   Settings,
   Redo2,
   ChevronsUpDown,
@@ -103,11 +102,6 @@ class Gui {
     this._toolbar.registerPanel('scene', panelScene);
     ctrls[idc++] = this._ctrlScene = new GuiScene(panelScene, this);
 
-    var panelStates = new PanelContainer('history', this._toolbar);
-    panelStates.setMain(main);
-    this._toolbar.registerPanel('history', panelStates);
-    ctrls[idc++] = this._ctrlStates = new GuiStates(panelStates, this);
-
     var panelSculpting = new PanelContainer('sculpting', this._toolbar);
     panelSculpting.setMain(main);
     this._toolbar.registerPanel('sculpting', panelSculpting);
@@ -133,15 +127,12 @@ class Gui {
     this._toolbar.registerPanel('background', panelBackground);
     ctrls[idc++] = this._ctrlBackground = new GuiBackground(panelBackground, this);
 
-    var panelTablet = new PanelContainer('tablet', this._toolbar);
-    panelTablet.setMain(main);
-    this._toolbar.registerPanel('tablet', panelTablet);
-    ctrls[idc++] = this._ctrlTablet = new GuiTablet(panelTablet, this);
-
     var panelConfig = new PanelContainer('settings', this._toolbar);
     panelConfig.setMain(main);
     this._toolbar.registerPanel('settings', panelConfig);
     ctrls[idc++] = this._ctrlConfig = new GuiConfig(panelConfig, this);
+    ctrls[idc++] = this._ctrlStates = new GuiStates(panelConfig, this);
+    ctrls[idc++] = this._ctrlTablet = new GuiTablet(panelConfig, this);
 
     // Eagerly initialize mesh info panel as a HUD inside the viewport
     ctrls[idc++] = this._ctrlMesh = new GuiMesh(viewport, this);
@@ -149,14 +140,12 @@ class Gui {
     // Register all buttons on the VerticalToolbar in the correct order
     this._toolbar.addButton('file', '<i data-lucide="folder-open"></i>', 'File');
     this._toolbar.addButton('scene', '<i data-lucide="globe"></i>', 'Scene');
-    this._toolbar.addButton('history', '<i data-lucide="undo-2"></i>', 'History');
     this._toolbar.addSeparator();
     this._toolbar.addButton('topology', '<i data-lucide="hexagon"></i>', 'Topology');
     this._toolbar.addButton('rendering', '<i data-lucide="lightbulb"></i>', 'Rendering');
     this._toolbar.addSeparator();
     this._toolbar.addButton('camera', '<i data-lucide="camera"></i>', 'Camera');
     this._toolbar.addButton('background', '<i data-lucide="image"></i>', 'Background');
-    this._toolbar.addButton('tablet', '<i data-lucide="pen-tool"></i>', 'Tablet');
     this._toolbar.addButton('settings', '<i data-lucide="settings"></i>', 'Settings');
 
     this._toolbar.addActiveToolButton('sculpting');
@@ -173,12 +162,10 @@ class Gui {
       icons: {
         FolderOpen,
         Globe,
-        Undo2,
         Hexagon,
         Lightbulb,
         Camera,
         Image,
-        PenTool,
         Settings
       },
       root: this._toolbar._dom
