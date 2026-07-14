@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.9]
+- **Fix**: Resolved an issue where global keyboard shortcuts (e.g., **Ctrl + Z** for Undo, **Ctrl + Shift + Z** for Redo, **Ctrl + D** for Duplicate) were blocked by the sculpting panel's keyboard handler.
+- **Clay Buildup Tool**: Reimplemented the Clay Buildup tool based on the standard Brush tool, configured with a default "Square" alpha texture and a spacing of 5% for tighter stroke coverage.
 - **UI**: Consolidated the History and Tablet settings panels directly inside the main Settings panel as collapsible folders, removing their standalone buttons from the vertical toolbar to simplify the interface.
 - **UI**: Replaced all old Unicode and emoji icons in the vertical toolbar, command shelf, and context popup menu with high-quality, modern vector icons from Lucide.
 - **Fix**: Resolved an issue where the camera navigation undo (**Alt + Z**) and redo (**Alt + Shift + Z**) hotkeys were blocked by the sculpting panel's keyboard handler.

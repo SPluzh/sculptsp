@@ -332,6 +332,10 @@ class GuiSculpting {
     if (event.altKey && !event.ctrlKey && key === 90)
       return;
 
+    // Do not intercept Ctrl/Cmd keyboard shortcuts (e.g. Ctrl+Z, Ctrl+Y, Ctrl+D, Ctrl+S)
+    if ((event.ctrlKey || event.metaKey) && key !== 17 && key !== 91 && key !== 93 && key !== 224)
+      return;
+
     var main = this._main;
     var shk = getOptionsURL.getShortKey(event.which);
     event.stopPropagation();
@@ -404,6 +408,10 @@ class GuiSculpting {
     var key = event.which;
     // Do not intercept camera undo/redo (Alt+Z / Alt+Shift+Z)
     if (event.altKey && !event.ctrlKey && key === 90)
+      return;
+
+    // Do not intercept Ctrl/Cmd keyboard shortcuts (e.g. Ctrl+Z, Ctrl+Y, Ctrl+D, Ctrl+S)
+    if ((event.ctrlKey || event.metaKey) && key !== 17 && key !== 91 && key !== 93 && key !== 224)
       return;
 
     var releaseTool = this._main._action === Enums.Action.NOTHING && this._toolOnRelease !== -1 && !event.ctrlKey && !event.shiftKey;
