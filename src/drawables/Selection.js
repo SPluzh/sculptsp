@@ -144,11 +144,12 @@ class Selection {
     mat4.mul(this._cacheDotMVP, _TMP_MATPV, this._cacheDotMVP);
     // symmetry mvp
     mat4.scale(this._cacheDotSymMVP, this._cacheDotSymMVP, [0.0, 0.0, 0.0]);
+    this._cacheDotSymMVPs = [];
   }
 
   _updateMatricesMesh(camera, main) {
     var picking = main.getPicking();
-    var pickingSym = main.getPickingSymmetry();
+    var pickingSyms = main.getPickingSymmetries();
     var worldRadius = Math.sqrt(picking.computeWorldRadius2(true));
     var screenRadius = main.getSculptManager().getCurrentTool().getScreenRadius();
 
@@ -181,14 +182,23 @@ class Selection {
     // dot mvp
     mat4.scale(this._cacheDotMVP, _TMP_MAT, vec3.set(_TMP_VEC, constRadius, constRadius, constRadius));
     mat4.mul(this._cacheDotMVP, _TMP_MATPV, this._cacheDotMVP);
-    // symmetry mvp
-    vec3.transformMat4(_TMP_VEC, pickingSym.getIntersectionPoint(), mesh.getMatrix());
-    mat4.identity(_TMP_MAT);
-    mat4.translate(_TMP_MAT, _TMP_MAT, _TMP_VEC);
-    mat4.rotate(_TMP_MAT, _TMP_MAT, rad, _TMP_AXIS);
 
-    mat4.scale(_TMP_MAT, _TMP_MAT, vec3.set(_TMP_VEC, constRadius, constRadius, constRadius));
-    mat4.mul(this._cacheDotSymMVP, _TMP_MATPV, _TMP_MAT);
+    // symmetry mvp
+    this._cacheDotSymMVPs = [];
+    for (var i = 0; i < pickingSyms.length; ++i) {
+      var sym = pickingSyms[i];
+      vec3.transformMat4(_TMP_VEC, sym.getIntersectionPoint(), mesh.getMatrix());
+      var m = mat4.create();
+      mat4.identity(m);
+      mat4.translate(m, m, _TMP_VEC);
+      mat4.rotate(m, m, rad, _TMP_AXIS);
+      mat4.scale(m, m, vec3.set(_TMP_VEC, constRadius, constRadius, constRadius));
+      mat4.mul(m, _TMP_MATPV, m);
+      this._cacheDotSymMVPs.push(m);
+    }
+    if (this._cacheDotSymMVPs.length > 0) {
+      mat4.copy(this._cacheDotSymMVP, this._cacheDotSymMVPs[0]);
+    }
   }
 
   render(main, camera, vpX) {

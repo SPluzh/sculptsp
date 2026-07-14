@@ -1081,3 +1081,59 @@ body {
   height: auto !important;
   margin: 8px 5px !important;
 }
+
+/* ── Настройки симметрии на панели инструментов ── */
+.vtb-sym-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  gap: 2px;
+}
+
+.vtb-btn-sub-container {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  gap: 2px;
+  transition: all 0.2s ease;
+}
+
+.vtb-btn-sub {
+  width: 36px;
+  height: 16px;
+  background: var(--color-bg-button);
+  border-radius: var(--radius-sm);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 8px;
+  font-weight: bold;
+  color: var(--color-text-muted);
+  cursor: pointer;
+  user-select: none;
+  transition: all 0.15s ease;
+  border: none;
+  box-sizing: border-box;
+}
+
+.vtb-btn-sub:hover {
+  background: var(--color-bg-control);
+  color: var(--color-text-primary);
+}
+
+.vtb-btn-sub.active {
+  background: var(--color-accent);
+  color: #fff;
+}
+
+.vtb-btn-sub-row {
+  display: flex;
+  width: 100%;
+  gap: 2px;
+}
+
+.vtb-btn-sub-row .vtb-btn-sub {
+  flex: 1;
+  width: auto;
+}

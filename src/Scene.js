@@ -52,7 +52,8 @@ class Scene {
     this._dividerRenderer = null;
     this._camera = new Camera(this);
     this._picking = new Picking(this); // the ray picking
-    this._pickingSym = new Picking(this, true); // the symmetrical picking
+    this._pickingSym = new Picking(this, ['x']); // the symmetrical picking
+    this._pickingSymmetries = [this._pickingSym];
 
     // split viewport
     this._splitMode = null;      // null | 'mirror' | 'independent'
@@ -232,6 +233,47 @@ class Scene {
 
   getPickingSymmetry() {
     return this._pickingSym;
+  }
+
+  getPickingSymmetries() {
+    if (!this._pickingSymmetries || this._pickingSymmetries.length === 0) {
+      this.updateSymmetryPickers();
+    }
+    return this._pickingSymmetries;
+  }
+
+  getSymmetryCombinations() {
+    var axes = Mesh.symmetryAxes || { x: true };
+    var active = [];
+    if (axes.x) active.push('x');
+    if (axes.y) active.push('y');
+    if (axes.z) active.push('z');
+
+    if (active.length === 0) return [];
+
+    var results = [];
+    var fn = function(index, current) {
+      if (index === active.length) {
+        if (current.length > 0) {
+          results.push(current);
+        }
+        return;
+      }
+      fn(index + 1, current.concat([active[index]]));
+      fn(index + 1, current);
+    };
+    fn(0, []);
+    return results;
+  }
+
+  updateSymmetryPickers() {
+    this._pickingSymmetries = [];
+    var combs = this.getSymmetryCombinations();
+    for (var i = 0; i < combs.length; ++i) {
+      var p = new Picking(this, combs[i]);
+      this._pickingSymmetries.push(p);
+    }
+    this._pickingSym = this._pickingSymmetries[0] || new Picking(this);
   }
 
   getSculptManager() {

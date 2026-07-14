@@ -58,9 +58,11 @@ ShaderSelection.draw = function (geom, drawCircle, drawSym) {
   ShaderSelection.attributes.aVertex.bindToBuffer(geom.getDotBuffer());
   gl.drawArrays(gl.TRIANGLE_FAN, 0, geom.getDotBuffer()._size / 3);
 
-  if (drawSym) {
-    gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getDotSymmetryMVP());
-    gl.drawArrays(gl.TRIANGLE_FAN, 0, geom.getDotBuffer()._size / 3);
+  if (drawSym && geom._cacheDotSymMVPs) {
+    for (var i = 0; i < geom._cacheDotSymMVPs.length; ++i) {
+      gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom._cacheDotSymMVPs[i]);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, geom.getDotBuffer()._size / 3);
+    }
   }
 };
 

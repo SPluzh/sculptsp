@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.10]
+- **Symmetry**: Upgraded the symmetry system to support multiple active symmetry axes (X, Y, and Z) simultaneously. Users can now enable any combination of axes (or all three together) for multi-directional mirroring.
+- **UI**: Updated the left toolbar shelf and sculpting sidebar to replace the single-axis selection dropdown with independent toggles for the X, Y, and Z axes.
+- **Symmetry**: Visual brush indicator circles/dots are now rendered at all active symmetrical mirroring points simultaneously across the mesh surface.
+- **Symmetry**: Added support for Y and Z symmetry planes in addition to the X plane, and implemented World coordinate symmetry space alongside Local symmetry.
+- **UI**: Added half-height toolbar controls directly below the main symmetry shelf button to easily toggle between World/Local symmetry spaces and select the active symmetry axis (X, Y, or Z).
+- **UI**: Added corresponding Symmetry Space and Symmetry Axis dropdown controls in the Sculpting settings sidebar, fully synchronized with the toolbar.
 - **Camera/Reference Images**: Added support for screen-space reference image overlays. Users can import unlimited images per camera (independent between the main and split viewports) and customize each image's visibility, opacity, scale, offset positions, and toggle interactive dragging via a new **Interactive Drag** checkbox.
 - **Viewport**: Added a 2D Viewport Pan/Zoom mode toggle under the Camera menu. When enabled, users can use **Alt + Middle Mouse Button drag** to pan the entire viewport (scene and reference images together) and **Ctrl + Middle Mouse Button drag** (horizontal movement) to zoom, allowing detailed viewport inspection without altering the 3D camera position.
 - **UI**: Added a custom heads-up display (HUD) for essential sculpting and painting hotkeys (`Q`, `W`, `E`, `R`, `A`, `S`, `D`, `X`, `Ctrl+X`, `Shift`, `Ctrl`) located in the bottom-left corner of the viewport.

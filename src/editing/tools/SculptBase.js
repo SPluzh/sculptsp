@@ -59,10 +59,12 @@ class SculptBase {
       return false;
 
     picking.initAlpha();
-    var pickingSym = main.getSculptManager().getSymmetry() ? main.getPickingSymmetry() : null;
-    if (pickingSym) {
-      pickingSym.intersectionMouseMesh(mesh);
-      pickingSym.initAlpha();
+    if (main.getSculptManager().getSymmetry()) {
+      var syms = main.getPickingSymmetries();
+      for (var i = 0; i < syms.length; ++i) {
+        syms[i].intersectionMouseMesh(mesh);
+        syms[i].initAlpha();
+      }
     }
 
     this.pushState();
@@ -102,8 +104,12 @@ class SculptBase {
       picking.intersectionMouseMeshes();
 
     var mesh = picking.getMesh();
-    if (mesh && main.getSculptManager().getSymmetry())
-      main.getPickingSymmetry().intersectionMouseMesh(mesh);
+    if (mesh && main.getSculptManager().getSymmetry()) {
+      var syms = main.getPickingSymmetries();
+      for (var i = 0; i < syms.length; ++i) {
+        syms[i].intersectionMouseMesh(mesh);
+      }
+    }
   }
 
   update(continuous) {
@@ -120,7 +126,7 @@ class SculptBase {
 
     var picking = main.getPicking();
     var origRad = this._radius;
-    var pickingSym = main.getSculptManager().getSymmetry() ? main.getPickingSymmetry() : null;
+    var pickingSyms = main.getSculptManager().getSymmetry() ? main.getPickingSymmetries() : [];
 
     var dx = main._mouseX - this._lastMouseX;
     var dy = main._mouseY - this._lastMouseY;
@@ -129,7 +135,7 @@ class SculptBase {
     // so that the stroke still has a direction (the mask can be rotated correctly then)
     var offx = dx / this._radius;
     var offy = dy / this._radius;
-    this.makeStroke(this._lastMouseX + offx * 1e-3, this._lastMouseY + offy * 1e-3, picking, pickingSym);
+    this.makeStroke(this._lastMouseX + offx * 1e-3, this._lastMouseY + offy * 1e-3, picking, pickingSyms);
     this._radius = origRad;
 
     this.updateRender();
@@ -139,7 +145,7 @@ class SculptBase {
   sculptStroke() {
     var main = this._main;
     var picking = main.getPicking();
-    var pickingSym = main.getSculptManager().getSymmetry() ? main.getPickingSymmetry() : null;
+    var pickingSyms = main.getSculptManager().getSymmetry() ? main.getPickingSymmetries() : [];
 
     var dx = main._mouseX - this._lastMouseX;
     var dy = main._mouseY - this._lastMouseY;
@@ -149,7 +155,7 @@ class SculptBase {
     // spacing = 0 means stamp on every mouse move (no distance threshold)
     if (minSpacing <= 0.0) {
       if (dist > 0.0)
-        this.makeStroke(main._mouseX, main._mouseY, picking, pickingSym);
+        this.makeStroke(main._mouseX, main._mouseY, picking, pickingSyms);
       this.updateRender();
       this._lastMouseX = main._mouseX;
       this._lastMouseY = main._mouseY;
@@ -166,7 +172,7 @@ class SculptBase {
     var mouseY = this._lastMouseY + dy;
 
     for (var i = step; i <= 1.0; i += step) {
-      if (!this.makeStroke(mouseX, mouseY, picking, pickingSym))
+      if (!this.makeStroke(mouseX, mouseY, picking, pickingSyms))
         break;
       mouseX += dx;
       mouseY += dy;
@@ -183,7 +189,7 @@ class SculptBase {
     this._main.render();
   }
 
-  makeStroke(mouseX, mouseY, picking, pickingSym) {
+  makeStroke(mouseX, mouseY, picking, pickingSyms) {
     var mesh = this.getMesh();
     picking.intersectionMouseMesh(mesh, mouseX, mouseY);
     var pick1 = picking.getMesh();
@@ -196,20 +202,26 @@ class SculptBase {
     if (dynTopo && pick1)
       this.stroke(picking, false);
 
-    var pick2;
-    if (pickingSym) {
-      pickingSym.intersectionMouseMesh(mesh, mouseX, mouseY);
-      pick2 = pickingSym.getMesh();
-      if (pick2) {
-        pickingSym.setLocalRadius2(picking.getLocalRadius2());
-        pickingSym.pickVerticesInSphere(pickingSym.getLocalRadius2());
-        pickingSym.computePickedNormal();
+    var picks = [];
+    if (pickingSyms && pickingSyms.length > 0) {
+      for (var i = 0; i < pickingSyms.length; ++i) {
+        var sym = pickingSyms[i];
+        sym.intersectionMouseMesh(mesh, mouseX, mouseY);
+        var p = sym.getMesh();
+        if (p) {
+          sym.setLocalRadius2(picking.getLocalRadius2());
+          sym.pickVerticesInSphere(sym.getLocalRadius2());
+          sym.computePickedNormal();
+          picks.push(sym);
+        }
       }
     }
 
     if (!dynTopo && pick1) this.stroke(picking, false);
-    if (pick2) this.stroke(pickingSym, true);
-    return pick1 || pick2;
+    for (var j = 0; j < picks.length; ++j) {
+      this.stroke(picks[j], true);
+    }
+    return pick1 || picks.length > 0;
   }
 
   updateMeshBuffers() {
@@ -224,8 +236,8 @@ class SculptBase {
     if (this._lockPosition) return this.update(true);
     var main = this._main;
     var picking = main.getPicking();
-    var pickingSym = main.getSculptManager().getSymmetry() ? main.getPickingSymmetry() : null;
-    this.makeStroke(main._mouseX, main._mouseY, picking, pickingSym);
+    var pickingSyms = main.getSculptManager().getSymmetry() ? main.getPickingSymmetries() : [];
+    this.makeStroke(main._mouseX, main._mouseY, picking, pickingSyms);
     this.updateRender();
   }
 

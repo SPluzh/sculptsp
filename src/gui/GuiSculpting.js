@@ -4,6 +4,7 @@ import Tools from '../editing/tools/Tools.js';
 import getOptionsURL from '../misc/getOptionsURL.js';
 import GuiSculptingTools from './GuiSculptingTools.js';
 import Indicator from './Indicator.js';
+import Mesh from '../mesh/Mesh.js';
 import {
   createIcons,
   Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
@@ -48,6 +49,8 @@ class GuiSculpting {
     this._menu = null;
     this._ctrlSculpt = null;
     this._ctrlSymmetry = null;
+    this._ctrlSymmetryMode = null;
+    this._ctrlSymmetryAxis = null;
     this._ctrlContinuous = null;
     this._ctrlTitleCommon = null;
     this._intensityInd = new Indicator({ label: TR('sculptIntensity').split(' (')[0], unit: '%', min: 0, max: 100 });
@@ -108,6 +111,17 @@ class GuiSculpting {
     // continuous
     this._ctrlContinuous = menu.addCheckbox(TR('sculptContinuous'), this._sculptManager, '_continuous');
 
+    // symmetry
+    this._ctrlSymmetry = menu.addCheckbox(TR('sculptSymmetry'), this._sculptManager.getSymmetry(), this.onSymmetryChange.bind(this));
+
+    var modeVal = Mesh.symmetryMode === 'world' ? 1 : 0;
+    this._ctrlSymmetryMode = menu.addCombobox(TR('sculptSymmetryMode'), modeVal, this.onSymmetryModeChange.bind(this), [TR('sculptSymmetryLocal'), TR('sculptSymmetryWorld')]);
+
+    this._ctrlSymmetryAxisLabel = menu.addTitle(TR('sculptSymmetryAxis'));
+    this._ctrlSymmetryX = menu.addCheckbox('X', Mesh.symmetryAxes.x, (val) => this.onSymmetryAxisToggle('x', val));
+    this._ctrlSymmetryY = menu.addCheckbox('Y', Mesh.symmetryAxes.y, (val) => this.onSymmetryAxisToggle('y', val));
+    this._ctrlSymmetryZ = menu.addCheckbox('Z', Mesh.symmetryAxes.z, (val) => this.onSymmetryAxisToggle('z', val));
+
     GuiSculptingTools.show(this._sculptManager.getToolIndex());
     this.addEvents();
     this.onChangeTool(this._sculptManager.getToolIndex());
@@ -125,6 +139,32 @@ class GuiSculpting {
     if (this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setSymmetryActive(value);
     }
+    var showSym = this._sculptManager.getToolIndex() !== Enums.Tools.TRANSFORM && this._sculptManager.getToolIndex() !== Enums.Tools.MEASURE && this._sculptManager.getToolIndex() !== Enums.Tools.DIVIDER;
+    if (this._ctrlSymmetryMode) {
+      this._ctrlSymmetryMode.setVisibility(value && showSym);
+    }
+    if (this._ctrlSymmetryAxisLabel) this._ctrlSymmetryAxisLabel.setVisibility(value && showSym);
+    if (this._ctrlSymmetryX) this._ctrlSymmetryX.setVisibility(value && showSym);
+    if (this._ctrlSymmetryY) this._ctrlSymmetryY.setVisibility(value && showSym);
+    if (this._ctrlSymmetryZ) this._ctrlSymmetryZ.setVisibility(value && showSym);
+  }
+
+  onSymmetryModeChange(value) {
+    var mode = value === 1 ? 'world' : 'local';
+    Mesh.symmetryMode = mode;
+    this._main.render();
+    if (this._ctrlGui._toolbar) {
+      this._ctrlGui._toolbar.updateSymmetrySettings();
+    }
+  }
+
+  onSymmetryAxisToggle(axis, value) {
+    Mesh.symmetryAxes[axis] = value;
+    this._main.updateSymmetryPickers();
+    if (this._ctrlGui._toolbar) {
+      this._ctrlGui._toolbar.updateSymmetrySettings();
+    }
+    this._main.render();
   }
 
   addEvents() {
@@ -209,9 +249,17 @@ class GuiSculpting {
     this._ctrlContinuous.setVisibility(showContinuous);
 
     var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
+    var symActive = this._sculptManager.getSymmetry();
     if (this._ctrlSymmetry) {
       this._ctrlSymmetry.setVisibility(showSym);
     }
+    if (this._ctrlSymmetryMode) {
+      this._ctrlSymmetryMode.setVisibility(showSym && symActive);
+    }
+    if (this._ctrlSymmetryAxisLabel) this._ctrlSymmetryAxisLabel.setVisibility(showSym && symActive);
+    if (this._ctrlSymmetryX) this._ctrlSymmetryX.setVisibility(showSym && symActive);
+    if (this._ctrlSymmetryY) this._ctrlSymmetryY.setVisibility(showSym && symActive);
+    if (this._ctrlSymmetryZ) this._ctrlSymmetryZ.setVisibility(showSym && symActive);
     if (this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setSymmetryVisibility(showSym);
     }

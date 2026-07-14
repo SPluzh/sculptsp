@@ -327,11 +327,34 @@ class Mesh {
     return Math.sqrt(this.getScale2());
   }
 
-  getSymmetryOrigin() {
+  getSymmetryOriginForAxis(axis) {
     var orig = vec3.create();
     var tdata = this._transformData;
-    var offset = tdata._symmetryOffset * this.computeLocalRadius();
-    return vec3.scaleAndAdd(orig, tdata._center, tdata._symmetryNormal, offset);
+    var offset = tdata._symmetryOffset;
+
+    var normalVec = [1.0, 0.0, 0.0];
+    if (axis === 'y') normalVec = [0.0, 1.0, 0.0];
+    else if (axis === 'z') normalVec = [0.0, 0.0, 1.0];
+
+    if (Mesh.symmetryMode === 'world') {
+      var worldRadius = this.computeLocalRadius() * this.getScale();
+      var worldOrigin = vec3.scaleAndAdd(vec3.create(), [0.0, 0.0, 0.0], normalVec, offset * worldRadius);
+      var invM = mat4.create();
+      mat4.invert(invM, this.getMatrix());
+      return vec3.transformMat4(orig, worldOrigin, invM);
+    } else {
+      var localRadius = this.computeLocalRadius();
+      return vec3.scaleAndAdd(orig, tdata._center, normalVec, offset * localRadius);
+    }
+  }
+
+  getSymmetryOrigin() {
+    var axes = Mesh.symmetryAxes || { x: true };
+    var activeAxis = 'x';
+    if (axes.y) activeAxis = 'y';
+    else if (axes.z) activeAxis = 'z';
+    else if (axes.x) activeAxis = 'x';
+    return this.getSymmetryOriginForAxis(activeAxis);
   }
 
   getSymmetryOffset() {
@@ -342,8 +365,31 @@ class Mesh {
     this._transformData._symmetryOffset = offset;
   }
 
+  getSymmetryNormalForAxis(axis) {
+    var normalVec = [1.0, 0.0, 0.0];
+    if (axis === 'y') normalVec = [0.0, 1.0, 0.0];
+    else if (axis === 'z') normalVec = [0.0, 0.0, 1.0];
+
+    if (Mesh.symmetryMode === 'world') {
+      var m3 = mat3.create();
+      mat3.fromMat4(m3, this.getMatrix());
+      mat3.transpose(m3, m3);
+      var localNormal = vec3.create();
+      vec3.transformMat3(localNormal, normalVec, m3);
+      return vec3.normalize(localNormal, localNormal);
+    } else {
+      vec3.copy(this._transformData._symmetryNormal, normalVec);
+      return this._transformData._symmetryNormal;
+    }
+  }
+
   getSymmetryNormal() {
-    return this._transformData._symmetryNormal;
+    var axes = Mesh.symmetryAxes || { x: true };
+    var activeAxis = 'x';
+    if (axes.y) activeAxis = 'y';
+    else if (axes.z) activeAxis = 'z';
+    else if (axes.x) activeAxis = 'x';
+    return this.getSymmetryNormalForAxis(activeAxis);
   }
 
   getFacePosInLeaf() {
@@ -2343,5 +2389,7 @@ class Mesh {
 
 Mesh.OPTIMIZE = true;
 Mesh.ID = 0;
+Mesh.symmetryMode = 'local';
+Mesh.symmetryAxes = { x: true, y: false, z: false };
 
 export default Mesh;

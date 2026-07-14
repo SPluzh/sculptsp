@@ -1,4 +1,5 @@
 import PanelContainer from './PanelContainer.js';
+import Mesh from '../mesh/Mesh.js';
 import {
   createIcons,
   Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
@@ -134,6 +135,9 @@ class VerticalToolbar {
   }
 
   addSymmetryButton(tooltip, onToggleFn, initialValue) {
+    var group = document.createElement('div');
+    group.className = 'vtb-sym-group';
+
     var btn = document.createElement('div');
     btn.className = 'vtb-btn';
     if (initialValue) {
@@ -148,14 +152,92 @@ class VerticalToolbar {
         document.activeElement.blur();
     });
     this._symmetryBtn = btn;
-    
+    group.appendChild(btn);
+
+    var subContainer = document.createElement('div');
+    subContainer.className = 'vtb-btn-sub-container';
+    this._symSubContainer = subContainer;
+    group.appendChild(subContainer);
+
+    var spaceBtn = document.createElement('div');
+    spaceBtn.className = 'vtb-btn-sub vtb-btn-sub--space';
+    spaceBtn.addEventListener('click', () => {
+      var nextMode = Mesh.symmetryMode === 'world' ? 'local' : 'world';
+      Mesh.symmetryMode = nextMode;
+      if (this._main._gui && this._main._gui._ctrlSculpting && this._main._gui._ctrlSculpting._ctrlSymmetryMode) {
+        this._main._gui._ctrlSculpting._ctrlSymmetryMode.setValue(nextMode === 'world' ? 1 : 0, true);
+      }
+      this.updateSymmetrySettings();
+      this._main.render();
+      spaceBtn.blur();
+    });
+    this._spaceBtn = spaceBtn;
+    subContainer.appendChild(spaceBtn);
+
+    var axisRow = document.createElement('div');
+    axisRow.className = 'vtb-btn-sub-row';
+    subContainer.appendChild(axisRow);
+
+    this._axisBtns = {};
+    ['x', 'y', 'z'].forEach(axis => {
+      var aBtn = document.createElement('div');
+      aBtn.className = 'vtb-btn-sub';
+      aBtn.textContent = axis.toUpperCase();
+      aBtn.addEventListener('click', () => {
+        var active = !Mesh.symmetryAxes[axis];
+        Mesh.symmetryAxes[axis] = active;
+        if (this._main._gui && this._main._gui._ctrlSculpting) {
+          var ctrl = this._main._gui._ctrlSculpting;
+          if (axis === 'x' && ctrl._ctrlSymmetryX) ctrl._ctrlSymmetryX.setValue(active, true);
+          if (axis === 'y' && ctrl._ctrlSymmetryY) ctrl._ctrlSymmetryY.setValue(active, true);
+          if (axis === 'z' && ctrl._ctrlSymmetryZ) ctrl._ctrlSymmetryZ.setValue(active, true);
+        }
+        this._main.updateSymmetryPickers();
+        this.updateSymmetrySettings();
+        this._main.render();
+        aBtn.blur();
+      });
+      this._axisBtns[axis] = aBtn;
+      axisRow.appendChild(aBtn);
+    });
+
+    this.updateSymmetrySettings();
+
     if (this._activeToolBtn) {
-      this._dom.insertBefore(btn, this._activeToolBtn.nextSibling);
+      this._dom.insertBefore(group, this._activeToolBtn.nextSibling);
     } else {
-      this._dom.insertBefore(btn, this._dom.firstChild);
+      this._dom.insertBefore(group, this._dom.firstChild);
     }
-    
+
     return btn;
+  }
+
+  updateSymmetrySettings() {
+    var active = this._main.getSculptManager().getSymmetry();
+    if (this._symSubContainer) {
+      this._symSubContainer.style.display = active ? 'flex' : 'none';
+    }
+    if (this._spaceBtn) {
+      var isWorld = Mesh.symmetryMode === 'world';
+      this._spaceBtn.textContent = isWorld ? 'WORLD' : 'LOCAL';
+      if (isWorld) {
+        this._spaceBtn.classList.add('active');
+      } else {
+        this._spaceBtn.classList.remove('active');
+      }
+    }
+    if (this._axisBtns) {
+      ['x', 'y', 'z'].forEach(axis => {
+        var btn = this._axisBtns[axis];
+        if (btn) {
+          if (Mesh.symmetryAxes[axis]) {
+            btn.classList.add('active');
+          } else {
+            btn.classList.remove('active');
+          }
+        }
+      });
+    }
   }
 
   setSymmetryActive(active) {
@@ -166,11 +248,12 @@ class VerticalToolbar {
         this._symmetryBtn.classList.remove('active');
       }
     }
+    this.updateSymmetrySettings();
   }
 
   setSymmetryVisibility(visible) {
-    if (this._symmetryBtn) {
-      this._symmetryBtn.style.display = visible ? 'flex' : 'none';
+    if (this._symmetryBtn && this._symmetryBtn.parentNode) {
+      this._symmetryBtn.parentNode.style.display = visible ? 'flex' : 'none';
     }
   }
 

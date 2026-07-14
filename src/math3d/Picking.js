@@ -43,7 +43,14 @@ class Picking {
     this._rWorld2 = 0.0; // radius of the selection area (world space)
     this._eyeDir = [0.0, 0.0, 0.0]; // eye direction
 
-    this._xSym = !!xSym;
+    if (Array.isArray(xSym)) {
+      this._mirrorAxes = xSym;
+    } else if (xSym === true) {
+      this._mirrorAxes = ['x'];
+    } else {
+      this._mirrorAxes = [];
+    }
+    this._xSym = this._mirrorAxes.indexOf('x') !== -1;
 
     this._pickedNormal = [0.0, 0.0, 0.0];
     // alpha stuffs
@@ -234,11 +241,14 @@ class Picking {
     vec3.copy(_TMP_NEAR, vNearOrig);
     vec3.copy(_TMP_FAR, vFarOrig);
     // apply symmetry
-    if (this._xSym) {
-      var ptPlane = mesh.getSymmetryOrigin();
-      var nPlane = mesh.getSymmetryNormal();
-      Geometry.mirrorPoint(_TMP_NEAR, ptPlane, nPlane);
-      Geometry.mirrorPoint(_TMP_FAR, ptPlane, nPlane);
+    if (this._mirrorAxes && this._mirrorAxes.length > 0) {
+      for (var i = 0; i < this._mirrorAxes.length; ++i) {
+        var axis = this._mirrorAxes[i];
+        var ptPlane = mesh.getSymmetryOriginForAxis(axis);
+        var nPlane = mesh.getSymmetryNormalForAxis(axis);
+        Geometry.mirrorPoint(_TMP_NEAR, ptPlane, nPlane);
+        Geometry.mirrorPoint(_TMP_FAR, ptPlane, nPlane);
+      }
     }
     var vAr = mesh.getVertices();
     var fAr = mesh.getFaces();
