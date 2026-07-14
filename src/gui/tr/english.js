@@ -279,7 +279,18 @@ var TR = {
   },
   remeshResolutionTooHigh: function (maxRes) {
     return 'Resolution is too high (memory limit exceeded).\nMaximum recommended resolution for this model is ~' + maxRes + '.';
-  }
+  },
+
+  // hotkeys HUD
+  hudHotkeysTitle: 'Hotkeys',
+  hudMoveTool: 'move tool',
+  hudClayBuildup: 'clay buildup',
+  hudCrease: 'crease',
+  hudPinch: 'pinch',
+  hudBrushIntensity: 'brush intensity',
+  hudBrushSize: 'brush size',
+  hudRemeshResolution: 'remesh resolution',
+  hudQuadVoxelRemesh: 'quad voxel remesh'
 };
 
 export default TR;

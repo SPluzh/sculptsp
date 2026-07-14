@@ -275,7 +275,18 @@ var TR = {
   },
   remeshResolutionTooHigh: function (maxRes) {
     return 'Разрешение слишком высокое (превышен лимит памяти).\nМаксимальное рекомендуемое разрешение для этой модели: ~' + maxRes + '.';
-  }
+  },
+
+  // hotkeys HUD
+  hudHotkeysTitle: 'Горячие клавиши',
+  hudMoveTool: 'move tool',
+  hudClayBuildup: 'clay buildup',
+  hudCrease: 'crease',
+  hudPinch: 'pinch',
+  hudBrushIntensity: 'brush intensity',
+  hudBrushSize: 'brush size',
+  hudRemeshResolution: 'remesh resolution',
+  hudQuadVoxelRemesh: 'quad voxel remesh'
 };
 
 export default TR;

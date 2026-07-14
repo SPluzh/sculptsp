@@ -5,6 +5,7 @@ import GuiCamera from './GuiCamera.js';
 import GuiConfig from './GuiConfig.js';
 import GuiFiles from './GuiFiles.js';
 import GuiMesh from './GuiMesh.js';
+import GuiHotkeysHUD from './GuiHotkeysHUD.js';
 import GuiTopology from './GuiTopology.js';
 import GuiRendering from './GuiRendering.js';
 import GuiScene from './GuiScene.js';
@@ -138,6 +139,8 @@ class Gui {
 
     // Eagerly initialize mesh info panel as a HUD inside the viewport
     ctrls[idc++] = this._ctrlMesh = new GuiMesh(viewport, this);
+    // Eagerly initialize hotkeys HUD panel inside the viewport
+    ctrls[idc++] = this._ctrlHotkeysHUD = new GuiHotkeysHUD(viewport, this);
 
     // Register all buttons on the VerticalToolbar in the correct order
     this._toolbar.addButton('file', '<i data-lucide="folder-open"></i>', 'File');
