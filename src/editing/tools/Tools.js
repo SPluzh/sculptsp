@@ -64,4 +64,25 @@ Tools[Enums.Tools.ELASTIC].uiName = 'sculptElastic';
 Tools[Enums.Tools.CURVE_DEFORM].uiName = 'sculptCurveDeform';
 Tools[Enums.Tools.DIVIDER].uiName = 'dividerTitle';
 
+Tools[Enums.Tools.BRUSH].icon = 'Brush';
+Tools[Enums.Tools.INFLATE].icon = 'Wind';
+Tools[Enums.Tools.TWIST].icon = 'RotateCw';
+Tools[Enums.Tools.SMOOTH].icon = 'Waves';
+Tools[Enums.Tools.FLATTEN].icon = 'ChevronsDownUp';
+Tools[Enums.Tools.PINCH].icon = 'Shrink';
+Tools[Enums.Tools.CREASE].icon = 'PenLine';
+Tools[Enums.Tools.DRAG].icon = 'Move';
+Tools[Enums.Tools.PAINT].icon = 'Paintbrush';
+Tools[Enums.Tools.MOVE].icon = 'Hand';
+Tools[Enums.Tools.MASKING].icon = 'Shield';
+Tools[Enums.Tools.LOCALSCALE].icon = 'Expand';
+Tools[Enums.Tools.TRANSFORM].icon = 'Grid';
+Tools[Enums.Tools.CLAYBUILDUP].icon = 'Layers';
+Tools[Enums.Tools.ZSPHERE].icon = 'CircleDot';
+Tools[Enums.Tools.TOPOLOGY].icon = 'Network';
+Tools[Enums.Tools.MEASURE].icon = 'Ruler';
+Tools[Enums.Tools.ELASTIC].icon = 'Activity';
+Tools[Enums.Tools.CURVE_DEFORM].icon = 'Spline';
+Tools[Enums.Tools.DIVIDER].icon = 'Scissors';
+
 export default Tools;

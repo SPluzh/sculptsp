@@ -17,13 +17,13 @@ import VerticalToolbar from './VerticalToolbar.js';
 import PanelContainer from './PanelContainer.js';
 
 import Export from '../files/Export.js';
+import Tools from '../editing/tools/Tools.js';
 
 import {
   createIcons,
   FolderOpen,
   Globe,
   Undo2,
-  Palette,
   Hexagon,
   Lightbulb,
   Camera,
@@ -151,7 +151,6 @@ class Gui {
     this._toolbar.addButton('scene', '<i data-lucide="globe"></i>', 'Scene');
     this._toolbar.addButton('history', '<i data-lucide="undo-2"></i>', 'History');
     this._toolbar.addSeparator();
-    this._toolbar.addButton('sculpting', '<i data-lucide="palette"></i>', 'Sculpting');
     this._toolbar.addButton('topology', '<i data-lucide="hexagon"></i>', 'Topology');
     this._toolbar.addButton('rendering', '<i data-lucide="lightbulb"></i>', 'Rendering');
     this._toolbar.addSeparator();
@@ -159,6 +158,13 @@ class Gui {
     this._toolbar.addButton('background', '<i data-lucide="image"></i>', 'Background');
     this._toolbar.addButton('tablet', '<i data-lucide="pen-tool"></i>', 'Tablet');
     this._toolbar.addButton('settings', '<i data-lucide="settings"></i>', 'Settings');
+
+    this._toolbar.addActiveToolButton('sculpting');
+    var currentToolIdx = this._main.getSculptManager().getToolIndex();
+    var activeToolClass = Tools[currentToolIdx];
+    if (activeToolClass && activeToolClass.icon) {
+      this._toolbar.setActiveToolIcon(activeToolClass.icon);
+    }
 
     this.updateMesh();
     this.setVisibility(true);
@@ -168,7 +174,6 @@ class Gui {
         FolderOpen,
         Globe,
         Undo2,
-        Palette,
         Hexagon,
         Lightbulb,
         Camera,

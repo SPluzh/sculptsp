@@ -1,4 +1,12 @@
 import PanelContainer from './PanelContainer.js';
+import {
+  createIcons,
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+} from 'lucide';
+
+const toolIcons = {
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+};
 
 class VerticalToolbar {
   constructor(container, main) {
@@ -83,7 +91,11 @@ class VerticalToolbar {
       this._panels.set(id, panel);
     }
     panel.show();
-    this._buttons.get(id).classList.add('active');
+    var btn = this._buttons.get(id);
+    if (btn) btn.classList.add('active');
+    if (id === 'sculpting' && this._activeToolBtn) {
+      this._activeToolBtn.classList.add('active');
+    }
     this._activeId = id;
   }
 
@@ -93,7 +105,44 @@ class VerticalToolbar {
       if (activePanel) activePanel.hide();
       var activeBtn = this._buttons.get(this._activeId);
       if (activeBtn) activeBtn.classList.remove('active');
+      if (this._activeId === 'sculpting' && this._activeToolBtn) {
+        this._activeToolBtn.classList.remove('active');
+      }
       this._activeId = null;
+    }
+  }
+
+  addActiveToolButton(id) {
+    var btn = document.createElement('div');
+    btn.className = 'vtb-btn vtb-btn--active-tool';
+    btn.setAttribute('data-tooltip', 'Active Tool');
+    btn.innerHTML = '<i data-lucide="brush"></i>';
+    btn.addEventListener('click', () => {
+      this._toggle(id, null);
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._activeToolBtn = btn;
+    this._dom.insertBefore(btn, this._dom.firstChild);
+    
+    var sep = document.createElement('div');
+    sep.className = 'vtb-sep';
+    this._dom.insertBefore(sep, btn.nextSibling);
+    
+    return btn;
+  }
+
+  setActiveToolIcon(iconName) {
+    if (!this._activeToolBtn || !iconName) return;
+    const kebabName = iconName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+    this._activeToolBtn.innerHTML = `<i data-lucide="${kebabName}"></i>`;
+    const iconObj = toolIcons[iconName];
+    if (iconObj) {
+      createIcons({
+        icons: { [iconName]: iconObj },
+        root: this._activeToolBtn
+      });
     }
   }
 

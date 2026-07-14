@@ -4,6 +4,14 @@ import Tools from '../editing/tools/Tools.js';
 import getOptionsURL from '../misc/getOptionsURL.js';
 import GuiSculptingTools from './GuiSculptingTools.js';
 import Indicator from './Indicator.js';
+import {
+  createIcons,
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+} from 'lucide';
+
+const toolIcons = {
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+};
 
 var GuiTools = GuiSculptingTools.tools;
 
@@ -60,6 +68,39 @@ class GuiSculpting {
       if (Tools[i]) optTools[i] = TR(Tools[i].uiName);
     }
     this._ctrlSculpt = menu.addCombobox(TR('sculptTool'), this._sculptManager.getToolIndex(), this.onChangeTool.bind(this), optTools);
+
+    var toolGrid = document.createElement('div');
+    toolGrid.className = 'tool-icon-grid';
+
+    for (var i = 0, nbTools = Tools.length; i < nbTools; ++i) {
+      if (!Tools[i]) continue;
+      var btn = document.createElement('button');
+      btn.className = 'tool-icon-btn';
+      btn.setAttribute('data-tooltip', TR(Tools[i].uiName));
+      btn.setAttribute('data-tool-index', i);
+      
+      const iconName = Tools[i].icon || 'Brush';
+      const kebabName = iconName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();
+      btn.innerHTML = `<i data-lucide="${kebabName}"></i>`;
+      
+      btn.addEventListener('click', (e) => {
+        var target = e.currentTarget;
+        var idx = parseInt(target.getAttribute('data-tool-index'));
+        this.onChangeTool(idx);
+      });
+      toolGrid.appendChild(btn);
+    }
+    this._toolGrid = toolGrid;
+    
+    var domLine = document.createElement('li');
+    domLine.className = 'tool-icon-grid-container';
+    domLine.appendChild(toolGrid);
+    menu.domUl.appendChild(domLine);
+
+    createIcons({
+      icons: toolIcons,
+      root: toolGrid
+    });
 
     GuiSculptingTools.initGuiTools(this._sculptManager, this._menu, this._main);
 
@@ -176,6 +217,27 @@ class GuiSculpting {
 
     if (this._ctrlSculpt && this._ctrlSculpt.domSelect) {
       this._ctrlSculpt.domSelect.blur();
+    }
+
+    if (this._ctrlSculpt && this._ctrlSculpt.getValue() !== newValue) {
+      this._ctrlSculpt.setValue(newValue, true);
+    }
+
+    if (this._toolGrid) {
+      var buttons = this._toolGrid.querySelectorAll('.tool-icon-btn');
+      buttons.forEach(btn => {
+        var idx = parseInt(btn.getAttribute('data-tool-index'));
+        if (idx === newValue) {
+          btn.classList.add('active');
+        } else {
+          btn.classList.remove('active');
+        }
+      });
+    }
+
+    var activeToolClass = Tools[newValue];
+    if (activeToolClass && activeToolClass.icon && this._ctrlGui._toolbar) {
+      this._ctrlGui._toolbar.setActiveToolIcon(activeToolClass.icon);
     }
   }
 
