@@ -56,8 +56,8 @@ var TR = {
 
   // mesh
   meshTitle: 'Nesne',
-  meshNbVertices: 'Verteks : ',
-  meshNbFaces: 'Cephe : ',
+  meshNbVertices: 'Aktif noktalar: ',
+  meshNbFaces: 'Toplam nokta: ',
 
   // topology
   topologyTitle: 'Topoloji',

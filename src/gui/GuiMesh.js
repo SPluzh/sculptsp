@@ -27,8 +27,16 @@ class GuiMesh {
 
   updateMeshInfo() {
     var mesh = this._main.getMesh();
-    this.domVerts.innerHTML = TR('meshNbVertices') + (mesh ? mesh.getNbVertices() : 0);
-    this.domFaces.innerHTML = TR('meshNbFaces') + (mesh ? mesh.getNbFaces() : 0);
+    var activePoints = mesh ? mesh.getNbVertices() : 0;
+
+    var meshes = this._main.getMeshes();
+    var totalPoints = 0;
+    for (var i = 0; i < meshes.length; ++i) {
+      totalPoints += meshes[i].getNbVertices();
+    }
+
+    this.domVerts.innerHTML = TR('meshNbVertices') + activePoints;
+    this.domFaces.innerHTML = TR('meshNbFaces') + totalPoints;
   }
 }
 

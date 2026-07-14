@@ -56,8 +56,8 @@ var TR = {
 
   // mesh
   meshTitle: 'Mesh',
-  meshNbVertices: 'Vertex : ',
-  meshNbFaces: 'Faces : ',
+  meshNbVertices: 'Points actifs: ',
+  meshNbFaces: 'Points totaux: ',
 
   // topology
   topologyTitle: 'Topologie',

@@ -56,8 +56,8 @@ var TR = {
 
   // mesh
   meshTitle: '메시',
-  meshNbVertices: '버텍스 개수 : ',
-  meshNbFaces: '페이스 개수 : ',
+  meshNbVertices: '활성 포인트: ',
+  meshNbFaces: '전체 포인트: ',
 
   // topology
   topologyTitle: '토폴로지',

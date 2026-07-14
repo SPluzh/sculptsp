@@ -476,8 +476,7 @@ class GuiScene {
       var hideCls = isVisible ? '' : ' sp-row--hidden';
 
       var vertCount = m.getNbVertices ? m.getNbVertices() : 0;
-      var faceCount = m.getNbFaces ? m.getNbFaces() : 0;
-      var metaStr = vertCount.toLocaleString() + ' v | ' + faceCount.toLocaleString() + ' f';
+      var metaStr = vertCount.toLocaleString() + ' pts';
 
       var eyeSvg = isVisible 
         ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`

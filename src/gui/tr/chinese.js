@@ -56,8 +56,8 @@ var TR = {
 
   // mesh
   meshTitle: '網面',
-  meshNbVertices: '頂點 : ',
-  meshNbFaces: '面 : ',
+  meshNbVertices: '当前点: ',
+  meshNbFaces: '总点数: ',
 
   // topology
   topologyTitle: '網面結構(拓撲)',

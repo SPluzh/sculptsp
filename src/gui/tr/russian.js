@@ -81,8 +81,8 @@ var TR = {
 
   // mesh
   meshTitle: 'Сетка',
-  meshNbVertices: 'Вершины : ',
-  meshNbFaces: 'Грани : ',
+  meshNbVertices: 'Активные точки: ',
+  meshNbFaces: 'Всего точек: ',
 
   // topology
   topologyTitle: 'Топология',
