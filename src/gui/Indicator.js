@@ -37,11 +37,9 @@ class Indicator {
 
     this._labelText  = document.createElement('span');
     this._labelValue = document.createElement('span');
-    if (this._color) {
-      this._labelValue.style.color = this._color;
-    } else {
-      this._labelValue.style.color = 'var(--color-accent)';
-    }
+    var textColor = this._color || 'var(--color-accent)';
+    this._labelText.style.color = textColor;
+    this._labelValue.style.color = textColor;
     row.appendChild(this._labelText);
     row.appendChild(this._labelValue);
 
