@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.10]
+- **Camera/Reference Images**: Added support for screen-space reference image overlays. Users can import unlimited images per camera (independent between the main and split viewports) and customize each image's visibility, opacity, scale, and offset positions.
+- **Viewport**: Added a 2D Viewport Pan/Zoom mode toggle under the Camera menu. When enabled, users can use **Alt + Middle Mouse Button drag** to pan the entire viewport (scene and reference images together) and **Ctrl + Middle Mouse Button drag** (horizontal movement) to zoom, allowing detailed viewport inspection without altering the 3D camera position.
 - **UI**: Added a custom heads-up display (HUD) for essential sculpting and painting hotkeys (`Q`, `W`, `E`, `R`, `A`, `S`, `D`, `X`, `Ctrl+X`, `Shift`, `Ctrl`) located in the bottom-left corner of the viewport.
 
 ## [0.9.9]

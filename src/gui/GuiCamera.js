@@ -101,6 +101,22 @@ class GuiCamera {
     }.bind(this), splitOptions);
     this._ctrlSplitShowInactiveCursor = menu.addCheckbox(TR('splitViewportShowInactiveCursor'), this._main._splitShowInactiveCursor, this.onSplitShowInactiveCursorChange.bind(this));
     this._ctrlSplitShowInactiveCursor.setVisibility(false);
+
+    // reference images
+    menu.addTitle(TR('cameraRefTitle'));
+    this._ctrlRef2DMode = menu.addCheckbox(TR('cameraRef2DMode'), camera.getRef2DMode(), this.onRef2DModeChange.bind(this));
+    menu.addButton(TR('cameraRefReset2D'), this, 'onReset2DView');
+    menu.addButton(TR('cameraRefAdd'), this, 'importRefImage');
+    this._ctrlRefImagesCombobox = menu.addCombobox('Active Image', -1, this.onActiveRefImageChange.bind(this), {});
+    this._ctrlRefVisible = menu.addCheckbox('Visible', true, this.onRefVisibleChange.bind(this));
+    this._ctrlRefOpacity = menu.addSlider(TR('cameraRefOpacity'), 0.5, this.onRefOpacityChange.bind(this), 0.0, 1.0, 0.01);
+    this._ctrlRefScale = menu.addSlider(TR('cameraRefScale'), 1.0, this.onRefScaleChange.bind(this), 0.05, 5.0, 0.01);
+    this._ctrlRefOffsetX = menu.addSlider(TR('cameraRefOffsetX'), 0.0, this.onRefOffsetXChange.bind(this), -2.0, 2.0, 0.01);
+    this._ctrlRefOffsetY = menu.addSlider(TR('cameraRefOffsetY'), 0.0, this.onRefOffsetYChange.bind(this), -2.0, 2.0, 0.01);
+    this._ctrlRefRemove = menu.addButton(TR('cameraRefRemove'), this, 'onRemoveRefImage');
+    this._ctrlRefClearAll = menu.addButton(TR('cameraRefClearAll'), this, 'onClearAllRefImages');
+
+    this.refreshRefImagesList();
   }
 
   onSplitShowInactiveCursorChange(value) {
@@ -304,6 +320,196 @@ class GuiCamera {
   cameraRedo() {
     this._camera.redo();
     this._main.render();
+  }
+
+  importRefImage() {
+    var input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e) => {
+      var files = e.target.files;
+      if (!files.length) return;
+      var file = files[0];
+      var reader = new FileReader();
+      reader.onload = (evt) => {
+        this._main.addRefImageToCamera(evt.target.result, file.name);
+        this.refreshRefImagesList();
+      };
+      reader.readAsDataURL(file);
+    };
+    input.click();
+  }
+
+  onActiveRefImageChange(value) {
+    this._camera.setActiveRefIdx(parseInt(value, 10));
+    this.refreshRefImagesList();
+    this._main.render();
+  }
+
+  onRefVisibleChange(val) {
+    var camera = this._camera;
+    var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+    if (activeImg) {
+      activeImg.setVisible(val);
+      this._main.render();
+    }
+  }
+
+  onRefOpacityChange(val) {
+    var camera = this._camera;
+    var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+    if (activeImg) {
+      activeImg.setOpacity(val);
+      this._main.render();
+    }
+  }
+
+  onRefScaleChange(val) {
+    var camera = this._camera;
+    var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+    if (activeImg) {
+      activeImg.setScale(val);
+      this._main.render();
+    }
+  }
+
+  onRefOffsetXChange(val) {
+    var camera = this._camera;
+    var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+    if (activeImg) {
+      activeImg.setOffsetX(val);
+      this._main.render();
+    }
+  }
+
+  onRefOffsetYChange(val) {
+    var camera = this._camera;
+    var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+    if (activeImg) {
+      activeImg.setOffsetY(val);
+      this._main.render();
+    }
+  }
+
+  onRef2DModeChange(val) {
+    this._camera.setRef2DMode(val);
+    if (this._ctrlRef2DMode) {
+      if (val) {
+        this._ctrlRef2DMode.domContainer.style.background = '#4488ff';
+        this._ctrlRef2DMode.domContainer.style.color = '#fff';
+      } else {
+        this._ctrlRef2DMode.domContainer.style.background = '';
+        this._ctrlRef2DMode.domContainer.style.color = '';
+      }
+    }
+    this._main.render();
+  }
+
+  onReset2DView() {
+    this._camera.resetView2D();
+    this.updateRef2DDisplay();
+    this._main.render();
+  }
+
+  updateRef2DDisplay() {
+    this._main.render();
+  }
+
+  onRemoveRefImage() {
+    var camera = this._camera;
+    var idx = camera.getActiveRefIdx();
+    if (idx >= 0 && idx < camera.getRefImages().length) {
+      camera.removeRefImage(idx);
+      this.refreshRefImagesList();
+      this._main.render();
+    }
+  }
+
+  onClearAllRefImages() {
+    var camera = this._camera;
+    var len = camera.getRefImages().length;
+    for (var i = len - 1; i >= 0; i--) {
+      camera.removeRefImage(i);
+    }
+    this.refreshRefImagesList();
+    this._main.render();
+  }
+
+  refreshRefImagesList() {
+    var camera = this._camera;
+    var refImages = camera.getRefImages();
+    var activeIdx = camera.getActiveRefIdx();
+
+    var options = {};
+    if (refImages.length === 0) {
+      options[-1] = 'No Images Loaded';
+    } else {
+      for (var i = 0; i < refImages.length; i++) {
+        options[i] = refImages[i].getName();
+      }
+    }
+
+    this.updateComboboxOptions(this._ctrlRefImagesCombobox, options);
+    this._ctrlRefImagesCombobox.setValue(activeIdx, true);
+
+    var hasActive = (activeIdx >= 0 && activeIdx < refImages.length);
+    this._ctrlRefVisible.setVisibility(hasActive);
+    this._ctrlRefOpacity.setVisibility(hasActive);
+    this._ctrlRefScale.setVisibility(hasActive);
+    this._ctrlRefOffsetX.setVisibility(hasActive);
+    this._ctrlRefOffsetY.setVisibility(hasActive);
+    this._ctrlRefRemove.setVisibility(hasActive);
+    this._ctrlRefClearAll.setVisibility(refImages.length > 0);
+
+    if (hasActive) {
+      var activeImg = refImages[activeIdx];
+      this._ctrlRefVisible.setValue(activeImg.getVisible(), true);
+      this._ctrlRefOpacity.setValue(activeImg.getOpacity(), true);
+      this._ctrlRefScale.setValue(activeImg.getScale(), true);
+      this._ctrlRefOffsetX.setValue(activeImg.getOffsetX(), true);
+      this._ctrlRefOffsetY.setValue(activeImg.getOffsetY(), true);
+    }
+  }
+
+  updateComboboxOptions(ctrl, options) {
+    if (!ctrl) return;
+    ctrl.domSelect.innerHTML = '';
+    ctrl.isArray = options.length !== undefined;
+    ctrl.addOptions(options);
+  }
+
+  updateRefImageSliders(activeImg) {
+    if (activeImg) {
+      this._ctrlRefOffsetX.setValue(activeImg.getOffsetX(), true);
+      this._ctrlRefOffsetY.setValue(activeImg.getOffsetY(), true);
+    }
+  }
+
+  selectRefImage(idx) {
+    this._camera.setActiveRefIdx(idx);
+    this.refreshRefImagesList();
+  }
+
+  refreshForCamera(camera) {
+    if (this._ctrlProjection) this._ctrlProjection.setValue(camera.getProjectionType(), true);
+    if (this._ctrlFov) {
+      this._ctrlFov.setValue(camera.getFov(), true);
+      this._ctrlFov.setVisibility(camera.getProjectionType() === Enums.Projection.PERSPECTIVE);
+    }
+    if (this._ctrlPivot) this._ctrlPivot.setValue(camera.getUsePivot(), true);
+    
+    if (this._ctrlRef2DMode) {
+      var val = camera.getRef2DMode();
+      this._ctrlRef2DMode.setValue(val, true);
+      if (val) {
+        this._ctrlRef2DMode.domContainer.style.background = '#4488ff';
+        this._ctrlRef2DMode.domContainer.style.color = '#fff';
+      } else {
+        this._ctrlRef2DMode.domContainer.style.background = '';
+        this._ctrlRef2DMode.domContainer.style.color = '';
+      }
+    }
+    this.refreshRefImagesList();
   }
 }
 

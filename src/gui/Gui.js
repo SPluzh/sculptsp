@@ -408,6 +408,24 @@ class Gui {
         ct[func](event);
     }
   }
+
+  updateRef2DDisplay() {
+    if (this._ctrlCamera && this._ctrlCamera.updateRef2DDisplay) {
+      this._ctrlCamera.updateRef2DDisplay();
+    }
+  }
+
+  updateRefImageSliders(overlay) {
+    if (this._ctrlCamera && this._ctrlCamera.updateRefImageSliders) {
+      this._ctrlCamera.updateRefImageSliders(overlay);
+    }
+  }
+
+  refreshForCamera(camera) {
+    if (this._ctrlCamera && this._ctrlCamera.refreshForCamera) {
+      this._ctrlCamera.refreshForCamera(camera);
+    }
+  }
 }
 
 export default Gui;

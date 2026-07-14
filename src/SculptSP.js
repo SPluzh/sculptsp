@@ -49,6 +49,14 @@ class SculptSP extends Scene {
     this.initHammer();
     this.addEvents();
     this.initInputCallbacks();
+
+    this._refDragActive = false;
+    this._refDragMode = null;
+    this._refDragLastX = 0;
+    this._refDragLastY = 0;
+    this._refImageDragActive = false;
+    this._refImageDragLastX = 0;
+    this._refImageDragLastY = 0;
   }
 
   initInputCallbacks() {
@@ -406,6 +414,18 @@ class SculptSP extends Scene {
   // HANDLES EVENTS
   ////////////////
   onDeviceUp(data) {
+    if (this._refDragActive) {
+      this._refDragActive = false;
+      this._refDragMode = null;
+      this.getCamera().pushState();
+      return;
+    }
+    if (this._refImageDragActive) {
+      this._refImageDragActive = false;
+      this.getCamera().pushState();
+      return;
+    }
+
     var altKey = data ? data.altKey : this._isAltDown;
     this._isAltDown = false;
     this._isCtrlDown = false;
@@ -484,7 +504,11 @@ class SculptSP extends Scene {
       return;
     }
     var halfW = Math.floor(this._canvasWidth / 2);
+    var oldViewport = this._activeViewport;
     this._activeViewport = rawMouseX >= halfW ? 1 : 0;
+    if (oldViewport !== this._activeViewport && this._gui && this._gui.refreshForCamera) {
+      this._gui.refreshForCamera(this.getCamera());
+    }
     // Update active indicator
     var ind = document.getElementById('split-active-indicator');
     if (ind) {
@@ -524,6 +548,49 @@ class SculptSP extends Scene {
       this._mouseY = data.y;
     } else {
       this.setMousePosition(data);
+    }
+
+    var rawMouseX = data.x !== undefined ? data.x : this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
+    var rawMouseY = data.y !== undefined ? data.y : this._pixelRatio * (data.pageY - this._canvasOffsetTop);
+
+    var camera = this.getCamera();
+    var button = data.which;
+
+    if (camera.getRef2DMode()) {
+      if (button === MOUSE_MIDDLE) {
+        this._refDragActive = true;
+        this._refDragMode = data.ctrlKey ? 'zoom' : (data.altKey ? 'pan' : null);
+        this._refDragLastX = rawMouseX;
+        this._refDragLastY = rawMouseY;
+        this._action = Enums.Action.NOTHING;
+        return;
+      } else if (button === MOUSE_LEFT) {
+        var vpX = 0;
+        var vpW = this._canvasWidth;
+        var vpH = this._canvasHeight;
+        if (this._splitMode) {
+          var halfW = Math.floor(this._canvasWidth / 2);
+          vpW = halfW;
+          if (this._activeViewport === 1) {
+            vpX = halfW;
+          }
+        }
+        var ndcX = (this._mouseX / vpW) * 2.0 - 1.0;
+        var ndcY = 1.0 - (this._mouseY / vpH) * 2.0;
+
+        var idx = camera.hitTestRefImages(ndcX, ndcY);
+        if (idx >= 0) {
+          camera.setActiveRefIdx(idx);
+          this._action = Enums.Action.NOTHING;
+          this._refImageDragActive = true;
+          this._refImageDragLastX = rawMouseX;
+          this._refImageDragLastY = rawMouseY;
+          if (this._gui && this._gui.refreshForCamera) {
+            this._gui.refreshForCamera(camera);
+          }
+          return;
+        }
+      }
     }
 
     var mouseX = this._mouseX;
@@ -635,6 +702,59 @@ class SculptSP extends Scene {
       this._mouseY = data.y;
     } else {
       this.setMousePosition(data);
+    }
+
+    var rawMouseX = data.x !== undefined ? data.x : this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
+    var rawMouseY = data.y !== undefined ? data.y : this._pixelRatio * (data.pageY - this._canvasOffsetTop);
+
+    var camera = this.getCamera();
+
+    if (this._refDragActive && this._refDragMode) {
+      var isSplit = this._splitMode && (this._canvasWidth / 2 < this._canvasWidth);
+      var widthDivisor = isSplit ? (this._canvasWidth / 4) : (this._canvasWidth / 2);
+      var heightDivisor = this._canvasHeight / 2;
+      var dx = (rawMouseX - this._refDragLastX) / widthDivisor;
+      var dy = -(rawMouseY - this._refDragLastY) / heightDivisor;
+
+      if (this._refDragMode === 'pan') {
+        camera.setView2DOffset(
+          camera.getView2DOffsetX() + dx,
+          camera.getView2DOffsetY() + dy
+        );
+      } else if (this._refDragMode === 'zoom') {
+        var factor = 1.0 + (rawMouseX - this._refDragLastX) * 0.005;
+        camera.setView2DZoom(camera.getView2DZoom() * factor);
+      }
+
+      this._refDragLastX = rawMouseX;
+      this._refDragLastY = rawMouseY;
+      this.render();
+      if (this._gui && this._gui.updateRef2DDisplay) {
+        this._gui.updateRef2DDisplay();
+      }
+      return;
+    }
+
+    if (this._refImageDragActive) {
+      var isSplit = this._splitMode && (this._canvasWidth / 2 < this._canvasWidth);
+      var widthDivisor = isSplit ? (this._canvasWidth / 4) : (this._canvasWidth / 2);
+      var heightDivisor = this._canvasHeight / 2;
+      var dx = (rawMouseX - this._refImageDragLastX) / widthDivisor;
+      var dy = -(rawMouseY - this._refImageDragLastY) / heightDivisor;
+
+      var activeImg = camera.getRefImages()[camera.getActiveRefIdx()];
+      if (activeImg) {
+        activeImg.setOffsetX(activeImg.getOffsetX() + dx);
+        activeImg.setOffsetY(activeImg.getOffsetY() + dy);
+        if (this._gui && this._gui.updateRefImageSliders) {
+          this._gui.updateRefImageSliders(activeImg);
+        }
+      }
+
+      this._refImageDragLastX = rawMouseX;
+      this._refImageDragLastY = rawMouseY;
+      this.render();
+      return;
     }
 
     var mouseX = this._mouseX;

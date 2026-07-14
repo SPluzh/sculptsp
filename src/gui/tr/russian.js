@@ -27,6 +27,18 @@ var TR = {
   cameraSpeedZoom: 'Скорость зума',
   cameraSpeedRotate: 'Скорость вращения',
 
+  // reference images
+  cameraRefTitle: 'Референсные изображения',
+  cameraRef2DMode: 'Режим 2D Панорамирования/Зума',
+  cameraRefReset2D: 'Сбросить 2D вид',
+  cameraRefAdd: 'Импорт референса',
+  cameraRefOpacity: 'Прозрачность',
+  cameraRefScale: 'Масштаб',
+  cameraRefOffsetX: 'Смещение X',
+  cameraRefOffsetY: 'Смещение Y',
+  cameraRefRemove: 'Удалить выбранный',
+  cameraRefClearAll: 'Очистить все референсы',
+
   // split viewport
   splitViewportTitle: 'Разделить экран',
   splitViewportOff: 'Выкл',

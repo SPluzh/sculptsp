@@ -91,6 +91,13 @@ class Camera {
 
     this._timers = {}; // animation timers
 
+    this._refImages = [];
+    this._activeRefIdx = -1;
+    this._ref2DMode = false;
+    this._view2DOffsetX = 0.0;
+    this._view2DOffsetY = 0.0;
+    this._view2DZoom = 1.0;
+
     this.resetView();
 
     this._history = [];
@@ -587,6 +594,13 @@ class Camera {
     cam.updateView();
     cam.updateProjection();
 
+    cam._refImages = [];
+    cam._activeRefIdx = -1;
+    cam._ref2DMode = this._ref2DMode;
+    cam._view2DOffsetX = this._view2DOffsetX;
+    cam._view2DOffsetY = this._view2DOffsetY;
+    cam._view2DZoom = this._view2DZoom;
+
     cam._history = [];
     cam._historyIndex = -1;
     cam.pushState();
@@ -717,6 +731,79 @@ class Camera {
     if (!anyRunning) {
       this.pushState();
     }
+  }
+  addRefImage(overlay) {
+    this._refImages.push(overlay);
+  }
+
+  removeRefImage(index) {
+    if (index >= 0 && index < this._refImages.length) {
+      this._refImages[index].release();
+      this._refImages.splice(index, 1);
+      if (this._activeRefIdx >= this._refImages.length) {
+        this._activeRefIdx = this._refImages.length - 1;
+      }
+    }
+  }
+
+  getRefImages() {
+    return this._refImages;
+  }
+
+  getRef2DMode() {
+    return this._ref2DMode;
+  }
+
+  setRef2DMode(val) {
+    this._ref2DMode = val;
+  }
+
+  getView2DOffset() {
+    return [this._view2DOffsetX, this._view2DOffsetY];
+  }
+
+  getView2DOffsetX() {
+    return this._view2DOffsetX;
+  }
+
+  getView2DOffsetY() {
+    return this._view2DOffsetY;
+  }
+
+  setView2DOffset(x, y) {
+    this._view2DOffsetX = x;
+    this._view2DOffsetY = y;
+  }
+
+  getView2DZoom() {
+    return this._view2DZoom;
+  }
+
+  setView2DZoom(z) {
+    this._view2DZoom = Math.max(0.01, z);
+  }
+
+  resetView2D() {
+    this._view2DOffsetX = 0.0;
+    this._view2DOffsetY = 0.0;
+    this._view2DZoom = 1.0;
+  }
+
+  getActiveRefIdx() {
+    return this._activeRefIdx;
+  }
+
+  setActiveRefIdx(idx) {
+    this._activeRefIdx = idx;
+  }
+
+  hitTestRefImages(ndcX, ndcY) {
+    for (var i = this._refImages.length - 1; i >= 0; i--) {
+      if (this._refImages[i].getVisible() && this._refImages[i].hitTest(ndcX, ndcY)) {
+        return i;
+      }
+    }
+    return -1;
   }
 }
 

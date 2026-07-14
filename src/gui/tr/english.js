@@ -27,6 +27,18 @@ var TR = {
   cameraSpeedZoom: 'Zoom speed',
   cameraSpeedRotate: 'Rotation speed',
 
+  // reference images
+  cameraRefTitle: 'Reference Images',
+  cameraRef2DMode: '2D Pan/Zoom Mode',
+  cameraRefReset2D: 'Reset 2D Viewport',
+  cameraRefAdd: 'Import Reference Image',
+  cameraRefOpacity: 'Opacity',
+  cameraRefScale: 'Scale',
+  cameraRefOffsetX: 'Offset X',
+  cameraRefOffsetY: 'Offset Y',
+  cameraRefRemove: 'Remove Selected',
+  cameraRefClearAll: 'Clear All Images',
+
   // split viewport
   splitViewportTitle: 'Split Viewport',
   splitViewportOff: 'Off',

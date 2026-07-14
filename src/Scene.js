@@ -9,6 +9,7 @@ import Gui from './gui/Gui.js';
 import Camera from './math3d/Camera.js';
 import Picking from './math3d/Picking.js';
 import Background from './drawables/Background.js';
+import RefImageOverlay from './drawables/RefImageOverlay.js';
 import Mesh from './mesh/Mesh.js';
 import Multimesh from './mesh/multiresolution/Multimesh.js';
 import MeshStatic from './mesh/meshStatic/MeshStatic.js';
@@ -111,6 +112,7 @@ class Scene {
     this._rttMerge = new Rtt(this._gl, Enums.Shader.MERGE, null);
     this._rttOpaque = new Rtt(this._gl, Enums.Shader.FXAA);
     this._rttTransparent = new Rtt(this._gl, null, this._rttOpaque.getDepth(), true);
+    this._rttComposite = new Rtt(this._gl, Enums.Shader.VIEWPORT2D, null);
 
     this._grid = Primitives.createGrid(this._gl);
     this.initGrid();
@@ -346,13 +348,30 @@ class Scene {
 
     gl.disable(gl.DEPTH_TEST);
 
+    // [1] Merge opaque + transparent
     gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttMerge.getFramebuffer());
-    this._rttMerge.render(this); // merge + decode
+    this._rttMerge.render(this);
 
-    // render to screen
+    // [2] Run FXAA on merged scene, outputting to our new _rttComposite
+    gl.bindFramebuffer(gl.FRAMEBUFFER, this._rttComposite.getFramebuffer());
+    this._rttOpaque.render(this);
+
+    // [3] Draw reference images on top of _rttComposite
+    gl.viewport(vpX, 0, vpW, vpH);
+    gl.enable(gl.BLEND);
+    gl.blendFunc(gl.SRC_ALPHA, gl.ONE_MINUS_SRC_ALPHA);
+    var refImages = camera.getRefImages();
+    for (var i = 0; i < refImages.length; i++) {
+      if (refImages[i].getVisible()) {
+        refImages[i].render(vpW, vpH);
+      }
+    }
+    gl.disable(gl.BLEND);
+    gl.viewport(0, 0, this._canvasWidth, this._canvasHeight);
+
+    // [4] Final blit to screen/scissor portion with 2D viewport transform
     gl.bindFramebuffer(gl.FRAMEBUFFER, null);
-
-    this._rttOpaque.render(this); // fxaa
+    this._rttComposite.render(this);
 
     gl.enable(gl.DEPTH_TEST);
 
@@ -634,6 +653,7 @@ class Scene {
     if (this._rttMerge) this._rttMerge.onResize(newWidth, newHeight);
     if (this._rttOpaque) this._rttOpaque.onResize(newWidth, newHeight);
     if (this._rttTransparent) this._rttTransparent.onResize(newWidth, newHeight);
+    if (this._rttComposite) this._rttComposite.onResize(newWidth, newHeight);
 
     if (this._measureRenderer) {
       this._measureRenderer.onResize(newWidth, newHeight, this._pixelRatio);
@@ -908,6 +928,15 @@ class Scene {
     this.getGui().addAlphaOptions(entry);
     if (tool && tool._ctrlAlpha)
       tool._ctrlAlpha.setValue(name);
+  }
+
+  addRefImageToCamera(dataURL, name) {
+    var camera = this.getCamera();
+    var overlay = new RefImageOverlay(this._gl, this);
+    overlay.loadFromDataURL(dataURL, name);
+    camera.addRefImage(overlay);
+    camera.setActiveRefIdx(camera.getRefImages().length - 1);
+    this.render();
   }
 }
 
