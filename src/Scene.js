@@ -11,6 +11,7 @@ import Picking from './math3d/Picking.js';
 import Background from './drawables/Background.js';
 import Mesh from './mesh/Mesh.js';
 import Multimesh from './mesh/multiresolution/Multimesh.js';
+import MeshStatic from './mesh/meshStatic/MeshStatic.js';
 import Primitives from './drawables/Primitives.js';
 import StateManager from './states/StateManager.js';
 import RenderData from './mesh/RenderData.js';
@@ -867,16 +868,25 @@ class Scene {
 
   duplicateSelection() {
     var meshes = this._selectMeshes.slice();
-    var mesh = null;
+    if (meshes.length === 0) return;
+
+    var newCopies = [];
     for (var i = 0; i < meshes.length; ++i) {
-      mesh = meshes[i];
+      var mesh = meshes[i];
       var copy = new MeshStatic(mesh.getGL());
       copy.copyData(mesh);
-
       this.addNewMesh(copy);
+      newCopies.push(copy);
     }
 
-    this.setMesh(mesh);
+    // Keep the new copies selected instead of the original meshes
+    this._selectMeshes.length = 0;
+    for (var j = 0; j < newCopies.length; ++j) {
+      this._selectMeshes.push(newCopies[j]);
+    }
+    this._mesh = newCopies[newCopies.length - 1];
+    this.getGui().updateMesh();
+    this.render();
   }
 
   onLoadAlphaImage(img, name, tool) {

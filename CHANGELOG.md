@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.9]
+- **UI**: Replaced the topology menu icon (a hexagon) with a modern boxes icon (`boxes`) in the vertical toolbar to better represent 3D mesh structure.
+- **UI**: Rearranged the vertical toolbar layout, removing the separator between Rendering and Camera, and inserting it right before Settings.
+- **UI**: Replaced the top scene creation buttons (Reset, Add Sphere, Add Cube, Add Cylinder, Add Torus) with a compact, modern horizontal row of Lucide vector icons with descriptive hover tooltips.
+- **UI**: Added a fully interactive Scene Outliner panel in the Scene settings tab, allowing users to view, select, rename (via double-click), toggle visibility of individual meshes, and execute actions (Duplicate, Delete, and Merge meshes) directly within the object list. The "Scene" tab icon in the vertical toolbar has been updated to Lucide's `table-of-contents` to better represent the outliner structure.
+- **UI**: Converted the bottom outliner action buttons (Rename, Duplicate, Delete, Merge) into a row of sleek Lucide vector icons (`edit-3`, `copy`, `trash-2`, `layers`) matching the application's top actions style. Double-clicking an object's name also remains active.
+- **UI**: Updated the outliner selection color and rename input border to dynamically use the application's global teal accent color (`var(--color-accent)`), matching the application's overall styling.
+- **UI**: Set a fixed height of 320px for the outliner list (regardless of mesh count) to view more objects, centered the empty scene message vertically, and styled its scrollbar to match the application's dark premium aesthetic.
+- **Fix**: Fixed the object duplication feature (both the outliner button and hotkey) which was throwing a ReferenceError because `MeshStatic` was not imported in `Scene.js`. Duplicating a selection now correctly selects the newly created copies instead of reverting selection back to the original objects.
 - **Fix**: Resolved an issue where global keyboard shortcuts (e.g., **Ctrl + Z** for Undo, **Ctrl + Shift + Z** for Redo, **Ctrl + D** for Duplicate) were blocked by the sculpting panel's keyboard handler.
 - **Clay Buildup Tool**: Reimplemented the Clay Buildup tool based on the standard Brush tool, configured with a default "Square" alpha texture and a spacing of 5% for tighter stroke coverage.
 - **UI**: Consolidated the History and Tablet settings panels directly inside the main Settings panel as collapsible folders, removing their standalone buttons from the vertical toolbar to simplify the interface.

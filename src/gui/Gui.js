@@ -23,9 +23,9 @@ import Enums from '../misc/Enums.js';
 import {
   createIcons,
   FolderOpen,
-  Globe,
+  TableOfContents,
   Undo2,
-  Hexagon,
+  Boxes,
   Lightbulb,
   Camera,
   Image,
@@ -141,13 +141,13 @@ class Gui {
 
     // Register all buttons on the VerticalToolbar in the correct order
     this._toolbar.addButton('file', '<i data-lucide="folder-open"></i>', 'File');
-    this._toolbar.addButton('scene', '<i data-lucide="globe"></i>', 'Scene');
+    this._toolbar.addButton('scene', '<i data-lucide="table-of-contents"></i>', 'Scene');
     this._toolbar.addSeparator();
-    this._toolbar.addButton('topology', '<i data-lucide="hexagon"></i>', 'Topology');
+    this._toolbar.addButton('topology', '<i data-lucide="boxes"></i>', 'Topology');
     this._toolbar.addButton('rendering', '<i data-lucide="lightbulb"></i>', 'Rendering');
-    this._toolbar.addSeparator();
     this._toolbar.addButton('camera', '<i data-lucide="camera"></i>', 'Camera');
     this._toolbar.addButton('background', '<i data-lucide="image"></i>', 'Background');
+    this._toolbar.addSeparator();
     this._toolbar.addButton('settings', '<i data-lucide="settings"></i>', 'Settings');
 
     this._toolbar.addActiveToolButton('sculpting');
@@ -178,8 +178,8 @@ class Gui {
     createIcons({
       icons: {
         FolderOpen,
-        Globe,
-        Hexagon,
+        TableOfContents,
+        Boxes,
         Lightbulb,
         Camera,
         Image,
@@ -284,8 +284,12 @@ class Gui {
     this._ctrlTopology.updateMesh();
     this._ctrlSculpting.updateMesh();
     this._ctrlScene.updateMesh();
+    if (this._ctrlScene && this._ctrlScene.refreshOutliner) {
+      this._ctrlScene.refreshOutliner();
+    }
     this.updateMeshInfo();
   }
+
 
   updateMeshInfo() {
     this._ctrlMesh.updateMeshInfo();
