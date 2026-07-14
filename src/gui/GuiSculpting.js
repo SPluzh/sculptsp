@@ -105,8 +105,6 @@ class GuiSculpting {
     GuiSculptingTools.initGuiTools(this._sculptManager, this._menu, this._main);
 
     this._ctrlTitleCommon = menu.addTitle(TR('sculptCommon'));
-    // symmetry
-    this._ctrlSymmetry = menu.addCheckbox(TR('sculptSymmetry'), this._sculptManager._symmetry, this.onSymmetryChange.bind(this));
     // continuous
     this._ctrlContinuous = menu.addCheckbox(TR('sculptContinuous'), this._sculptManager, '_continuous');
 
@@ -211,7 +209,9 @@ class GuiSculpting {
     this._ctrlContinuous.setVisibility(showContinuous);
 
     var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
-    this._ctrlSymmetry.setVisibility(showSym);
+    if (this._ctrlSymmetry) {
+      this._ctrlSymmetry.setVisibility(showSym);
+    }
     if (this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setSymmetryVisibility(showSym);
     }
