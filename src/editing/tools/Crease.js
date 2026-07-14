@@ -7,7 +7,7 @@ class Crease extends SculptBase {
     super(main);
 
     this._radius = 25;
-    this._intensity = 0.2;
+    this._intensity = 0.2 / 3;
     this._spacing = 0.05;
     this._negative = true;
     this._culling = false;
@@ -26,7 +26,7 @@ class Crease extends SculptBase {
 
   stroke(picking) {
     var iVertsInRadius = picking.getPickedVertices();
-    var intensity = this._intensity * Tablet.getPressureIntensity();
+    var intensity = (this._intensity * Tablet.getPressureIntensity()) / 3;
 
     this.updateProxy(iVertsInRadius);
     // undo-redo
