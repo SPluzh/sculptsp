@@ -105,6 +105,7 @@ class GuiCamera {
     // reference images
     menu.addTitle(TR('cameraRefTitle'));
     this._ctrlRef2DMode = menu.addCheckbox(TR('cameraRef2DMode'), camera.getRef2DMode(), this.onRef2DModeChange.bind(this));
+    this._ctrlRefDrag = menu.addCheckbox(TR('cameraRefDrag'), camera.getRefDragEnabled(), this.onRefDragChange.bind(this));
     menu.addButton(TR('cameraRefReset2D'), this, 'onReset2DView');
     menu.addButton(TR('cameraRefAdd'), this, 'importRefImage');
     this._ctrlRefImagesCombobox = menu.addCombobox('Active Image', -1, this.onActiveRefImageChange.bind(this), {});
@@ -405,6 +406,20 @@ class GuiCamera {
     this._main.render();
   }
 
+  onRefDragChange(val) {
+    this._camera.setRefDragEnabled(val);
+    if (this._ctrlRefDrag) {
+      if (val) {
+        this._ctrlRefDrag.domContainer.style.background = '#4488ff';
+        this._ctrlRefDrag.domContainer.style.color = '#fff';
+      } else {
+        this._ctrlRefDrag.domContainer.style.background = '';
+        this._ctrlRefDrag.domContainer.style.color = '';
+      }
+    }
+    this._main.render();
+  }
+
   onReset2DView() {
     this._camera.resetView2D();
     this.updateRef2DDisplay();
@@ -507,6 +522,17 @@ class GuiCamera {
       } else {
         this._ctrlRef2DMode.domContainer.style.background = '';
         this._ctrlRef2DMode.domContainer.style.color = '';
+      }
+    }
+    if (this._ctrlRefDrag) {
+      var valDrag = camera.getRefDragEnabled();
+      this._ctrlRefDrag.setValue(valDrag, true);
+      if (valDrag) {
+        this._ctrlRefDrag.domContainer.style.background = '#4488ff';
+        this._ctrlRefDrag.domContainer.style.color = '#fff';
+      } else {
+        this._ctrlRefDrag.domContainer.style.background = '';
+        this._ctrlRefDrag.domContainer.style.color = '';
       }
     }
     this.refreshRefImagesList();

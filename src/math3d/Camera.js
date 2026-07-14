@@ -97,6 +97,7 @@ class Camera {
     this._view2DOffsetX = 0.0;
     this._view2DOffsetY = 0.0;
     this._view2DZoom = 1.0;
+    this._refDragEnabled = false;
 
     this.resetView();
 
@@ -428,6 +429,35 @@ class Camera {
     return out;
   }
 
+  unproject2DAware(mouseX, mouseY, z) {
+    if (!this._ref2DMode) {
+      return this.unproject(mouseX, mouseY, z);
+    }
+    var w = this._width || 1.0;
+    var h = this._height || 1.0;
+    var ndcX = (mouseX / w) * 2.0 - 1.0;
+    var ndcY = 1.0 - (mouseY / h) * 2.0;
+    var ndcXReal = (ndcX - this._view2DOffsetX) / this._view2DZoom;
+    var ndcYReal = (ndcY - this._view2DOffsetY) / this._view2DZoom;
+    var mxReal = (ndcXReal + 1.0) * 0.5 * w;
+    var myReal = (1.0 - ndcYReal) * 0.5 * h;
+    return this.unproject(mxReal, myReal, z);
+  }
+
+  project2DAware(vector) {
+    var out = this.project(vector);
+    if (!this._ref2DMode) return out;
+    var w = this._width || 1.0;
+    var h = this._height || 1.0;
+    var ndcX = (out[0] / w) * 2.0 - 1.0;
+    var ndcY = 1.0 - (out[1] / h) * 2.0;
+    var ndcXS = ndcX * this._view2DZoom + this._view2DOffsetX;
+    var ndcYS = ndcY * this._view2DZoom + this._view2DOffsetY;
+    out[0] = (ndcXS + 1.0) * 0.5 * w;
+    out[1] = (1.0 - ndcYS) * 0.5 * h;
+    return out;
+  }
+
   onResize(width, height) {
     this._width = width;
     this._height = height;
@@ -600,6 +630,7 @@ class Camera {
     cam._view2DOffsetX = this._view2DOffsetX;
     cam._view2DOffsetY = this._view2DOffsetY;
     cam._view2DZoom = this._view2DZoom;
+    cam._refDragEnabled = this._refDragEnabled;
 
     cam._history = [];
     cam._historyIndex = -1;
@@ -804,6 +835,14 @@ class Camera {
       }
     }
     return -1;
+  }
+
+  getRefDragEnabled() {
+    return this._refDragEnabled;
+  }
+
+  setRefDragEnabled(val) {
+    this._refDragEnabled = val;
   }
 }
 

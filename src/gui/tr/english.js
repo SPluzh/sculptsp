@@ -30,6 +30,7 @@ var TR = {
   // reference images
   cameraRefTitle: 'Reference Images',
   cameraRef2DMode: '2D Pan/Zoom Mode',
+  cameraRefDrag: 'Interactive Drag',
   cameraRefReset2D: 'Reset 2D Viewport',
   cameraRefAdd: 'Import Reference Image',
   cameraRefOpacity: 'Opacity',

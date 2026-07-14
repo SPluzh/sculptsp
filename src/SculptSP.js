@@ -564,7 +564,31 @@ class SculptSP extends Scene {
         this._refDragLastY = rawMouseY;
         this._action = Enums.Action.NOTHING;
         return;
-      } else if (button === MOUSE_LEFT) {
+      }
+    }
+
+    var mouseX = this._mouseX;
+    var mouseY = this._mouseY;
+    var button = data.which;
+
+    // Clear ZSphere hover/selected states on right/middle click
+    if (button !== MOUSE_LEFT) {
+      var zsphereTool = this._sculptManager.getTool(Enums.Tools.ZSPHERE);
+      if (zsphereTool && zsphereTool._graph && (zsphereTool._graph._selected || zsphereTool._graph._hoveredLink || zsphereTool._graph._previewNode)) {
+        zsphereTool._graph._selected = null;
+        zsphereTool._graph._hoveredLink = null;
+        zsphereTool._graph._previewNode = null;
+        this.render();
+      }
+    }
+
+    var canEdit = false;
+    if (button === MOUSE_LEFT) {
+      console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
+      canEdit = this._sculptManager.start(data.shiftKey);
+      console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
+
+      if (!canEdit && camera.getRefDragEnabled()) {
         var vpX = 0;
         var vpW = this._canvasWidth;
         var vpH = this._canvasHeight;
@@ -591,28 +615,6 @@ class SculptSP extends Scene {
           return;
         }
       }
-    }
-
-    var mouseX = this._mouseX;
-    var mouseY = this._mouseY;
-    var button = data.which;
-
-    // Clear ZSphere hover/selected states on right/middle click
-    if (button !== MOUSE_LEFT) {
-      var zsphereTool = this._sculptManager.getTool(Enums.Tools.ZSPHERE);
-      if (zsphereTool && zsphereTool._graph && (zsphereTool._graph._selected || zsphereTool._graph._hoveredLink || zsphereTool._graph._previewNode)) {
-        zsphereTool._graph._selected = null;
-        zsphereTool._graph._hoveredLink = null;
-        zsphereTool._graph._previewNode = null;
-        this.render();
-      }
-    }
-
-    var canEdit = false;
-    if (button === MOUSE_LEFT) {
-      console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
-      canEdit = this._sculptManager.start(data.shiftKey);
-      console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
     }
 
     if (button === MOUSE_LEFT && canEdit) {

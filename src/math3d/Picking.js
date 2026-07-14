@@ -419,11 +419,11 @@ class Picking {
   }
 
   unproject(x, y, z) {
-    return this._main.getCamera().unproject(x, y, z);
+    return this._main.getCamera().unproject2DAware(x, y, z);
   }
 
   project(vec) {
-    return this._main.getCamera().project(vec);
+    return this._main.getCamera().project2DAware(vec);
   }
 
   computePickedNormal() {

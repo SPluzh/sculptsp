@@ -9,13 +9,17 @@ ShaderSelection.activeAttributes = {
   vertex: true
 };
 
-ShaderSelection.uniformNames = ['uMVP', 'uColor'];
+ShaderSelection.uniformNames = ['uMVP', 'uColor', 'uView2DOffset', 'uView2DZoom'];
 
 ShaderSelection.vertex = [
   'attribute vec3 aVertex;',
   'uniform mat4 uMVP;',
+  'uniform vec2 uView2DOffset;',
+  'uniform float uView2DZoom;',
   'void main() {',
-  '  gl_Position = uMVP * vec4(aVertex, 1.0);',
+  '  vec4 pos = uMVP * vec4(aVertex, 1.0);',
+  '  pos.xy = pos.xy * uView2DZoom + uView2DOffset * pos.w;',
+  '  gl_Position = pos;',
   '}'
 ].join('\n');
 
@@ -31,6 +35,15 @@ ShaderSelection.draw = function (geom, drawCircle, drawSym) {
   gl.useProgram(this.program);
 
   gl.uniform3fv(this.uniforms.uColor, geom.getColor());
+
+  var camera = geom.getActiveCamera();
+  if (camera && camera.getRef2DMode() && geom.getPickedMesh()) {
+    gl.uniform2fv(this.uniforms.uView2DOffset, camera.getView2DOffset());
+    gl.uniform1f(this.uniforms.uView2DZoom, camera.getView2DZoom());
+  } else {
+    gl.uniform2f(this.uniforms.uView2DOffset, 0.0, 0.0);
+    gl.uniform1f(this.uniforms.uView2DZoom, 1.0);
+  }
 
   if (drawCircle) {
     gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getCircleMVP());

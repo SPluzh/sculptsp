@@ -30,6 +30,7 @@ var TR = {
   // reference images
   cameraRefTitle: 'Референсные изображения',
   cameraRef2DMode: 'Режим 2D Панорамирования/Зума',
+  cameraRefDrag: 'Интерактивное перемещение',
   cameraRefReset2D: 'Сбросить 2D вид',
   cameraRefAdd: 'Импорт референса',
   cameraRefOpacity: 'Прозрачность',

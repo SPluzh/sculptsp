@@ -27,6 +27,8 @@ class Selection {
 
     this._offsetX = 0.0; // horizontal offset (when editing the radius)
     this._isEditMode = false;
+    this._activeCamera = null;
+    this._pickedMesh = false;
 
     this.init();
   }
@@ -77,6 +79,14 @@ class Selection {
 
   getOffsetX() {
     return this._offsetX;
+  }
+
+  getActiveCamera() {
+    return this._activeCamera;
+  }
+
+  getPickedMesh() {
+    return this._pickedMesh;
   }
 
   init() {
@@ -192,8 +202,10 @@ class Selection {
     }
 
     camera = camera || main.getCamera();
+    this._activeCamera = camera;
     // if there's an offset then it means we are editing the tool radius
     var pickedMesh = main.getPicking().getMesh() && !this._isEditMode;
+    this._pickedMesh = pickedMesh;
     if (pickedMesh) this._updateMatricesMesh(camera, main);
     else this._updateMatricesBackground(camera, main);
 
