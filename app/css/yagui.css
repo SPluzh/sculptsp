@@ -27,7 +27,7 @@
   /* Indicator */
   --color-indicator-bg:   rgba(68, 68, 68, 0.85);
   --color-indicator-fill: var(--color-accent);
-  --indicator-min-width:  180px;
+  --indicator-min-width:  90px;
   --indicator-padding:    8px 12px;
   --indicator-radius:     6px;
 
@@ -566,7 +566,8 @@ body {
   z-index: 99999;
   border: 1px solid var(--color-border);
   box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
-  width: var(--indicator-min-width);
+  min-width: var(--indicator-min-width);
+  width: max-content;
   flex-direction: column;
   gap: 6px;
   transform: translate(-50%, -100%);
