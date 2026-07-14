@@ -10,7 +10,7 @@ class ClayBuildup extends SculptBase {
     super(main);
 
     this._radius = 50;
-    this._intensity = 0.5;
+    this._intensity = 0.05;
     this._negative = false;
     this._clay = true;
     this._culling = false;
@@ -22,7 +22,7 @@ class ClayBuildup extends SculptBase {
 
   stroke(picking) {
     var iVertsInRadius = picking.getPickedVertices();
-    var intensity = this._intensity * Tablet.getPressureIntensity();
+    var intensity = this._intensity * Tablet.getPressureIntensity() * 0.1;
 
     if (!this._accumulate && !this._lockPosition)
       this.updateProxy(iVertsInRadius);
