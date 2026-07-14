@@ -27,7 +27,7 @@
   /* Indicator */
   --color-indicator-bg:   rgba(68, 68, 68, 0.85);
   --color-indicator-fill: var(--color-accent);
-  --indicator-min-width:  130px;
+  --indicator-min-width:  150px;
   --indicator-padding:    8px 12px;
   --indicator-radius:     6px;
 
