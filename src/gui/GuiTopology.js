@@ -153,6 +153,7 @@ class GuiMultiresolution {
   }
 
   remeshResolution(val) {
+    val = Math.round(val);
     Remesh.RESOLUTION = val;
     this._ctrlRes1.setValue(val, true);
     this._ctrlRes2.setValue(val, true);
@@ -491,7 +492,7 @@ class GuiMultiresolution {
 
   _updateRemeshIndicator(x, y) {
     if (this._modalRemeshResolution) {
-      var val = Remesh.RESOLUTION;
+      var val = Math.round(Remesh.RESOLUTION);
       var pct = Math.max(0, Math.min(100, ((val - 8) / (2000 - 8)) * 100));
       this._remeshInd.show(x, y, val, pct);
     } else {
