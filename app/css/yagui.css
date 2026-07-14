@@ -950,7 +950,6 @@ body {
   gap: 6px;
   backdrop-filter: blur(4px);
   -webkit-backdrop-filter: blur(4px);
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.35);
   width: 210px;
 }
 
