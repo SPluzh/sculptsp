@@ -2,6 +2,9 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.10]
+- **UI**: Added a custom heads-up display (HUD) for essential sculpting and painting hotkeys (`Q`, `W`, `E`, `R`, `A`, `S`, `D`, `X`, `Ctrl+X`, `Shift`, `Ctrl`) located in the bottom-left corner of the viewport.
+
 ## [0.9.9]
 - **UI**: Replaced the topology menu icon (a hexagon) with a modern boxes icon (`boxes`) in the vertical toolbar to better represent 3D mesh structure.
 - **UI**: Rearranged the vertical toolbar layout, removing the separator between Rendering and Camera, and inserting it right before Settings.
