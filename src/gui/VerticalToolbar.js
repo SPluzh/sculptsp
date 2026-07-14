@@ -133,6 +133,48 @@ class VerticalToolbar {
     return btn;
   }
 
+  addSymmetryButton(tooltip, onToggleFn, initialValue) {
+    var btn = document.createElement('div');
+    btn.className = 'vtb-btn';
+    if (initialValue) {
+      btn.classList.add('active');
+    }
+    btn.setAttribute('data-tooltip', tooltip);
+    btn.innerHTML = '<i data-lucide="flip-horizontal-2"></i>';
+    btn.addEventListener('click', () => {
+      onToggleFn();
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._symmetryBtn = btn;
+    
+    if (this._activeToolBtn) {
+      this._dom.insertBefore(btn, this._activeToolBtn.nextSibling);
+    } else {
+      this._dom.insertBefore(btn, this._dom.firstChild);
+    }
+    
+    return btn;
+  }
+
+  setSymmetryActive(active) {
+    if (this._symmetryBtn) {
+      if (active) {
+        this._symmetryBtn.classList.add('active');
+      } else {
+        this._symmetryBtn.classList.remove('active');
+      }
+    }
+  }
+
+  setSymmetryVisibility(visible) {
+    if (this._symmetryBtn) {
+      this._symmetryBtn.style.display = visible ? 'flex' : 'none';
+    }
+  }
+
+
   setActiveToolIcon(iconName) {
     if (!this._activeToolBtn || !iconName) return;
     const kebabName = iconName.replace(/([a-z0-9])([A-Z])/g, '$1-$2').toLowerCase();

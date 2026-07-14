@@ -124,6 +124,9 @@ class GuiSculpting {
       }
     }
     this._main.render();
+    if (this._ctrlGui._toolbar) {
+      this._ctrlGui._toolbar.setSymmetryActive(value);
+    }
   }
 
   addEvents() {
@@ -209,6 +212,9 @@ class GuiSculpting {
 
     var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
     this._ctrlSymmetry.setVisibility(showSym);
+    if (this._ctrlGui._toolbar) {
+      this._ctrlGui._toolbar.setSymmetryVisibility(showSym);
+    }
 
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);
 

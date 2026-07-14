@@ -18,6 +18,7 @@ import PanelContainer from './PanelContainer.js';
 
 import Export from '../files/Export.js';
 import Tools from '../editing/tools/Tools.js';
+import Enums from '../misc/Enums.js';
 
 import {
   createIcons,
@@ -33,7 +34,8 @@ import {
   ChevronsUpDown,
   Sparkles,
   Square,
-  Grid
+  Grid,
+  FlipHorizontal2
 } from 'lucide';
 
 class Gui {
@@ -155,6 +157,21 @@ class Gui {
       this._toolbar.setActiveToolIcon(activeToolClass.icon);
     }
 
+    var initialSymmetry = this._main.getSculptManager().getSymmetry();
+    var showSym = currentToolIdx !== Enums.Tools.TRANSFORM && currentToolIdx !== Enums.Tools.MEASURE && currentToolIdx !== Enums.Tools.DIVIDER;
+    this._toolbar.addSymmetryButton(
+      TR('sculptSymmetry'),
+      () => {
+        var value = !this._main.getSculptManager().getSymmetry();
+        this._ctrlSculpting.onSymmetryChange(value);
+        if (this._ctrlSculpting._ctrlSymmetry) {
+          this._ctrlSculpting._ctrlSymmetry.setValue(value, true);
+        }
+      },
+      initialSymmetry
+    );
+    this._toolbar.setSymmetryVisibility(showSym);
+
     this.updateMesh();
     this.setVisibility(true);
 
@@ -166,7 +183,8 @@ class Gui {
         Lightbulb,
         Camera,
         Image,
-        Settings
+        Settings,
+        FlipHorizontal2
       },
       root: this._toolbar._dom
     });
