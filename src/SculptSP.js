@@ -425,7 +425,7 @@ class SculptSP extends Scene {
       if (this._mesh) {
         var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
         if (wasClick) {
-          maskingTool.invert();
+          maskingTool.clickAction(this._maskX, this._maskY);
         } else {
           var applied = maskingTool.endLasso(altKey);
           if (!applied) {
@@ -436,6 +436,16 @@ class SculptSP extends Scene {
         maskingTool.endLasso(altKey);
       }
       maskingTool.destroyLassoOverlay();
+    } else if (this._action === Enums.Action.SCULPT_EDIT) {
+      var smgr = this.getSculptManager();
+      console.log('[onDeviceUp] SCULPT_EDIT, toolIndex=', smgr.getToolIndex(), 'MASKING=', Enums.Tools.MASKING, 'mesh=', !!this._mesh, 'wasClick=', data ? data.wasClick : false);
+      if (smgr.getToolIndex() === Enums.Tools.MASKING && this._mesh) {
+        var wasClickSculpt = data ? data.wasClick : false;
+        if (wasClickSculpt) {
+          var maskingToolSculpt = smgr.getTool(Enums.Tools.MASKING);
+          maskingToolSculpt.clickAction(this._mouseX, this._mouseY, true);
+        }
+      }
     }
 
     this._action = Enums.Action.NOTHING;

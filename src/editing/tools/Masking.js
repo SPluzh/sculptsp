@@ -121,6 +121,78 @@ class Masking extends SculptBase {
     this.updateAndRenderMask();
   }
 
+  /**
+   * Called on a simple click in mask-edit mode.
+   * - Click on masked area (mask < 1.0)   → blur the mask.
+   * - Click on object outside mask (mask == 1.0) → sharpen the mask.
+   * - Click on empty space (no mesh hit)  → invert the mask (original behaviour).
+   */
+  clickAction(mouseX, mouseY, undoStroke) {
+    var main = this._main;
+    var stateManager = main.getStateManager();
+
+    // If this click was from SCULPT_EDIT (brush stroke happened), undo it first
+    // so we read the pre-stroke mask and apply blur/sharpen cleanly.
+    if (undoStroke) {
+      stateManager.undo();
+    }
+
+    var mesh = this.getMesh();
+    console.log('[Masking.clickAction] mouseX=', mouseX, 'mouseY=', mouseY, 'mesh=', mesh ? mesh.getID() : 'null', 'undoStroke=', undoStroke);
+    if (!mesh) return;
+
+    var picking = main.getPicking();
+    // Ray-cast at the click position across all meshes
+    var hit = picking.intersectionMouseMeshes(main.getMeshes(), mouseX, mouseY);
+    console.log('[Masking.clickAction] hit=', hit);
+    if (!hit) {
+      // Clicked on empty space — invert mask (original behaviour)
+      this.invert();
+      return;
+    }
+
+    // Find the vertex of the picked face closest to the intersection point
+    var hitMesh = picking.getMesh();
+    var pickedFace = picking.getPickedFace();
+    if (pickedFace < 0 || !hitMesh) {
+      this.invert();
+      return;
+    }
+
+    var fAr = hitMesh.getFaces();
+    var mAr = hitMesh.getMaterials();
+    var vAr = hitMesh.getVertices();
+    var inter = picking.getIntersectionPoint();
+    var ix = inter[0], iy = inter[1], iz = inter[2];
+
+    var idf = pickedFace * 4;
+    var bestDist = Infinity;
+    var bestMask = 1.0;
+    // Walk through up to 4 vertices of the face
+    for (var k = 0; k < 4; ++k) {
+      var vid = fAr[idf + k];
+      if (vid === Utils.TRI_INDEX) break; // tri sentinel
+      var v3 = vid * 3;
+      var dx = vAr[v3] - ix;
+      var dy = vAr[v3 + 1] - iy;
+      var dz = vAr[v3 + 2] - iz;
+      var dist = dx * dx + dy * dy + dz * dz;
+      if (dist < bestDist) {
+        bestDist = dist;
+        bestMask = mAr[v3 + 2];
+      }
+    }
+
+    console.log('[Masking.clickAction] bestMask=', bestMask, '→', bestMask < 1.0 ? 'blur' : 'sharpen');
+
+    // mask value < 1.0 means the vertex is (at least partially) masked
+    if (bestMask < 1.0) {
+      this.blur();
+    } else {
+      this.sharpen();
+    }
+  }
+
   clear() {
     var mesh = this.getMesh();
     var iVerts = this.getMaskedVertices();
