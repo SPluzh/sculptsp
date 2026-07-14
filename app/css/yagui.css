@@ -933,7 +933,7 @@ body {
 /* HUD-подсказка горячих клавиш слева снизу */
 .viewport-hud-hotkeys {
   position: absolute;
-  left: 60px; /* Размещается справа от вертикального тулбара */
+  left: 20px; /* Размещается у левого края экрана */
   bottom: 20px;
   pointer-events: none;
   font-family: 'Inter', sans-serif;
