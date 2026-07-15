@@ -89,6 +89,10 @@ class Camera {
     // near far
     this._near = 0.05;
     this._far = 5000.0;
+    this._smoothNear = 0.05;
+    this._smoothFar = 5000.0;
+    this._nearFarAlpha = 0.08;
+    this._useSafeMargin = false;
 
     this._timers = {}; // animation timers
 
@@ -320,10 +324,22 @@ class Camera {
 
     var boxRadius = 0.5 * vec3.dist(bb, vec3.set(_TMP_VEC3, bb[3], bb[4], bb[5]));
     
-    // Add a safe margin to avoid aggressive near/far clipping planes
-    var margin = Math.max(10.0, boxRadius * 1.5, distToBoxCenter * 0.15);
-    this._near = Math.max(0.01, distToBoxCenter - margin);
-    this._far = distToBoxCenter + margin;
+    var targetNear = 0.01;
+    var targetFar = 5000.0;
+
+    if (this._useSafeMargin) {
+      // Add a safe margin to avoid aggressive near/far clipping planes
+      var margin = Math.max(10.0, boxRadius * 1.5, distToBoxCenter * 0.15);
+      targetNear = Math.max(0.01, distToBoxCenter - margin);
+      targetFar = distToBoxCenter + margin;
+    } else {
+      // Standard precise calculation (similar to sculpt_ng)
+      targetNear = Math.max(0.01, distToBoxCenter - boxRadius);
+      targetFar = boxRadius + distToBoxCenter;
+    }
+
+    this._near = targetNear;
+    this._far = targetFar;
     this.updateProjection();
   }
 
@@ -661,6 +677,10 @@ class Camera {
     cam._speed = this._speed;
     cam._near = this._near;
     cam._far = this._far;
+    cam._smoothNear = this._smoothNear;
+    cam._smoothFar = this._smoothFar;
+    cam._nearFarAlpha = this._nearFarAlpha;
+    cam._useSafeMargin = this._useSafeMargin;
     cam._width = this._width;
     cam._height = this._height;
     mat4.copy(cam._viewport, this._viewport);

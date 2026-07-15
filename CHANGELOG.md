@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file.
 
+## [0.9.11]
+- **Rendering**: Fixed rendering edge aliasing and visual shimmering noise on mesh edges at medium/far camera distances. The near/far camera clipping plane calculations have been optimized to perfectly match the active scene bounding box (similar to the sculpt_ng project).
+- **Navigation**: Resolved a bug where meshes would get clipped (disappear) during fast camera zoom-in/dolly movements. The near/far smoothing delay has been replaced with instant updates.
+- **UI**: Added a **Safe Near/Far margin** checkbox in the Camera menu to restore safe camera clipping buffers if needed.
+- **Rendering**: Added a native **Anti-aliasing** (MSAA) checkbox in the Rendering menu (requires page reload to apply).
+- **Rendering**: Enhanced FXAA post-processing anti-aliasing by increasing the diagonal search span from 8 to 12 pixels.
+- **UI**: Added full English and Russian translations for all new rendering quality and camera clipping options.
+
 ## [0.9.10]
 - **Selection**: Changed viewport mesh selection to require holding the **Alt** key (Alt + stylus tap / left-click). Tapping another mesh without holding Alt will no longer select it, allowing you to sculpt without accidentally switching objects.
 - **Stylus / Pen**: Fixed an issue where starting a sculpt stroke with a tablet stylus/pen (or left-drag when navigation-on-click is disabled) outside the mesh silhouette would not sculpt when dragging onto the mesh. Sculpting now begins automatically as soon as the pointer enters the mesh bounds.

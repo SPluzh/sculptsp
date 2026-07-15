@@ -86,6 +86,13 @@ class GuiRendering {
     if (RenderData.ONLY_DRAW_ARRAYS)
       this._ctrlShowWireframe.setVisibility(false);
 
+    menu.addTitle(TR('renderingQualityTitle'));
+    this._ctrlAntialias = menu.addCheckbox(
+      TR('renderingAntialias'),
+      this._main._antialias,
+      this.onAntialiasChanged.bind(this)
+    );
+
     this.addEvents();
   }
 
@@ -330,6 +337,10 @@ class GuiRendering {
 
   importMatcap() {
     document.getElementById('matcapopen').click();
+  }
+
+  onAntialiasChanged(val) {
+    this._main.setAntialias(val);
   }
 
   ////////////////

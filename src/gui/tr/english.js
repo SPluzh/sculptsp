@@ -22,6 +22,7 @@ var TR = {
   cameraFov: 'Fov (mm)',
   cameraPivot: 'Picking pivot',
   cameraRmbOnly: 'RMB only navigation',
+  cameraSafeMargin: 'Safe Near/Far margin',
   cameraSpeedTitle: 'Speed settings',
   cameraSpeedTranslate: 'Translation speed',
   cameraSpeedZoom: 'Zoom speed',
@@ -238,6 +239,10 @@ var TR = {
   renderingEnvironment: 'Environment',
   renderingIsolate: 'Isolate/Show (I)',
   renderingFilmic: 'Filmic tonemapping',
+  renderingQualityTitle: 'Image Quality',
+  renderingNearFarSmooth: 'Depth stability',
+  renderingAntialias: 'Anti-aliasing (restart required)',
+  renderingAntialiasRestart: 'Anti-aliasing changed. Reload page to apply?',
 
   // contour
   contour: 'Contour',

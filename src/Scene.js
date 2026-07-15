@@ -23,6 +23,7 @@ import ShaderVoxelChecker from './render/shaders/ShaderVoxelChecker.js';
 import SnapCube from './gui/SnapCube.js';
 import MeasureRenderer from './measure/MeasureRenderer.js';
 import DividerRenderer from './measure/DividerRenderer.js';
+import TR from './gui/GuiTR.js';
 
 class Scene {
 
@@ -96,6 +97,7 @@ class Scene {
     this._vertexSRGB = true; // srgb vs linear colorspace for vertex color
     this._snapCubeLeft = null;
     this._snapCubeRight = null;
+    this._antialias = window.localStorage.getItem('sculptsp_antialias') === '1';
   }
 
   start() {
@@ -599,7 +601,7 @@ class Scene {
 
   initWebGL() {
     var attributes = {
-      antialias: false,
+      antialias: this._antialias,
       stencil: true
     };
 
@@ -980,6 +982,14 @@ class Scene {
     camera.addRefImage(overlay);
     camera.setActiveRefIdx(camera.getRefImages().length - 1);
     this.render();
+  }
+
+  setAntialias(val) {
+    this._antialias = val;
+    window.localStorage.setItem('sculptsp_antialias', val ? '1' : '0');
+    if (window.confirm(TR('renderingAntialiasRestart'))) {
+      window.location.reload();
+    }
   }
 }
 

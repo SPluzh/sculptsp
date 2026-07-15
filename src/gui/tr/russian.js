@@ -22,6 +22,7 @@ var TR = {
   cameraFov: 'Фокусное расстояние (мм)',
   cameraPivot: 'Выбор вращения',
   cameraRmbOnly: 'Только ПКМ для камеры',
+  cameraSafeMargin: 'Безопасные границы Near/Far',
   cameraSpeedTitle: 'Настройки скорости',
   cameraSpeedTranslate: 'Скорость перемещения',
   cameraSpeedZoom: 'Скорость зума',
@@ -238,6 +239,10 @@ var TR = {
   renderingEnvironment: 'Отражение',
   renderingIsolate: 'Изолировать / Показать (I)',
   renderingFilmic: 'Пленка',
+  renderingQualityTitle: 'Качество изображения',
+  renderingNearFarSmooth: 'Стабильность глубины',
+  renderingAntialias: 'Сглаживание (нужен перезапуск)',
+  renderingAntialiasRestart: 'Сглаживание изменено. Перезагрузить страницу?',
 
   // contour
   contour: 'Контур',

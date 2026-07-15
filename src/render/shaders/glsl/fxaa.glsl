@@ -1,7 +1,7 @@
 // https://github.com/mattdesl/glsl-fxaa
 #define FXAA_REDUCE_MIN (1.0/ 128.0)
 #define FXAA_REDUCE_MUL (1.0 / 8.0)
-#define FXAA_SPAN_MAX 8.0
+#define FXAA_SPAN_MAX 12.0
 
 vec3 fxaa(const in sampler2D tex, const in vec2 uvNW, const in vec2 uvNE, const in vec2 uvSW, const in vec2 uvSE, const in vec2 uvM, const in vec2 invRes) {
     const vec3 luma = vec3(0.299, 0.587, 0.114);

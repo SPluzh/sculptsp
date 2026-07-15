@@ -79,6 +79,7 @@ class GuiCamera {
     menu.addCombobox('', camera.getMode(), this.onCameraModeChange.bind(this), optionsMode);
     this._ctrlPivot = menu.addCheckbox(TR('cameraPivot'), camera.getUsePivot(), this.onPivotChange.bind(this));
     this._ctrlRmbOnly = menu.addCheckbox(TR('cameraRmbOnly'), this._main, '_cameraRmbOnly');
+    this._ctrlSafeMargin = menu.addCheckbox(TR('cameraSafeMargin'), camera._useSafeMargin, this.onSafeMarginChange.bind(this));
 
     // speed settings
     menu.addTitle(TR('cameraSpeedTitle'));
@@ -314,6 +315,15 @@ class GuiCamera {
     this._main.render();
   }
 
+  onSafeMarginChange(value) {
+    var camera = this._camera;
+    camera._useSafeMargin = value;
+    if (this._main._cameraRight) this._main._cameraRight._useSafeMargin = value;
+    camera.optimizeNearFar();
+    if (this._main._cameraRight) this._main._cameraRight.optimizeNearFar();
+    this._main.render();
+  }
+
   cameraUndo() {
     this._camera.undo();
     this._main.render();
@@ -513,6 +523,7 @@ class GuiCamera {
       this._ctrlFov.setVisibility(camera.getProjectionType() === Enums.Projection.PERSPECTIVE);
     }
     if (this._ctrlPivot) this._ctrlPivot.setValue(camera.getUsePivot(), true);
+    if (this._ctrlSafeMargin) this._ctrlSafeMargin.setValue(camera._useSafeMargin, true);
     
     if (this._ctrlRef2DMode) {
       var val = camera.getRef2DMode();
