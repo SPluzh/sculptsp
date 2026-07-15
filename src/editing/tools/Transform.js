@@ -208,8 +208,7 @@ class Transform extends SculptBase {
   }
 
   addSculptToScene(scene) {
-    if (this.getMesh())
-      this._gizmo.addGizmoToScene(scene);
+    // Do not add gizmo to scene to prevent duplicate rendering in _drawScene.
   }
 }
 
