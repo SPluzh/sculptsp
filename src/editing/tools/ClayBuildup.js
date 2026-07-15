@@ -10,7 +10,7 @@ class ClayBuildup extends SculptBase {
     super(main);
 
     this._radius = 50;
-    this._intensity = 0.05;
+    this._intensity = 0.5;
     this._negative = false;
     this._clay = true;
     this._culling = false;

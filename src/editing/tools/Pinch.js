@@ -7,7 +7,7 @@ class Pinch extends SculptBase {
     super(main);
 
     this._radius = 50;
-    this._intensity = 0.75;
+    this._intensity = 0.5;
     this._negative = false;
     this._culling = false;
     this._idAlpha = 0;
