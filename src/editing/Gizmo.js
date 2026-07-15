@@ -314,9 +314,9 @@ class Gizmo {
   }
 
   _initRotate() {
-    this._createCircle(this._rotX, Math.PI, COLOR_X);
-    this._createCircle(this._rotY, Math.PI, COLOR_Y);
-    this._createCircle(this._rotZ, Math.PI, COLOR_Z);
+    this._createCircle(this._rotX, Math.PI * 2, COLOR_X);
+    this._createCircle(this._rotY, Math.PI * 2, COLOR_Y);
+    this._createCircle(this._rotZ, Math.PI * 2, COLOR_Z);
     this._createCircle(this._rotW, Math.PI * 2, COLOR_GREY);
     vec3.set(this._rotW._colorSelect, 1.0, 1.0, 1.0);
   }
@@ -549,27 +549,31 @@ class Gizmo {
     vec3.copy(projCenter, camera.project(projCenter));
 
     this._editProjCenter = vec2.clone(projCenter);
+    this._editAngleStart = Math.atan2(main._mouseY - projCenter[1], main._mouseX - projCenter[0]);
 
     if (this._selected._type === Gizmo.ROT_W) {
       var trMesh = [0.0, 0.0, 0.0];
       this._computeCenterGizmo(trMesh);
       var eye = camera.computePosition();
       this._editRotateAxis = vec3.normalize(vec3.create(), vec3.sub(eye, trMesh, eye));
-      this._editAngleStart = Math.atan2(main._mouseY - projCenter[1], main._mouseX - projCenter[0]);
       return;
     }
 
-    // compute tangent direction and project it on screen
-    var dir = this._editLineDirection;
-    var sign = this._selected._nbAxis === 0 ? -1.0 : 1.0;
-    var lastInter = this._selected._lastInter;
-    vec3.set(dir, -sign * lastInter[2], -sign * lastInter[1], sign * lastInter[0]);
-    vec3.transformMat4(dir, dir, this._selected._finalMatrix);
-    vec3.copy(dir, camera.project(dir));
+    // Compute the sign of the rotation relative to the camera viewpoint
+    var nbAxis = this._selected._nbAxis;
+    var trMesh = [0.0, 0.0, 0.0];
+    this._computeCenterGizmo(trMesh);
+    var eye = camera.computePosition();
+    var eyeDir = vec3.sub(vec3.create(), eye, trMesh);
+    vec3.normalize(eyeDir, eyeDir);
 
-    vec2.normalize(dir, vec2.sub(dir, dir, projCenter));
+    var axisDir = vec3.fromValues(
+      this._editGizmoRot[nbAxis * 4],
+      this._editGizmoRot[nbAxis * 4 + 1],
+      this._editGizmoRot[nbAxis * 4 + 2]
+    );
 
-    vec2.set(this._editLineOrigin, main._mouseX, main._mouseY);
+    this._editRotateSign = vec3.dot(axisDir, eyeDir) < 0.0 ? -1.0 : 1.0;
   }
 
   _startTranslateEdit() {
@@ -651,10 +655,10 @@ class Gizmo {
       main._mouseY
     );
 
-    if (this._selected._type === Gizmo.ROT_W) {
-      var currentAngle = Math.atan2(main._mouseY - this._editProjCenter[1], main._mouseX - this._editProjCenter[0]);
-      var angle = currentAngle - this._editAngleStart;
+    var currentAngle = Math.atan2(main._mouseY - this._editProjCenter[1], main._mouseX - this._editProjCenter[0]);
+    var angle = currentAngle - this._editAngleStart;
 
+    if (this._selected._type === Gizmo.ROT_W) {
       for (var i = 0; i < meshes.length; ++i) {
         var mrot = this._isMovingPivot ? (meshes[i]._pivotEditMatrix || (meshes[i]._pivotEditMatrix = mat4.create())) : meshes[i].getEditMatrix();
         mat4.identity(mrot);
@@ -665,23 +669,15 @@ class Gizmo {
         }
       }
     } else {
-      var origin = this._editLineOrigin;
-      var dir = this._editLineDirection;
-
-      var vec = [main._mouseX, main._mouseY, 0.0];
-      vec2.sub(vec, vec, origin);
-      var dist = vec2.dot(vec, dir);
-
-      var angle = (7 * dist) / Math.min(main.getCanvasWidth(), main.getCanvasHeight());
-      angle %= Math.PI * 2;
       var nbAxis = this._selected._nbAxis;
+      var rotAngle = -angle * this._editRotateSign;
 
       for (var i = 0; i < meshes.length; ++i) {
         var mrot = this._isMovingPivot ? (meshes[i]._pivotEditMatrix || (meshes[i]._pivotEditMatrix = mat4.create())) : meshes[i].getEditMatrix();
         mat4.identity(mrot);
-        if (nbAxis === 0) mat4.rotateX(mrot, mrot, -angle);
-        else if (nbAxis === 1) mat4.rotateY(mrot, mrot, -angle);
-        else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, -angle);
+        if (nbAxis === 0) mat4.rotateX(mrot, mrot, rotAngle);
+        else if (nbAxis === 1) mat4.rotateY(mrot, mrot, rotAngle);
+        else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, rotAngle);
 
         var tmp = mat4.create();
         mat4.mul(tmp, this._editGizmoRot, mrot);

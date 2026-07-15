@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Transform Tool**: Changed coordinate axes rotation dragging (X, Y, and Z axes) to track the mouse cursor's angle around the gizmo's screen center, matching the intuitive circular dragging behavior of camera-plane rotation.
+- **Transform Tool**: Updated the coordinate axes rotation rings to render as complete 360-degree circles rather than semi-circles.
 - **Transform Tool**: Fixed a bug where rotating or scaling the mesh (or the pivot itself) along the X, Y, or Z axes occurred incorrectly (along the wrong directions) after the pivot had been rotated. The rotation and scaling transformations now align perfectly with the tilted pivot axes.
 - **Transform Tool**: Hid the scale handle cubes from the gizmo when editing the pivot (either via holding Alt or toggling the lock) to prevent accidental scaling and clean up the viewport.
 - **Transform Tool**: Integrated the Alt hotkey with the padlock lock icon state, so that holding Alt instantly activates the pivot-editing unlocked visual state (red background / open padlock) and releasing it reverts it back.
