@@ -300,7 +300,7 @@ class Gizmo {
     vec3.copy(this._planeW._color, COLOR_GREY);
     this._planeW._drawGeo = Primitives.createSquareCorners(this._gl, ROT_RADIUS, 0.4);
     this._planeW._drawGeo.setShaderType(Enums.Shader.FLAT);
-    this._planeW._pickGeo = Primitives.createTorusXY(this._gl, Math.SQRT2 * ROT_RADIUS, THICKNESS_PICK * 2.0, Math.PI * 2, 6, 4, Math.PI * 0.25);
+    this._planeW._pickGeo = Primitives.createSquareCornersPick(this._gl, ROT_RADIUS, 0.5);
     this._planeW._pickGeo._gizmo = this._planeW;
     vec3.set(this._planeW._colorSelect, 1.0, 1.0, 1.0);
   }

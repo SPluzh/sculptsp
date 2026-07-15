@@ -452,4 +452,30 @@ Primitives.createSquareCorners = function (gl, radius, d) {
   return mesh;
 };
 
+Primitives.createSquareCornersPick = function (gl, radius, side) {
+  var c1 = createMesh(null, createCubeArray(side));
+  var c2 = createMesh(null, createCubeArray(side));
+  var c3 = createMesh(null, createCubeArray(side));
+  var c4 = createMesh(null, createCubeArray(side));
+
+  c1.getMatrix()[12] = -radius;
+  c1.getMatrix()[13] = radius;
+
+  c2.getMatrix()[12] = radius;
+  c2.getMatrix()[13] = radius;
+
+  c3.getMatrix()[12] = radius;
+  c3.getMatrix()[13] = -radius;
+
+  c4.getMatrix()[12] = -radius;
+  c4.getMatrix()[13] = -radius;
+
+  var merged = {
+    vertices: null,
+    faces: null
+  };
+  Remesh.mergeArrays([c1, c2, c3, c4], merged);
+  return createMesh(gl, merged);
+};
+
 export default Primitives;
