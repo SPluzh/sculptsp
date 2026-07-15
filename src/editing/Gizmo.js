@@ -385,6 +385,34 @@ class Gizmo {
 
     var traScale = mat4.create();
     mat4.translate(traScale, traScale, trMesh);
+
+    // Apply rotation from the mesh
+    var mesh = this._main.getMesh();
+    if (mesh) {
+      var meshMat = mat4.create();
+      if (this._isMovingPivot && mesh._pivotEditMatrix) {
+        mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
+      } else {
+        mat4.copy(meshMat, mesh.getMatrix());
+      }
+      var rotMesh = mat4.create();
+      mat4.copy(rotMesh, meshMat);
+      rotMesh[12] = rotMesh[13] = rotMesh[14] = 0.0;
+
+      // Orthonormalize rotation matrix to strip scale
+      var col1 = [rotMesh[0], rotMesh[1], rotMesh[2]];
+      var col2 = [rotMesh[4], rotMesh[5], rotMesh[6]];
+      var col3 = [rotMesh[8], rotMesh[9], rotMesh[10]];
+      vec3.normalize(col1, col1);
+      vec3.normalize(col2, col2);
+      vec3.normalize(col3, col3);
+      rotMesh[0] = col1[0]; rotMesh[1] = col1[1]; rotMesh[2] = col1[2];
+      rotMesh[4] = col2[0]; rotMesh[5] = col2[1]; rotMesh[6] = col2[2];
+      rotMesh[8] = col3[0]; rotMesh[9] = col3[1]; rotMesh[10] = col3[2];
+
+      mat4.mul(traScale, traScale, rotMesh);
+    }
+
     mat4.scale(traScale, traScale, [scaleFactor, scaleFactor, scaleFactor]);
 
     // manage arc stuffs
@@ -435,6 +463,10 @@ class Gizmo {
   _saveEditMatrices() {
     var meshes = this._main.getSelectedMeshes();
 
+    if (this._isMovingPivot) {
+      this._editMeshCentersStart = [];
+    }
+
     // translation part
     var center = this._computeCenterGizmo();
     mat4.translate(this._editTrans, mat4.identity(this._editTrans), center);
@@ -456,6 +488,10 @@ class Gizmo {
       // precomputes the invert
       mat4.invert(this._editLocalInv[i], this._editLocal[i]);
       mat4.invert(this._editScaleRotInv[i], this._editScaleRot[i]);
+
+      if (this._isMovingPivot) {
+        this._editMeshCentersStart[i] = vec3.copy([0.0, 0.0, 0.0], meshes[i].getCenter());
+      }
     }
   }
 
@@ -504,9 +540,22 @@ class Gizmo {
 
     // 3d direction
     var nbAxis = this._selected._nbAxis;
-    if (nbAxis !== -1)
-      // if -1, we don't care about dir vector
-      vec3.set(dir, 0.0, 0.0, 0.0)[nbAxis] = 1.0;
+    if (nbAxis !== -1) {
+      var mesh = main.getMesh();
+      if (mesh) {
+        var meshMat = mat4.create();
+        if (this._isMovingPivot && mesh._pivotEditMatrix) {
+          mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
+        } else {
+          mat4.copy(meshMat, mesh.getMatrix());
+        }
+        var offsetIndex = nbAxis * 4;
+        vec3.set(dir, meshMat[offsetIndex], meshMat[offsetIndex + 1], meshMat[offsetIndex + 2]);
+        vec3.normalize(dir, dir);
+      } else {
+        vec3.set(dir, 0.0, 0.0, 0.0)[nbAxis] = 1.0;
+      }
+    }
     vec3.add(dir, origin, dir);
 
     // project on screen and get a 2D line
@@ -549,7 +598,6 @@ class Gizmo {
 
   _updateRotateEdit() {
     var main = this._main;
-
     var meshes = this._main.getSelectedMeshes();
 
     this._updateLineHelper(
@@ -564,10 +612,13 @@ class Gizmo {
       var angle = currentAngle - this._editAngleStart;
 
       for (var i = 0; i < meshes.length; ++i) {
-        var mrot = meshes[i].getEditMatrix();
+        var mrot = this._isMovingPivot ? (meshes[i]._pivotEditMatrix || (meshes[i]._pivotEditMatrix = mat4.create())) : meshes[i].getEditMatrix();
         mat4.identity(mrot);
         mat4.rotate(mrot, mrot, angle, this._editRotateAxis);
         this._scaleRotateEditMatrix(mrot, i);
+        if (this._isMovingPivot) {
+          mat4.identity(meshes[i].getEditMatrix());
+        }
       }
     } else {
       var origin = this._editLineOrigin;
@@ -582,13 +633,16 @@ class Gizmo {
       var nbAxis = this._selected._nbAxis;
 
       for (var i = 0; i < meshes.length; ++i) {
-        var mrot = meshes[i].getEditMatrix();
+        var mrot = this._isMovingPivot ? (meshes[i]._pivotEditMatrix || (meshes[i]._pivotEditMatrix = mat4.create())) : meshes[i].getEditMatrix();
         mat4.identity(mrot);
         if (nbAxis === 0) mat4.rotateX(mrot, mrot, -angle);
         else if (nbAxis === 1) mat4.rotateY(mrot, mrot, -angle);
         else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, -angle);
 
         this._scaleRotateEditMatrix(mrot, i);
+        if (this._isMovingPivot) {
+          mat4.identity(meshes[i].getEditMatrix());
+        }
       }
     }
 
@@ -619,15 +673,32 @@ class Gizmo {
     // intersection line line
     vec3.normalize(vec, vec3.sub(vec, far, near));
 
-    var inter = [0.0, 0.0, 0.0];
-    inter[this._selected._nbAxis] = 1.0;
+    var nbAxis = this._selected._nbAxis;
+    var axisDir = [0.0, 0.0, 0.0];
+    var mesh = main.getMesh();
+    if (mesh) {
+      var meshMat = mat4.create();
+      if (this._isMovingPivot && mesh._pivotEditMatrix) {
+        mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
+      } else {
+        mat4.copy(meshMat, mesh.getMatrix());
+      }
+      var offsetIndex = nbAxis * 4;
+      vec3.set(axisDir, meshMat[offsetIndex], meshMat[offsetIndex + 1], meshMat[offsetIndex + 2]);
+      vec3.normalize(axisDir, axisDir);
+    } else {
+      axisDir[nbAxis] = 1.0;
+    }
 
-    var a01 = -vec3.dot(vec, inter);
+    var a01 = -vec3.dot(vec, axisDir);
     var b0 = vec3.dot(near, vec);
     var det = Math.abs(1.0 - a01 * a01);
 
-    var b1 = -vec3.dot(near, inter);
-    inter[this._selected._nbAxis] = (a01 * b0 - b1) / det;
+    var b1 = -vec3.dot(near, axisDir);
+    var t = (a01 * b0 - b1) / det;
+
+    var inter = [0.0, 0.0, 0.0];
+    vec3.scale(inter, axisDir, t);
 
     this._updateMatrixTranslate(inter);
 
@@ -660,7 +731,21 @@ class Gizmo {
     if (this._selected._type === Gizmo.PLANE_W) {
       vec3.copy(normal, this._editPlaneNormal);
     } else {
-      normal[this._selected._nbAxis] = 1.0;
+      var nbAxis = this._selected._nbAxis;
+      var mesh = main.getMesh();
+      if (mesh) {
+        var meshMat = mat4.create();
+        if (this._isMovingPivot && mesh._pivotEditMatrix) {
+          mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
+        } else {
+          mat4.copy(meshMat, mesh.getMatrix());
+        }
+        var offsetIndex = nbAxis * 4;
+        vec3.set(normal, meshMat[offsetIndex], meshMat[offsetIndex + 1], meshMat[offsetIndex + 2]);
+        vec3.normalize(normal, normal);
+      } else {
+        normal[nbAxis] = 1.0;
+      }
     }
 
     var dist1 = vec3.dot(near, normal);
@@ -690,13 +775,29 @@ class Gizmo {
 
       var edim = meshes[i].getEditMatrix();
       mat4.identity(edim);
-      mat4.translate(edim, edim, tmp);
+
+      if (this._isMovingPivot) {
+        if (this._editMeshCentersStart && this._editMeshCentersStart[i]) {
+          vec3.add(meshes[i].getCenter(), this._editMeshCentersStart[i], tmp);
+        }
+      } else {
+        mat4.translate(edim, edim, tmp);
+      }
     }
   }
 
   _updateScaleEdit() {
     var main = this._main;
     var mesh = main.getMesh();
+    var meshes = this._main.getSelectedMeshes();
+
+    if (this._isMovingPivot) {
+      for (var i = 0; i < meshes.length; ++i) {
+        mat4.identity(meshes[i].getEditMatrix());
+      }
+      main.render();
+      return;
+    }
 
     var origin = this._editLineOrigin;
     var dir = this._editLineDirection;
@@ -839,6 +940,7 @@ class Gizmo {
     if (!sel) return false;
 
     this._isEditing = true;
+    this._isMovingPivot = this._main._isAltDown;
     var type = sel._type;
     this._saveEditMatrices();
 

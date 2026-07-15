@@ -35,6 +35,13 @@ class Transform extends SculptBase {
 
     if (mesh && this._gizmo.onMouseDown()) {
       picking._mesh = mesh;
+      this._isMovingPivot = main._isAltDown;
+      this._editType = this._gizmo._selected._type;
+      if (this._isMovingPivot) {
+        var meshes = main.getSelectedMeshes();
+        this._startCenters = meshes.map(m => vec3.copy([0, 0, 0], m.getCenter()));
+        this._startMatrices = meshes.map(m => mat4.copy(mat4.create(), m.getMatrix()));
+      }
       return true;
     }
 
@@ -69,24 +76,96 @@ class Transform extends SculptBase {
   end() {
     this._gizmo.onMouseUp();
 
-    if (!this.getMesh() || this.isIdentity(this.getMesh().getEditMatrix()))
-      return;
-
     var meshes = this._main.getSelectedMeshes();
+    if (this._isMovingPivot) {
+      for (var i = 0; i < meshes.length; ++i) {
+        var mesh = meshes[i];
+        var startCenter = this._startCenters[i];
+        var startMatrix = this._startMatrices[i];
+        var hasRot = mesh._pivotEditMatrix && !this.isIdentity(mesh._pivotEditMatrix);
+        var hasTrans = startCenter && vec3.sqrDist(mesh.getCenter(), startCenter) > 1e-7;
+
+        if (hasTrans || hasRot) {
+          var newMatrix = mat4.create();
+          if (hasRot) {
+            mat4.mul(newMatrix, mesh.getMatrix(), mesh._pivotEditMatrix);
+          } else {
+            mat4.copy(newMatrix, mesh.getMatrix());
+          }
+          var newCenter = vec3.copy([0, 0, 0], mesh.getCenter());
+
+          // Temporarily restore start center and matrix for state creation
+          vec3.copy(mesh.getCenter(), startCenter);
+          mat4.copy(mesh.getMatrix(), startMatrix);
+
+          this._forceToolMesh = mesh;
+          this.pushState();
+          if (i > 0) this._main.getStateManager().getCurrentState().squash = true;
+
+          if (hasRot) {
+            var nbVertices = mesh.getNbVertices();
+            var iVerts = new Uint32Array(nbVertices);
+            for (var j = 0; j < nbVertices; ++j) {
+              iVerts[j] = j;
+            }
+            this._main.getStateManager().pushVertices(iVerts);
+
+            // Restore new center and matrix to apply inverse rotation
+            vec3.copy(mesh.getCenter(), newCenter);
+            mat4.copy(mesh.getMatrix(), newMatrix);
+
+            var R_local_inv = mat4.create();
+            mat4.invert(R_local_inv, mesh._pivotEditMatrix);
+            mat4.copy(mesh.getEditMatrix(), R_local_inv);
+
+            this.applyEditMatrix(iVerts);
+            this.updateMeshBuffers();
+            vec3.copy(mesh.getCenter(), newCenter);
+          } else {
+            // Restore new center
+            vec3.copy(mesh.getCenter(), newCenter);
+          }
+        }
+        mesh._pivotEditMatrix = null;
+      }
+      this._forceToolMesh = null;
+      this._isMovingPivot = false;
+      this._startCenters = null;
+      this._startMatrices = null;
+      this._editType = null;
+      return;
+    }
+
+    if (!this.getMesh() || this.isIdentity(this.getMesh().getEditMatrix())) {
+      this._editType = null;
+      return;
+    }
+
+    var isRotation = this._editType === Gizmo.ROT_X || this._editType === Gizmo.ROT_Y || this._editType === Gizmo.ROT_Z || this._editType === Gizmo.ROT_W;
+
     for (var i = 0; i < meshes.length; ++i) {
-      this._forceToolMesh = meshes[i];
+      var mesh = meshes[i];
+      this._forceToolMesh = mesh;
 
       this.pushState();
       if (i > 0) this._main.getStateManager().getCurrentState().squash = true;
 
       var iVerts = this.getUnmaskedVertices();
-      this._main.getStateManager().pushVertices(iVerts);
-      this.applyEditMatrix(iVerts);
+      var hasMasking = iVerts.length < mesh.getNbVertices();
 
-      if (iVerts.length === 0) continue;
-      this.updateMeshBuffers();
+      if (isRotation && !hasMasking) {
+        mat4.mul(mesh.getMatrix(), mesh.getMatrix(), mesh.getEditMatrix());
+        mat4.identity(mesh.getEditMatrix());
+      } else {
+        this._main.getStateManager().pushVertices(iVerts);
+        this.applyEditMatrix(iVerts);
+
+        if (iVerts.length === 0) continue;
+        this.updateMeshBuffers();
+      }
     }
     this._forceToolMesh = null;
+    this._editType = null;
   }
 
   applyEditMatrix(iVerts) {

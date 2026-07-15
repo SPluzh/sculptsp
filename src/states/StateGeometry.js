@@ -1,4 +1,4 @@
-import { vec3 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
 import Utils from '../misc/Utils.js';
 
 class StateGeometry {
@@ -7,13 +7,24 @@ class StateGeometry {
     this._main = main; // main application
     this._mesh = mesh; // the mesh
     this._center = vec3.copy([0.0, 0.0, 0.0], mesh.getCenter());
+    this._matrix = mat4.copy(mat4.create(), mesh.getMatrix());
 
     this._idVertState = []; // ids of vertices
     this._vArState = []; // copies of vertices coordinates
   }
 
   isNoop() {
-    return this._idVertState.length === 0;
+    var centerChanged = vec3.sqrDist(this._center, this._mesh.getCenter()) > 1e-7;
+    var matrixChanged = false;
+    var m1 = this._matrix;
+    var m2 = this._mesh.getMatrix();
+    for (var i = 0; i < 16; ++i) {
+      if (Math.abs(m1[i] - m2[i]) > 1e-7) {
+        matrixChanged = true;
+        break;
+      }
+    }
+    return this._idVertState.length === 0 && !centerChanged && !matrixChanged;
   }
 
   undo() {
@@ -22,6 +33,7 @@ class StateGeometry {
     mesh.updateGeometry(mesh.getFacesFromVertices(this._idVertState), this._idVertState);
     mesh.updateGeometryBuffers();
     vec3.copy(mesh.getCenter(), this._center);
+    mat4.copy(mesh.getMatrix(), this._matrix);
     this._main.setMesh(mesh);
   }
 
