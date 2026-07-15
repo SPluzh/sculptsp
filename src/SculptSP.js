@@ -32,6 +32,8 @@ class SculptSP extends Scene {
     this._isLeftMouseDown = false;
     this._lastNbPointers = 0;
     this._isWheelingIn = false;
+    this._isAltDown = false;
+    this._isCtrlDown = false;
 
     // masking
     this._maskX = 0;
@@ -228,6 +230,9 @@ class SculptSP extends Scene {
       }
       this.render();
     }
+    if (e.key === 'Control') {
+      this._isCtrlDown = true;
+    }
 
     this._gui.callFunc('onKeyDown', e);
   }
@@ -245,6 +250,9 @@ class SculptSP extends Scene {
         transformTool._gizmo.updateLockIcon();
       }
       this.render();
+    }
+    if (e.key === 'Control') {
+      this._isCtrlDown = false;
     }
 
     this._gui.callFunc('onKeyUp', e);
@@ -451,6 +459,7 @@ class SculptSP extends Scene {
     }
 
     var altKey = data ? data.altKey : this._isAltDown;
+    var ctrlKey = data ? data.ctrlKey : this._isCtrlDown;
     this._isAltDown = false;
     this._isCtrlDown = false;
     this.setCanvasCursor('default');
@@ -469,7 +478,7 @@ class SculptSP extends Scene {
       if (this._mesh) {
         var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
         if (wasClick) {
-          maskingTool.clickAction(this._maskX, this._maskY);
+          maskingTool.clickAction(this._maskX, this._maskY, false, ctrlKey, altKey);
         } else {
           var applied = maskingTool.endLasso(altKey);
           if (!applied) {
@@ -487,7 +496,7 @@ class SculptSP extends Scene {
         var wasClickSculpt = data ? data.wasClick : false;
         if (wasClickSculpt) {
           var maskingToolSculpt = smgr.getTool(Enums.Tools.MASKING);
-          maskingToolSculpt.clickAction(this._mouseX, this._mouseY, true);
+          maskingToolSculpt.clickAction(this._mouseX, this._mouseY, true, ctrlKey, altKey);
         }
       }
     }

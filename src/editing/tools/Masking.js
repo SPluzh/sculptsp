@@ -88,7 +88,8 @@ class Masking extends SculptBase {
     var iVerts = this.getMaskedVertices();
     if (iVerts.length === 0)
       return;
-    iVerts = mesh.expandsVertices(iVerts, 1);
+    var numIterations = 24;
+    iVerts = mesh.expandsVertices(iVerts, numIterations);
 
     this.pushState();
     this._main.getStateManager().pushVertices(iVerts);
@@ -96,9 +97,11 @@ class Masking extends SculptBase {
     var mAr = mesh.getMaterials();
     var nbVerts = iVerts.length;
     var smoothVerts = new Float32Array(nbVerts * 3);
-    this.laplacianSmooth(iVerts, smoothVerts, mAr);
-    for (var i = 0; i < nbVerts; ++i)
-      mAr[iVerts[i] * 3 + 2] = smoothVerts[i * 3 + 2];
+    for (var iter = 0; iter < numIterations; ++iter) {
+      this.laplacianSmooth(iVerts, smoothVerts, mAr);
+      for (var i = 0; i < nbVerts; ++i)
+        mAr[iVerts[i] * 3 + 2] = smoothVerts[i * 3 + 2];
+    }
     this.updateAndRenderMask();
   }
 
@@ -116,7 +119,7 @@ class Masking extends SculptBase {
     for (var i = 0; i < nbVerts; ++i) {
       var idm = iVerts[i] * 3 + 2;
       var val = mAr[idm];
-      mAr[idm] = val > 0.5 ? Math.min(val + 0.1, 1.0) : Math.max(val - 1.0, 0.0);
+      mAr[idm] = val > 0.5 ? Math.min(val + 0.05, 1.0) : Math.max(val - 0.05, 0.0);
     }
     this.updateAndRenderMask();
   }
@@ -127,7 +130,7 @@ class Masking extends SculptBase {
    * - Click on object outside mask (mask == 1.0) → sharpen the mask.
    * - Click on empty space (no mesh hit)  → invert the mask (original behaviour).
    */
-  clickAction(mouseX, mouseY, undoStroke) {
+  clickAction(mouseX, mouseY, undoStroke, ctrlKey, altKey) {
     var main = this._main;
     var stateManager = main.getStateManager();
 
@@ -138,7 +141,7 @@ class Masking extends SculptBase {
     }
 
     var mesh = this.getMesh();
-    console.log('[Masking.clickAction] mouseX=', mouseX, 'mouseY=', mouseY, 'mesh=', mesh ? mesh.getID() : 'null', 'undoStroke=', undoStroke);
+    console.log('[Masking.clickAction] mouseX=', mouseX, 'mouseY=', mouseY, 'mesh=', mesh ? mesh.getID() : 'null', 'undoStroke=', undoStroke, 'ctrlKey=', ctrlKey, 'altKey=', altKey);
     if (!mesh) return;
 
     var picking = main.getPicking();
@@ -183,11 +186,15 @@ class Masking extends SculptBase {
       }
     }
 
-    console.log('[Masking.clickAction] bestMask=', bestMask, '→', bestMask < 1.0 ? 'blur' : 'sharpen');
+    console.log('[Masking.clickAction] bestMask=', bestMask, 'ctrlKey=', ctrlKey, 'altKey=', altKey, '→', (bestMask < 1.0 && !(ctrlKey && altKey)) ? 'blur' : 'sharpen');
 
     // mask value < 1.0 means the vertex is (at least partially) masked
     if (bestMask < 1.0) {
-      this.blur();
+      if (ctrlKey && altKey) {
+        this.sharpen();
+      } else {
+        this.blur();
+      }
     } else {
       this.sharpen();
     }
