@@ -191,6 +191,8 @@ class Gizmo {
     this._editLocalInv = [];
     this._editTransInv = mat4.create();
     this._editScaleRotInv = [];
+    this._editGizmoRot = mat4.create();
+    this._editGizmoRotInv = mat4.create();
 
     this._initTranslate();
     this._initRotate();
@@ -507,6 +509,34 @@ class Gizmo {
         this._editMeshCentersStart[i] = vec3.copy([0.0, 0.0, 0.0], meshes[i].getCenter());
       }
     }
+
+    mat4.identity(this._editGizmoRot);
+    mat4.identity(this._editGizmoRotInv);
+    var mesh = this._main.getMesh();
+    if (mesh) {
+      var meshMat = mat4.create();
+      if (this._isMovingPivot && mesh._pivotEditMatrix) {
+        mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
+      } else {
+        mat4.copy(meshMat, mesh.getMatrix());
+      }
+      var rotMesh = this._editGizmoRot;
+      mat4.copy(rotMesh, meshMat);
+      rotMesh[12] = rotMesh[13] = rotMesh[14] = 0.0;
+
+      // Orthonormalize rotation matrix to strip scale
+      var col1 = [rotMesh[0], rotMesh[1], rotMesh[2]];
+      var col2 = [rotMesh[4], rotMesh[5], rotMesh[6]];
+      var col3 = [rotMesh[8], rotMesh[9], rotMesh[10]];
+      vec3.normalize(col1, col1);
+      vec3.normalize(col2, col2);
+      vec3.normalize(col3, col3);
+      rotMesh[0] = col1[0]; rotMesh[1] = col1[1]; rotMesh[2] = col1[2];
+      rotMesh[4] = col2[0]; rotMesh[5] = col2[1]; rotMesh[6] = col2[2];
+      rotMesh[8] = col3[0]; rotMesh[9] = col3[1]; rotMesh[10] = col3[2];
+
+      mat4.invert(this._editGizmoRotInv, rotMesh);
+    }
   }
 
   _startRotateEdit() {
@@ -652,6 +682,10 @@ class Gizmo {
         if (nbAxis === 0) mat4.rotateX(mrot, mrot, -angle);
         else if (nbAxis === 1) mat4.rotateY(mrot, mrot, -angle);
         else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, -angle);
+
+        var tmp = mat4.create();
+        mat4.mul(tmp, this._editGizmoRot, mrot);
+        mat4.mul(mrot, tmp, this._editGizmoRotInv);
 
         this._scaleRotateEditMatrix(mrot, i);
         if (this._isMovingPivot) {
@@ -851,6 +885,10 @@ class Gizmo {
       var edim = meshes[i].getEditMatrix();
       mat4.identity(edim);
       mat4.scale(edim, edim, inter);
+
+      var tmp = mat4.create();
+      mat4.mul(tmp, this._editGizmoRot, edim);
+      mat4.mul(edim, tmp, this._editGizmoRotInv);
 
       this._scaleRotateEditMatrix(edim, i);
     }
