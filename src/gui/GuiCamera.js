@@ -85,6 +85,7 @@ class GuiCamera {
     menu.addSlider(TR('cameraSpeedTranslate'), this._main, '_cameraSpeedTranslate', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedZoom'), this._main, '_cameraSpeedZoom', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedRotate'), this._main, '_cameraSpeedRotate', 0.05, 5.0, 0.001);
+    menu.addSlider(TR('cameraSpeedRoll'), this._main, '_cameraSpeedRoll', 0.05, 5.0, 0.001);
 
     // split viewport
     menu.addTitle(TR('splitViewportTitle'));

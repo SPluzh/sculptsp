@@ -626,10 +626,14 @@ class SculptSP extends Scene {
       }
     }
 
+    var isTrackball = camera.getMode() !== Enums.CameraMode.ORBIT;
+
     if (this._cameraRmbOnly) {
       if (button === MOUSE_RIGHT) {
         if (data.ctrlKey)
           this._action = Enums.Action.CAMERA_ZOOM;
+        else if (data.shiftKey && data.altKey && isTrackball)
+          this._action = Enums.Action.CAMERA_ROLL;
         else if (data.altKey)
           this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
         else
@@ -650,7 +654,9 @@ class SculptSP extends Scene {
         this._action = Enums.Action.NOTHING;
       }
     } else {
-      if (button === MOUSE_RIGHT && data.ctrlKey)
+      if (button === MOUSE_RIGHT && data.shiftKey && data.altKey && isTrackball)
+        this._action = Enums.Action.CAMERA_ROLL;
+      else if (button === MOUSE_RIGHT && data.ctrlKey)
         this._action = Enums.Action.CAMERA_ZOOM;
       else if (button === MOUSE_MIDDLE)
         this._action = Enums.Action.CAMERA_PAN;
@@ -773,6 +779,13 @@ class SculptSP extends Scene {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
       this.getCamera().translate((mouseX - this._lastMouseX) * this.getSpeedTranslateFactor(), (mouseY - this._lastMouseY) * this.getSpeedTranslateFactor());
+      this.render();
+
+    } else if (action === Enums.Action.CAMERA_ROLL) {
+
+      Multimesh.RENDER_HINT = Multimesh.CAMERA;
+      var dx = (mouseX - this._lastMouseX) * this.getSpeedTranslateFactor() * 60 * (this._cameraSpeedRoll / 0.5);
+      this.getCamera().roll(dx);
       this.render();
 
     } else if (action === Enums.Action.CAMERA_ROTATE) {

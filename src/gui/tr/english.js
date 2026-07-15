@@ -26,6 +26,7 @@ var TR = {
   cameraSpeedTranslate: 'Translation speed',
   cameraSpeedZoom: 'Zoom speed',
   cameraSpeedRotate: 'Rotation speed',
+  cameraSpeedRoll: 'Roll speed',
 
   // reference images
   cameraRefTitle: 'Reference Images',

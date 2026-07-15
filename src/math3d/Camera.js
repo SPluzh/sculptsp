@@ -227,9 +227,18 @@ class Camera {
       var mouseOnSphereBefore = Geometry.mouseOnUnitSphere(this._lastNormalizedMouseXY);
       var mouseOnSphereAfter = Geometry.mouseOnUnitSphere(normalizedMouseXY);
       var angle = Math.acos(Math.min(1.0, vec3.dot(mouseOnSphereBefore, mouseOnSphereAfter)));
-      vec3.normalize(axisRot, vec3.cross(axisRot, mouseOnSphereBefore, mouseOnSphereAfter));
-      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0 * (speedRotate / 0.25)), this._quatRot);
+      vec3.cross(axisRot, mouseOnSphereBefore, mouseOnSphereAfter);
 
+      // Suppress roll: zero out the camera-forward (Z) component of the axis
+      // by projecting it onto the camera's XY plane (view-space).
+      axisRot[2] = 0.0; // kill Z in view-space — prevents roll
+      if (vec3.length(axisRot) < 1e-6) {
+        this._lastNormalizedMouseXY = normalizedMouseXY;
+        return;
+      }
+      vec3.normalize(axisRot, axisRot);
+
+      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0 * (speedRotate / 0.25)), this._quatRot);
       this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], angle * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
     }
 
@@ -238,12 +247,25 @@ class Camera {
   }
 
   setOrbit(rx, ry) {
-    this._rotX = rx;
+    // Clamp rotX to ±89° — camera hits a pin and never flips
+    this._rotX = Math.max(-Math.PI / 2 + 0.001, Math.min(Math.PI / 2 - 0.001, rx));
     this._rotY = ry;
     var qrt = this._quatRot;
     quat.identity(qrt);
     quat.rotateX(qrt, qrt, this._rotX);
     quat.rotateY(qrt, qrt, this._rotY);
+  }
+
+  roll(angle) {
+    // Camera is always looking along the world Z-axis in world space.
+    // Therefore, rolling the view translates directly to rotating around the world Z-axis [0, 0, 1].
+    var axis = _TMP_VEC3;
+    vec3.set(axis, 0.0, 0.0, 1.0);
+    quat.mul(this._quatRot,
+      quat.setAxisAngle(_TMP_QUAT, axis, -angle),
+      this._quatRot
+    );
+    this.updateView();
   }
 
   getTransZ() {
@@ -560,7 +582,7 @@ class Camera {
       var qw = qrt[3];
       // find back euler values
       this._rotY = Math.atan2(2 * (qw * qy + qz * qx), 1 - 2 * (qy * qy + qz * qz));
-      this._rotX = Math.atan2(2 * (qw * qx + qy * qz), 1 - 2 * (qz * qz + qx * qx));
+      this._rotX = Math.max(-Math.PI / 2 + 0.001, Math.min(Math.PI / 2 - 0.001, Math.atan2(2 * (qw * qx + qy * qz), 1 - 2 * (qz * qz + qx * qx))));
     }
 
     this.updateView();

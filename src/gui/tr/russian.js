@@ -26,6 +26,7 @@ var TR = {
   cameraSpeedTranslate: 'Скорость перемещения',
   cameraSpeedZoom: 'Скорость зума',
   cameraSpeedRotate: 'Скорость вращения',
+  cameraSpeedRoll: 'Скорость наклона',
 
   // reference images
   cameraRefTitle: 'Референсные изображения',
