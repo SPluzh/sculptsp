@@ -2,6 +2,7 @@ import TR from './GuiTR.js';
 import Remesh from '../editing/Remesh.js';
 import ShaderBase from '../render/shaders/ShaderBase.js';
 import { createIcons, Trash2, Circle, Box, Cylinder, Donut, Edit3, Copy, Layers } from 'lucide';
+import Enums from '../misc/Enums.js';
 
 
 class GuiScene {
@@ -353,14 +354,16 @@ class GuiScene {
         // Selection check on row click
         var row = e.target.closest('.sp-outliner-row');
         if (row) {
-          var meshId = parseInt(row.getAttribute('data-mesh-id'));
+          var meshIdAttr = row.getAttribute('data-mesh-id');
+          var meshId = meshIdAttr === 'zsphere' ? 'zsphere' : parseInt(meshIdAttr);
           this._selectMesh(meshId, e.ctrlKey || e.metaKey);
         }
         return;
       }
 
       var action = btn.getAttribute('data-action');
-      var id = btn.getAttribute('data-mesh-id') ? parseInt(btn.getAttribute('data-mesh-id')) : null;
+      var idAttr = btn.getAttribute('data-mesh-id');
+      var id = idAttr === 'zsphere' ? 'zsphere' : (idAttr ? parseInt(idAttr) : null);
 
       switch (action) {
         case 'toggle-vis':
@@ -395,7 +398,9 @@ class GuiScene {
     this._outlinerContainer.addEventListener('dblclick', (e) => {
       var row = e.target.closest('.sp-outliner-row');
       if (row) {
-        var meshId = parseInt(row.getAttribute('data-mesh-id'));
+        var meshIdAttr = row.getAttribute('data-mesh-id');
+        if (meshIdAttr === 'zsphere') return;
+        var meshId = parseInt(meshIdAttr);
         var nameSpan = row.querySelector('.sp-mesh-name');
         if (nameSpan) {
           this._startRename(nameSpan, meshId);
@@ -405,6 +410,28 @@ class GuiScene {
   }
 
   _selectMesh(id, multiSelect) {
+    if (id === 'zsphere') {
+      var gui = this._main.getGui();
+      if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
+        gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.ZSPHERE);
+      } else {
+        this._main.getSculptManager().setToolIndex(Enums.Tools.ZSPHERE);
+      }
+      this._main.render();
+      this.refreshOutliner();
+      return;
+    }
+
+    var sculptMgr = this._main.getSculptManager();
+    if (sculptMgr.getToolIndex() === Enums.Tools.ZSPHERE) {
+      var gui = this._main.getGui();
+      if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
+        gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.BRUSH);
+      } else {
+        sculptMgr.setToolIndex(Enums.Tools.BRUSH);
+      }
+    }
+
     var meshes = this._main.getMeshes();
     var target = meshes.find(m => m.getID() === id);
     if (target) {
@@ -413,6 +440,16 @@ class GuiScene {
   }
 
   _toggleVisibility(id) {
+    if (id === 'zsphere') {
+      var zsphereTool = this._main.getSculptManager().getTool(Enums.Tools.ZSPHERE);
+      if (zsphereTool && zsphereTool._drawable) {
+        zsphereTool._drawable.setVisible(!zsphereTool._drawable.isVisible());
+        this._main.render();
+        this.refreshOutliner();
+      }
+      return;
+    }
+
     var meshes = this._main.getMeshes();
     var target = meshes.find(m => m.getID() === id);
     if (target) {
@@ -462,7 +499,10 @@ class GuiScene {
 
     var meshes = this._main.getMeshes();
     var selected = this._main.getSelectedMeshes();
-    var selSet = new Set(selected.map(m => m.getID()));
+    
+    var currentTool = this._main.getSculptManager().getToolIndex();
+    var isZSphereActive = (currentTool === Enums.Tools.ZSPHERE);
+    var selSet = isZSphereActive ? new Set() : new Set(selected.map(m => m.getID()));
 
     var html = '';
     for (var i = 0; i < meshes.length; i++) {
@@ -490,6 +530,30 @@ class GuiScene {
           <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="${id}">
             <span class="sp-mesh-name" title="Double click to rename">${this.escapeHtml(name)}</span>
             <span class="sp-mesh-meta">${metaStr}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    var zsphereTool = this._main.getSculptManager().getTool(Enums.Tools.ZSPHERE);
+    var zsphereNodes = zsphereTool ? zsphereTool._graph.getNodes() : [];
+    if (isZSphereActive || zsphereNodes.length > 0) {
+      var isZSphereVisible = zsphereTool._drawable ? zsphereTool._drawable.isVisible() : true;
+      var zSelCls = isZSphereActive ? ' sp-row--selected' : '';
+      var zHideCls = isZSphereVisible ? '' : ' sp-row--hidden';
+      var zMetaStr = zsphereNodes.length + ' spheres';
+      var zEyeSvg = isZSphereVisible 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      html += `
+        <div class="sp-outliner-row${zSelCls}${zHideCls}" data-mesh-id="zsphere">
+          <button class="sp-vis-btn" data-action="toggle-vis" data-mesh-id="zsphere" title="${isZSphereVisible ? 'Hide' : 'Show'}">
+            ${zEyeSvg}
+          </button>
+          <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="zsphere">
+            <span class="sp-mesh-name">ZSphere Armature</span>
+            <span class="sp-mesh-meta">${zMetaStr}</span>
           </div>
         </div>
       `;

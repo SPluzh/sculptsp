@@ -58,6 +58,7 @@ class ZSphereDrawable {
     this._mvp = mat4.create();
     this._n = mat3.create();
     this._modelMatrix = mat4.create();
+    this._visible = true;
   }
 
   _getSymmetricPosition(pos, mesh) {
@@ -86,7 +87,11 @@ class ZSphereDrawable {
   }
 
   isVisible() {
-    return true;
+    return this._visible;
+  }
+
+  setVisible(bool) {
+    this._visible = bool;
   }
 
   isTransparent() {
@@ -122,6 +127,7 @@ class ZSphereDrawable {
   }
 
   render(main) {
+    if (!this._visible) return;
     var gl = this._gl;
     var nodes = this._graph.getNodes();
     if (nodes.length === 0) return;

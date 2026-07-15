@@ -302,6 +302,10 @@ class GuiSculpting {
     if (activeToolClass && activeToolClass.icon && this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setActiveToolIcon(activeToolClass.icon);
     }
+
+    if (this._ctrlGui && this._ctrlGui._ctrlScene && this._ctrlGui._ctrlScene.refreshOutliner) {
+      this._ctrlGui._ctrlScene.refreshOutliner();
+    }
   }
 
   loadAlpha(event) {

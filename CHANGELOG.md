@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Scene Outliner**: Added ZSphere Armatures to the Scene Outliner list, allowing users to view node counts, select the armature to enter ZSphere editing mode, and toggle its visibility in the viewport via the eye icon.
 - **ZSphere Tool**: Fixed a bug where the ZSphere armature (including the root ZSphere) was completely invisible when the tool was active.
 - **Masking Tool**: Increased the strength of mask blurring per step by performing 24 iterations of Laplacian smoothing instead of 1 (and expanded the vertex region accordingly). Reimplemented mask sharpening using a stable Unsharp Masking (USM) approach to prevent feedback-loop instability (stripes/noise), and mapped mask sharpening to trigger when clicking directly on the masked area while holding **Ctrl + Alt**.
 - **Transform Tool**: Configured the coordinate axes (X, Y, and Z) and scale-all handles to highlight in bright, saturated versions of their own respective colors (bright red, bright green, bright blue, and bright yellow) when hovered, instead of using a single uniform yellow highlight.

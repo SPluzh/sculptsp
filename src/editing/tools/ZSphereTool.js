@@ -126,6 +126,9 @@ class ZSphereTool extends SculptBase {
         tool.clearHoverAndSelection();
         graph.deserialize(JSON.parse(beforeStr));
         main.render();
+        if (main.getGui() && main.getGui().updateMesh) {
+          main.getGui().updateMesh();
+        }
       };
       var redoCb = function() {
         tool._activeNode = null;
@@ -133,9 +136,16 @@ class ZSphereTool extends SculptBase {
         tool.clearHoverAndSelection();
         graph.deserialize(JSON.parse(afterStr));
         main.render();
+        if (main.getGui() && main.getGui().updateMesh) {
+          main.getGui().updateMesh();
+        }
       };
 
       main.getStateManager().pushStateCustom(undoCb, redoCb);
+
+      if (main.getGui() && main.getGui().updateMesh) {
+        main.getGui().updateMesh();
+      }
     }
 
     this._historyState = null;
