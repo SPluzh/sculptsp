@@ -176,6 +176,9 @@ class Move extends SculptBase {
     }
     vec3.scale(moveData.dir, moveData.dir, this._intensity);
 
+    vec3.add(picking.getIntersectionPoint(), moveData.center, moveData.dir);
+    picking.updateLocalAndWorldRadius2();
+
     var eyeDir = picking.getEyeDirection();
     vec3.sub(eyeDir, vFar, vNear);
     vec3.normalize(eyeDir, eyeDir);

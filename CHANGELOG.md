@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Move / Elastic Tools**: Fixed a bug where the brush cursor (red dot/circle) stayed behind at the initial click point instead of following the mesh deformation during drag operations. The visual indicator now tracks the deformed surface dynamically, matching the behavior of the Drag tool.
 - **Transform Tool**: Fixed a bug where a large red duplicate copy of the gizmo appeared briefly upon activating the tool, and a stale copy of the gizmo appeared on screen when zooming or moving the camera.
 - **Rendering**: Fixed rendering edge aliasing and visual shimmering noise on mesh edges at medium/far camera distances. The near/far camera clipping plane calculations have been optimized to perfectly match the active scene bounding box (similar to the sculpt_ng project).
 - **Navigation**: Resolved a bug where meshes would get clipped (disappear) during fast camera zoom-in/dolly movements. The near/far smoothing delay has been replaced with instant updates.
