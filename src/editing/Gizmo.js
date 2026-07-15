@@ -199,6 +199,13 @@ class Gizmo {
     this._initDomLock();
   }
 
+  _checkMovingPivot() {
+    if (this._isEditing) return this._isMovingPivot;
+    var sculptMgr = this._main.getSculptManager();
+    var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+    return !!(this._main._isAltDown || (transformTool && transformTool._editPivot));
+  }
+
   setActivatedType(type) {
     this._activatedType = type;
     this._initPickables();
@@ -395,9 +402,7 @@ class Gizmo {
     var mesh = this._main.getMesh();
     if (mesh) {
       var meshMat = mat4.create();
-      var sculptMgr = this._main.getSculptManager();
-      var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
-      var isMovingPivot = this._isEditing ? this._isMovingPivot : (this._main._isAltDown || (transformTool && transformTool._editPivot));
+      var isMovingPivot = this._checkMovingPivot();
       if (isMovingPivot && mesh._pivotEditMatrix) {
         mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
       } else {
@@ -889,7 +894,12 @@ class Gizmo {
     this._updateMatrices(camera);
     this._updateDomLockPosition(camera);
 
-    var type = (this._isEditing && this._selected && !this._isMovingPivot) ? this._selected._type : this._activatedType;
+    var isMovingPivot = this._checkMovingPivot();
+    var type = (this._isEditing && this._selected && !isMovingPivot) ? this._selected._type : this._activatedType;
+
+    if (isMovingPivot) {
+      type &= ~Gizmo.SCALE_XYZW;
+    }
 
     if (type & ROT_W) this._drawGizmo(this._rotW, camera);
     if (type & PLANE_W) this._drawGizmo(this._planeW, camera);
@@ -930,6 +940,11 @@ class Gizmo {
     var mx = main._mouseX;
     var my = main._mouseY;
     var pickables = this._pickables;
+
+    if (this._checkMovingPivot()) {
+      pickables = pickables.filter(p => !(p._gizmo._type & Gizmo.SCALE_XYZW));
+    }
+
     picking.intersectionMouseMeshes(pickables, mx, my);
 
     if (this._selected) this._selected._isSelected = false;
@@ -949,10 +964,8 @@ class Gizmo {
     var sel = this._selected;
     if (!sel) return false;
 
+    this._isMovingPivot = this._checkMovingPivot();
     this._isEditing = true;
-    var sculptMgr = this._main.getSculptManager();
-    var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
-    this._isMovingPivot = this._main._isAltDown || (transformTool && transformTool._editPivot);
     var type = sel._type;
     this._saveEditMatrices();
 
@@ -1015,9 +1028,7 @@ class Gizmo {
 
   updateLockIcon() {
     if (!this._domLock) return;
-    var sculptMgr = this._main.getSculptManager();
-    var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
-    var editPivot = (transformTool && transformTool._editPivot) || this._main._isAltDown;
+    var editPivot = this._checkMovingPivot();
     if (editPivot) {
       this._domLock.style.backgroundColor = '#d32f2f';
       this._domLock.innerHTML = `

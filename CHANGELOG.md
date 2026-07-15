@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Transform Tool**: Hid the scale handle cubes from the gizmo when editing the pivot (either via holding Alt or toggling the lock) to prevent accidental scaling and clean up the viewport.
 - **Transform Tool**: Integrated the Alt hotkey with the padlock lock icon state, so that holding Alt instantly activates the pivot-editing unlocked visual state (red background / open padlock) and releasing it reverts it back.
 - **Transform Tool**: Kept all gizmo handles persistently visible when editing the pivot (moving/rotating it), rather than hiding the inactive axes, to provide better feedback on pivot orientation.
 - **Transform Tool**: Configured the screen-space (camera-plane) overlays (translation square corners and outer rotation ring) to remain perfectly aligned with the screen plane without rotating when the mesh or pivot is rotated.
