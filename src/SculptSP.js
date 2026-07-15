@@ -1,5 +1,6 @@
 import './misc/Polyfill.js';
-import { vec3 } from 'gl-matrix';
+import { vec3, mat4 } from 'gl-matrix';
+import Geometry from './math3d/Geometry.js';
 import { Manager as HammerManager, Pan, Pinch, Tap } from 'hammerjs';
 import Tablet from './misc/Tablet.js';
 import Enums from './misc/Enums.js';
@@ -34,6 +35,7 @@ class SculptSP extends Scene {
     this._isWheelingIn = false;
     this._isAltDown = false;
     this._isCtrlDown = false;
+    this._isShiftDown = false;
 
     // masking
     this._maskX = 0;
@@ -233,6 +235,9 @@ class SculptSP extends Scene {
     if (e.key === 'Control') {
       this._isCtrlDown = true;
     }
+    if (e.key === 'Shift') {
+      this._isShiftDown = true;
+    }
 
     this._gui.callFunc('onKeyDown', e);
   }
@@ -253,6 +258,9 @@ class SculptSP extends Scene {
     }
     if (e.key === 'Control') {
       this._isCtrlDown = false;
+    }
+    if (e.key === 'Shift') {
+      this._isShiftDown = false;
     }
 
     this._gui.callFunc('onKeyUp', e);
@@ -475,7 +483,25 @@ class SculptSP extends Scene {
     }
     this._snapTriggered = false;
 
-    if (this._action === Enums.Action.MASK_EDIT) {
+    if (this._action === Enums.Action.HIDE_EDIT) {
+      var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+      var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
+      if (wasClick) {
+        var hit = this.getPicking().intersectionMouseMeshes(this.getMeshes(), this._maskX, this._maskY);
+        if (!hit) {
+          this.showAllHidden();
+        }
+      } else {
+        if (maskingTool._lassoPoints && maskingTool._lassoPoints.length >= 3) {
+          var selectedVertices = this.getVerticesInLasso(maskingTool._lassoPoints);
+          if (selectedVertices && selectedVertices.length > 0) {
+            this.hideVertices(selectedVertices);
+          }
+        }
+      }
+      maskingTool.destroyLassoOverlay();
+      maskingTool._lassoPoints = [];
+    } else if (this._action === Enums.Action.MASK_EDIT) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
       if (this._mesh) {
         var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
@@ -623,6 +649,18 @@ class SculptSP extends Scene {
 
     var canEdit = false;
     if (button === MOUSE_LEFT) {
+      if (data.ctrlKey && data.shiftKey) {
+        var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+        this._maskX = mouseX;
+        this._maskY = mouseY;
+        this._action = Enums.Action.HIDE_EDIT;
+        maskingTool.startLasso(mouseX, mouseY, false);
+        this.setCanvasCursor('default');
+        this._lastMouseX = mouseX;
+        this._lastMouseY = mouseY;
+        return;
+      }
+
       console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
       canEdit = this._sculptManager.start(data.shiftKey);
       console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
@@ -890,12 +928,312 @@ class SculptSP extends Scene {
       } else if (action === Enums.Action.MASK_EDIT) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
         maskingTool.addLassoPoint(mouseX, mouseY, data.altKey);
+      } else if (action === Enums.Action.HIDE_EDIT) {
+        var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
+        maskingTool.addLassoPoint(mouseX, mouseY, false);
       }
     }
 
     this._lastMouseX = mouseX;
     this._lastMouseY = mouseY;
     this.renderSelectOverRtt();
+  }
+
+  getVerticesInLasso(points) {
+    var mesh = this.getMesh();
+    if (!mesh) return [];
+
+    var vAr = mesh.getVertices();
+    var nbVertices = mesh.getNbVertices();
+    var camera = this.getCamera();
+    var mat = mesh.getMatrix();
+
+    var localToScreen = mat4.create();
+    mat4.mul(localToScreen, camera.computeWorldToScreenMatrix(), mat);
+
+    var m = localToScreen;
+    var m0 = m[0], m4 = m[4], m8 = m[8], m12 = m[12];
+    var m1 = m[1], m5 = m[5], m9 = m[9], m13 = m[13];
+    var m3 = m[3], m7 = m[7], m11 = m[11], m15 = m[15];
+    var height = camera._height;
+
+    var symmetry = this.getSculptManager().getSymmetry();
+    var ptPlane, nPlane;
+    if (symmetry) {
+      ptPlane = mesh.getSymmetryOrigin();
+      nPlane = mesh.getSymmetryNormal();
+    }
+
+    var isPointInPolygon = function (p, polygon) {
+      var x = p[0], y = p[1];
+      var inside = false;
+      for (var i = 0, j = polygon.length - 1; i < polygon.length; j = i++) {
+        var xi = polygon[i][0], yi = polygon[i][1];
+        var xj = polygon[j][0], yj = polygon[j][1];
+
+        var intersect = ((yi > y) !== (yj > y))
+            && (x < (xj - xi) * (y - yi) / (yj - yi) + xi);
+        if (intersect) inside = !inside;
+      }
+      return inside;
+    };
+
+    var selectedVertices = [];
+
+    for (var i = 0; i < nbVertices; ++i) {
+      var ind = i * 3;
+      var vx = vAr[ind];
+      var vy = vAr[ind + 1];
+      var vz = vAr[ind + 2];
+
+      var w = m3 * vx + m7 * vy + m11 * vz + m15;
+      w = w || 1.0;
+      var x_screen = (m0 * vx + m4 * vy + m8 * vz + m12) / w;
+      var y_screen = height - (m1 * vx + m5 * vy + m9 * vz + m13) / w;
+
+      var inside = isPointInPolygon([x_screen, y_screen], points);
+
+      if (!inside && symmetry) {
+        var symV = [vx, vy, vz];
+        Geometry.mirrorPoint(symV, ptPlane, nPlane);
+        var svx = symV[0], svy = symV[1], svz = symV[2];
+        var sw = m3 * svx + m7 * svy + m11 * svz + m15;
+        sw = sw || 1.0;
+        x_screen = (m0 * svx + m4 * svy + m8 * svz + m12) / sw;
+        y_screen = height - (m1 * svx + m5 * svy + m9 * svz + m13) / sw;
+        inside = isPointInPolygon([x_screen, y_screen], points);
+      }
+
+      if (inside) {
+        selectedVertices.push(i);
+      }
+    }
+
+    return selectedVertices;
+  }
+
+  hideVertices(selectedVertices) {
+    var mesh = this.getMesh();
+    if (!mesh) return;
+
+    var vertVisible = mesh._meshData._vertVisible;
+    if (!vertVisible) return;
+
+    var prevStates = [];
+    var self = this;
+
+    if (mesh instanceof Multimesh) {
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        var subVis = subMesh._meshData._vertVisible;
+        if (subVis) {
+          prevStates.push({
+            mesh: subMesh,
+            vis: new Uint8Array(subVis)
+          });
+        }
+      }
+    } else {
+      prevStates.push({
+        mesh: mesh,
+        vis: new Uint8Array(vertVisible)
+      });
+    }
+
+    for (var i = 0; i < selectedVertices.length; ++i) {
+      vertVisible[selectedVertices[i]] = 0;
+    }
+
+    if (mesh instanceof Multimesh) {
+      mesh.syncVisibility(mesh._sel, 0);
+      mesh.syncVisibility(mesh._sel, mesh._meshes.length - 1);
+
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        subMesh.updateIndexBuffer();
+        if (subMesh.isUsingDrawArrays()) {
+          subMesh.updateDrawArrays();
+        }
+        if (subMesh.getShowWireframe()) {
+          subMesh.updateWireframeBuffer();
+        }
+      }
+    } else {
+      mesh.updateIndexBuffer();
+      if (mesh.isUsingDrawArrays()) {
+        mesh.updateDrawArrays();
+      }
+      if (mesh.getShowWireframe()) {
+        mesh.updateWireframeBuffer();
+      }
+    }
+
+    var nextStates = [];
+    if (mesh instanceof Multimesh) {
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        var subVis = subMesh._meshData._vertVisible;
+        if (subVis) {
+          nextStates.push({
+            mesh: subMesh,
+            vis: new Uint8Array(subVis)
+          });
+        }
+      }
+    } else {
+      nextStates.push({
+        mesh: mesh,
+        vis: new Uint8Array(vertVisible)
+      });
+    }
+
+    var undoCb = () => {
+      for (var idx = 0; idx < prevStates.length; ++idx) {
+        var p = prevStates[idx];
+        if (p.mesh && p.mesh._meshData._vertVisible) {
+          p.mesh._meshData._vertVisible.set(p.vis);
+          p.mesh.updateIndexBuffer();
+          if (p.mesh.isUsingDrawArrays()) p.mesh.updateDrawArrays();
+          if (p.mesh.getShowWireframe()) p.mesh.updateWireframeBuffer();
+        }
+      }
+      var activeM = self.getMesh();
+      if (activeM instanceof Multimesh) {
+        activeM.updateResolution();
+      }
+      self.render();
+    };
+
+    var redoCb = () => {
+      for (var idx = 0; idx < nextStates.length; ++idx) {
+        var n = nextStates[idx];
+        if (n.mesh && n.mesh._meshData._vertVisible) {
+          n.mesh._meshData._vertVisible.set(n.vis);
+          n.mesh.updateIndexBuffer();
+          if (n.mesh.isUsingDrawArrays()) n.mesh.updateDrawArrays();
+          if (n.mesh.getShowWireframe()) n.mesh.updateWireframeBuffer();
+        }
+      }
+      var activeM = self.getMesh();
+      if (activeM instanceof Multimesh) {
+        activeM.updateResolution();
+      }
+      self.render();
+    };
+
+    this.getStateManager().pushStateCustom(undoCb, redoCb);
+
+    if (mesh instanceof Multimesh) {
+      mesh.updateResolution();
+    }
+    this.render();
+  }
+
+  showAllHidden() {
+    var mesh = this.getMesh();
+    if (!mesh) return;
+
+    var vertVisible = mesh._meshData._vertVisible;
+    if (!vertVisible) return;
+
+    var prevStates = [];
+    var self = this;
+
+    if (mesh instanceof Multimesh) {
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        var subVis = subMesh._meshData._vertVisible;
+        if (subVis) {
+          prevStates.push({
+            mesh: subMesh,
+            vis: new Uint8Array(subVis)
+          });
+        }
+      }
+    } else {
+      prevStates.push({
+        mesh: mesh,
+        vis: new Uint8Array(vertVisible)
+      });
+    }
+
+    if (mesh instanceof Multimesh) {
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        var subVis = subMesh._meshData._vertVisible;
+        if (subVis) {
+          for (var i = 0; i < subVis.length; ++i) subVis[i] = 1;
+          subMesh.updateIndexBuffer();
+          if (subMesh.isUsingDrawArrays()) subMesh.updateDrawArrays();
+          if (subMesh.getShowWireframe()) subMesh.updateWireframeBuffer();
+        }
+      }
+    } else {
+      for (var i = 0; i < vertVisible.length; ++i) vertVisible[i] = 1;
+      mesh.updateIndexBuffer();
+      if (mesh.isUsingDrawArrays()) mesh.updateDrawArrays();
+      if (mesh.getShowWireframe()) mesh.updateWireframeBuffer();
+    }
+
+    var nextStates = [];
+    if (mesh instanceof Multimesh) {
+      for (var k = 0; k < mesh._meshes.length; ++k) {
+        var subMesh = mesh._meshes[k];
+        var subVis = subMesh._meshData._vertVisible;
+        if (subVis) {
+          nextStates.push({
+            mesh: subMesh,
+            vis: new Uint8Array(subVis)
+          });
+        }
+      }
+    } else {
+      nextStates.push({
+        mesh: mesh,
+        vis: new Uint8Array(vertVisible)
+      });
+    }
+
+    var undoCb = () => {
+      for (var idx = 0; idx < prevStates.length; ++idx) {
+        var p = prevStates[idx];
+        if (p.mesh && p.mesh._meshData._vertVisible) {
+          p.mesh._meshData._vertVisible.set(p.vis);
+          p.mesh.updateIndexBuffer();
+          if (p.mesh.isUsingDrawArrays()) p.mesh.updateDrawArrays();
+          if (p.mesh.getShowWireframe()) p.mesh.updateWireframeBuffer();
+        }
+      }
+      var activeM = self.getMesh();
+      if (activeM instanceof Multimesh) {
+        activeM.updateResolution();
+      }
+      self.render();
+    };
+
+    var redoCb = () => {
+      for (var idx = 0; idx < nextStates.length; ++idx) {
+        var n = nextStates[idx];
+        if (n.mesh && n.mesh._meshData._vertVisible) {
+          n.mesh._meshData._vertVisible.set(n.vis);
+          n.mesh.updateIndexBuffer();
+          if (n.mesh.isUsingDrawArrays()) n.mesh.updateDrawArrays();
+          if (n.mesh.getShowWireframe()) n.mesh.updateWireframeBuffer();
+        }
+      }
+      var activeM = self.getMesh();
+      if (activeM instanceof Multimesh) {
+        activeM.updateResolution();
+      }
+      self.render();
+    };
+
+    this.getStateManager().pushStateCustom(undoCb, redoCb);
+
+    if (mesh instanceof Multimesh) {
+      mesh.updateResolution();
+    }
+    this.render();
   }
 }
 

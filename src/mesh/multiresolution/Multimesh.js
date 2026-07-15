@@ -84,10 +84,78 @@ class Multimesh extends Mesh {
     return newMesh;
   }
 
+  syncVisibility(fromSel, toSel) {
+    if (fromSel === toSel) return;
+
+    var meshes = this._meshes;
+    var step = fromSel < toSel ? 1 : -1;
+    for (var k = fromSel; k !== toSel; k += step) {
+      var src = meshes[k];
+      var dst = meshes[k + step];
+
+      var srcVis = src._meshData._vertVisible;
+      if (!srcVis) continue;
+
+      var dstVis = dst._meshData._vertVisible;
+      var nbVertsUp = dst.getNbVertices();
+      if (!dstVis || dstVis.length !== nbVertsUp) {
+        dstVis = dst._meshData._vertVisible = new Uint8Array(nbVertsUp);
+      }
+      for (var idx = 0; idx < nbVertsUp; ++idx) dstVis[idx] = 1;
+
+      if (step === -1) {
+        // Going down (from higher res to lower res)
+        var nbVertsDown = dst.getNbVertices();
+        if (dst.getEvenMapping() === false) {
+          for (var i = 0; i < nbVertsDown; ++i) {
+            dstVis[i] = srcVis[i];
+          }
+        } else {
+          var vertMap = dst.getVerticesMapping();
+          for (var i = 0; i < nbVertsDown; ++i) {
+            dstVis[i] = srcVis[vertMap[i]];
+          }
+        }
+      } else {
+        // Going up (from lower res to higher res)
+        var nbVertsDown = src.getNbVertices();
+        var evenMapping = src.getEvenMapping();
+        var vertMap = src.getVerticesMapping();
+
+        var isParentHidden = new Uint8Array(nbVertsUp);
+        var isParent = new Uint8Array(nbVertsUp);
+
+        for (var i = 0; i < nbVertsDown; ++i) {
+          var childIdx = evenMapping ? vertMap[i] : i;
+          dstVis[childIdx] = srcVis[i];
+          isParent[childIdx] = 1;
+          if (srcVis[i] === 0) {
+            isParentHidden[childIdx] = 1;
+          }
+        }
+
+        var dstRing = dst.getVerticesRingVert();
+        for (var j = 0; j < nbVertsUp; ++j) {
+          if (isParent[j] === 0) {
+            var neighbors = dstRing[j];
+            for (var n = 0; n < neighbors.length; ++n) {
+              var neighborIdx = neighbors[n];
+              if (isParentHidden[neighborIdx] === 1) {
+                dstVis[j] = 0;
+                break;
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+
   lowerLevel() {
     if (this._sel === 0)
       return this._meshes[0];
 
+    this.syncVisibility(this._sel, this._sel - 1);
     this._meshes[this._sel - 1].lowerAnalysis(this.getCurrentMesh());
     this.setSelection(this._sel - 1);
     this.updateResolution();
@@ -99,6 +167,7 @@ class Multimesh extends Mesh {
     if (this._sel === this._meshes.length - 1)
       return this.getCurrentMesh();
 
+    this.syncVisibility(this._sel, this._sel + 1);
     this._meshes[this._sel + 1].higherSynthesis(this.getCurrentMesh());
     this.setSelection(this._sel + 1);
     this.updateResolution();

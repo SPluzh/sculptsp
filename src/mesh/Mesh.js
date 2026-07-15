@@ -472,6 +472,10 @@ class Mesh {
     this._meshData._vertTagFlags = new Int32Array(nbVertices);
     this._meshData._vertSculptFlags = new Int32Array(nbVertices);
     this._meshData._vertStateFlags = new Int32Array(nbVertices);
+    this._meshData._vertVisible = new Uint8Array(nbVertices);
+    for (var iVis = 0; iVis < nbVertices; ++iVis) {
+      this._meshData._vertVisible[iVis] = 1;
+    }
     this._meshData._vertProxy = new Float32Array(nbVertices * 3);
 
     var nbFaces = this.getNbFaces();
@@ -506,6 +510,12 @@ class Mesh {
         mAr[j] = DEF_ROUGHNESS;
         mAr[j + 1] = DEF_METALNESS;
         mAr[j + 2] = 1.0;
+      }
+    }
+    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbVertices) {
+      var vVis = this._meshData._vertVisible = new Uint8Array(nbVertices);
+      for (i = 0; i < nbVertices; ++i) {
+        vVis[i] = 1;
       }
     }
   }
@@ -1065,6 +1075,8 @@ class Mesh {
     var nbLines = 0;
     var tagEdges = new Uint8Array(nbEdges);
 
+    var vertVisible = this._meshData._vertVisible;
+
     for (var i = 0; i < nbFaces; ++i) {
       var id = i * 4;
 
@@ -1084,6 +1096,17 @@ class Mesh {
         iv3 = fAr[id + 2];
       }
 
+      var iv1_orig = fAr[id];
+      var iv2_orig = fAr[id + 1];
+      var iv3_orig = fAr[id + 2];
+      var visible = true;
+      if (vertVisible) {
+        visible = vertVisible[iv1_orig] !== 0 && vertVisible[iv2_orig] !== 0 && vertVisible[iv3_orig] !== 0;
+        if (isQuad && visible) {
+          visible = vertVisible[iv4] !== 0;
+        }
+      }
+
       var ide1 = feAr[id];
       var ide2 = feAr[id + 1];
       var ide3 = feAr[id + 2];
@@ -1092,25 +1115,25 @@ class Mesh {
       if (tagEdges[ide1] === 0) {
         tagEdges[ide1] = 1;
         cdw[nbLines * 2] = iv1;
-        cdw[nbLines * 2 + 1] = iv2;
+        cdw[nbLines * 2 + 1] = visible ? iv2 : iv1;
         nbLines++;
       }
       if (tagEdges[ide2] === 0) {
         tagEdges[ide2] = 1;
         cdw[nbLines * 2] = iv2;
-        cdw[nbLines * 2 + 1] = iv3;
+        cdw[nbLines * 2 + 1] = visible ? iv3 : iv2;
         nbLines++;
       }
       if (tagEdges[ide3] === 0) {
         tagEdges[ide3] = 1;
         cdw[nbLines * 2] = iv3;
-        cdw[nbLines * 2 + 1] = isQuad ? iv4 : iv1;
+        cdw[nbLines * 2 + 1] = visible ? (isQuad ? iv4 : iv1) : iv3;
         nbLines++;
       }
       if (isQuad && tagEdges[ide4] === 0) {
         tagEdges[ide4] = 1;
         cdw[nbLines * 2] = iv4;
-        cdw[nbLines * 2 + 1] = iv1;
+        cdw[nbLines * 2 + 1] = visible ? iv1 : iv4;
         nbLines++;
       }
     }
@@ -1338,6 +1361,7 @@ class Mesh {
     var mAr = this.getMaterials();
 
     var fAr = this.getFaces();
+    var vertVisible = this._meshData._vertVisible;
 
     var nbTriangles = this.getNbTriangles();
     var facesToTris = this.hasOnlyTriangles() ? null : this.getFacesToTriangles();
@@ -1361,10 +1385,24 @@ class Mesh {
       var ftt = facesToTris ? facesToTris[idFace] : idFace;
       var vId = ftt * 9;
 
-      idFace *= 4;
-      var id1 = fAr[idFace] * 3;
-      var id2 = fAr[idFace + 1] * 3;
-      var id3 = fAr[idFace + 2] * 3;
+      var idFace4 = idFace * 4;
+      var iv1 = fAr[idFace4];
+      var iv2 = fAr[idFace4 + 1];
+      var iv3 = fAr[idFace4 + 2];
+      var iv4 = fAr[idFace4 + 3];
+      var isQuad = iv4 !== Utils.TRI_INDEX;
+
+      var visible = true;
+      if (vertVisible) {
+        visible = vertVisible[iv1] !== 0 && vertVisible[iv2] !== 0 && vertVisible[iv3] !== 0;
+        if (isQuad && visible) {
+          visible = vertVisible[iv4] !== 0;
+        }
+      }
+
+      var id1 = iv1 * 3;
+      var id2 = visible ? iv2 * 3 : id1;
+      var id3 = visible ? iv3 * 3 : id1;
 
       // coordinates
       cdv[vId] = vAr[id1];
@@ -1410,55 +1448,57 @@ class Mesh {
       cdn[vId + 7] = nAr[id3 + 1];
       cdn[vId + 8] = nAr[id3 + 2];
 
-      var id4 = fAr[idFace + 3];
-      if (id4 === Utils.TRI_INDEX)
+      if (!isQuad)
         continue;
-      id4 *= 3;
+
+      var id4 = iv4 * 3;
+      var id3_2 = visible ? id3 : id1;
+      var id4_2 = visible ? id4 : id1;
 
       vId += 9;
       // coordinates
       cdv[vId] = vAr[id1];
       cdv[vId + 1] = vAr[id1 + 1];
       cdv[vId + 2] = vAr[id1 + 2];
-      cdv[vId + 3] = vAr[id3];
-      cdv[vId + 4] = vAr[id3 + 1];
-      cdv[vId + 5] = vAr[id3 + 2];
-      cdv[vId + 6] = vAr[id4];
-      cdv[vId + 7] = vAr[id4 + 1];
-      cdv[vId + 8] = vAr[id4 + 2];
+      cdv[vId + 3] = vAr[id3_2];
+      cdv[vId + 4] = vAr[id3_2 + 1];
+      cdv[vId + 5] = vAr[id3_2 + 2];
+      cdv[vId + 6] = vAr[id4_2];
+      cdv[vId + 7] = vAr[id4_2 + 1];
+      cdv[vId + 8] = vAr[id4_2 + 2];
 
       // colors
       cdc[vId] = cAr[id1];
       cdc[vId + 1] = cAr[id1 + 1];
       cdc[vId + 2] = cAr[id1 + 2];
-      cdc[vId + 3] = cAr[id3];
-      cdc[vId + 4] = cAr[id3 + 1];
-      cdc[vId + 5] = cAr[id3 + 2];
-      cdc[vId + 6] = cAr[id4];
-      cdc[vId + 7] = cAr[id4 + 1];
-      cdc[vId + 8] = cAr[id4 + 2];
+      cdc[vId + 3] = cAr[id3_2];
+      cdc[vId + 4] = cAr[id3_2 + 1];
+      cdc[vId + 5] = cAr[id3_2 + 2];
+      cdc[vId + 6] = cAr[id4_2];
+      cdc[vId + 7] = cAr[id4_2 + 1];
+      cdc[vId + 8] = cAr[id4_2 + 2];
 
       // materials
       cdm[vId] = mAr[id1];
       cdm[vId + 1] = mAr[id1 + 1];
       cdm[vId + 2] = mAr[id1 + 2];
-      cdm[vId + 3] = mAr[id3];
-      cdm[vId + 4] = mAr[id3 + 1];
-      cdm[vId + 5] = mAr[id3 + 2];
-      cdm[vId + 6] = mAr[id4];
-      cdm[vId + 7] = mAr[id4 + 1];
-      cdm[vId + 8] = mAr[id4 + 2];
+      cdm[vId + 3] = mAr[id3_2];
+      cdm[vId + 4] = mAr[id3_2 + 1];
+      cdm[vId + 5] = mAr[id3_2 + 2];
+      cdm[vId + 6] = mAr[id4_2];
+      cdm[vId + 7] = mAr[id4_2 + 1];
+      cdm[vId + 8] = mAr[id4_2 + 2];
 
       // normals
       cdn[vId] = nAr[id1];
       cdn[vId + 1] = nAr[id1 + 1];
       cdn[vId + 2] = nAr[id1 + 2];
-      cdn[vId + 3] = nAr[id3];
-      cdn[vId + 4] = nAr[id3 + 1];
-      cdn[vId + 5] = nAr[id3 + 2];
-      cdn[vId + 6] = nAr[id4];
-      cdn[vId + 7] = nAr[id4 + 1];
-      cdn[vId + 8] = nAr[id4 + 2];
+      cdn[vId + 3] = nAr[id3_2];
+      cdn[vId + 4] = nAr[id3_2 + 1];
+      cdn[vId + 5] = nAr[id3_2 + 2];
+      cdn[vId + 6] = nAr[id4_2];
+      cdn[vId + 7] = nAr[id4_2 + 1];
+      cdn[vId + 8] = nAr[id4_2 + 2];
     }
 
     if (this.isUsingTexCoords())
@@ -1477,6 +1517,8 @@ class Mesh {
 
     var tAr = this.getTexCoords();
     var fArUV = this.getFacesTexCoord();
+    var fAr = this.getFaces();
+    var vertVisible = this._meshData._vertVisible;
 
     var nbFaces = full ? this.getNbFaces() : iFaces.length;
     for (var i = 0; i < nbFaces; ++i) {
@@ -1484,10 +1526,24 @@ class Mesh {
       var ftt = facesToTris[idFace];
       var vIduv = ftt * 6;
 
-      idFace *= 4;
-      var id1uv = fArUV[idFace] * 2;
-      var id2uv = fArUV[idFace + 1] * 2;
-      var id3uv = fArUV[idFace + 2] * 2;
+      var idFace4 = idFace * 4;
+      var iv1 = fAr[idFace4];
+      var iv2 = fAr[idFace4 + 1];
+      var iv3 = fAr[idFace4 + 2];
+      var iv4 = fAr[idFace4 + 3];
+      var isQuad = iv4 !== Utils.TRI_INDEX;
+
+      var visible = true;
+      if (vertVisible) {
+        visible = vertVisible[iv1] !== 0 && vertVisible[iv2] !== 0 && vertVisible[iv3] !== 0;
+        if (isQuad && visible) {
+          visible = vertVisible[iv4] !== 0;
+        }
+      }
+
+      var id1uv = fArUV[idFace4] * 2;
+      var id2uv = visible ? fArUV[idFace4 + 1] * 2 : id1uv;
+      var id3uv = visible ? fArUV[idFace4 + 2] * 2 : id1uv;
 
       cdt[vIduv] = tAr[id1uv];
       cdt[vIduv + 1] = tAr[id1uv + 1];
@@ -1496,16 +1552,17 @@ class Mesh {
       cdt[vIduv + 4] = tAr[id3uv];
       cdt[vIduv + 5] = tAr[id3uv + 1];
 
-      var id4uv = fArUV[idFace + 3];
-      if (id4uv === Utils.TRI_INDEX)
+      if (!isQuad)
         continue;
-      id4uv *= 3;
+
+      var id4uv = visible ? fArUV[idFace4 + 3] * 2 : id1uv;
+      var id3uv_2 = visible ? id3uv : id1uv;
 
       vIduv += 6;
       cdt[vIduv] = tAr[id1uv];
       cdt[vIduv + 1] = tAr[id1uv + 1];
-      cdt[vIduv + 2] = tAr[id3uv];
-      cdt[vIduv + 3] = tAr[id3uv + 1];
+      cdt[vIduv + 2] = tAr[id3uv_2];
+      cdt[vIduv + 3] = tAr[id3uv_2 + 1];
       cdt[vIduv + 4] = tAr[id4uv];
       cdt[vIduv + 5] = tAr[id4uv + 1];
     }
@@ -2010,7 +2067,44 @@ class Mesh {
   updateIndexBuffer() {
     if (!this.isUsingDrawArrays()) {
       var triangles = this.isUsingTexCoords() ? this.getTrianglesTexCoord() : this.getTriangles();
-      this.getIndexBuffer().update(triangles, this.getNbTriangles() * 3);
+      var vertVisible = this._meshData._vertVisible;
+      if (vertVisible) {
+        var fAr = this.getFaces();
+        var nbFaces = this.getNbFaces();
+        var facesToTris = this.getFacesToTriangles();
+        var uploadTriangles = new Uint32Array(triangles);
+        for (var i = 0; i < nbFaces; ++i) {
+          var id = i * 4;
+          var iv1 = fAr[id];
+          var iv2 = fAr[id + 1];
+          var iv3 = fAr[id + 2];
+          var iv4 = fAr[id + 3];
+          var isQuad = iv4 !== Utils.TRI_INDEX;
+
+          var visible = vertVisible[iv1] !== 0 && vertVisible[iv2] !== 0 && vertVisible[iv3] !== 0;
+          if (isQuad && visible) {
+            visible = vertVisible[iv4] !== 0;
+          }
+
+          if (!visible) {
+            var ftt = (facesToTris && facesToTris.length > i) ? facesToTris[i] * 3 : i * 3;
+            // Degenerate first triangle
+            uploadTriangles[ftt] = iv1;
+            uploadTriangles[ftt + 1] = iv1;
+            uploadTriangles[ftt + 2] = iv1;
+            if (isQuad) {
+              // Degenerate second triangle
+              var ftt2 = (facesToTris && facesToTris.length > i) ? (facesToTris[i] + 1) * 3 : (i + 1) * 3;
+              uploadTriangles[ftt2] = iv1;
+              uploadTriangles[ftt2 + 1] = iv1;
+              uploadTriangles[ftt2 + 2] = iv1;
+            }
+          }
+        }
+        this.getIndexBuffer().update(uploadTriangles, triangles.length);
+      } else {
+        this.getIndexBuffer().update(triangles, this.getNbTriangles() * 3);
+      }
     }
   }
 

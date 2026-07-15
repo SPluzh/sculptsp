@@ -262,9 +262,21 @@ class Picking {
     console.log('[Picking] intersectionRayMesh: mesh', mesh.getID(), 'number of faces candidates:', nbFacesCandidates);
     for (var i = 0; i < nbFacesCandidates; ++i) {
       var indFace = iFacesCandidates[i] * 4;
-      var ind1 = fAr[indFace] * 3;
-      var ind2 = fAr[indFace + 1] * 3;
-      var ind3 = fAr[indFace + 2] * 3;
+      var iv1_orig = fAr[indFace];
+      var iv2_orig = fAr[indFace + 1];
+      var iv3_orig = fAr[indFace + 2];
+      var iv4_orig = fAr[indFace + 3];
+      var isQuad_orig = iv4_orig !== Utils.TRI_INDEX;
+      var vertVisible = mesh._meshData._vertVisible;
+      if (vertVisible) {
+        var vis = vertVisible[iv1_orig] !== 0 && vertVisible[iv2_orig] !== 0 && vertVisible[iv3_orig] !== 0;
+        if (isQuad_orig && vis) vis = vertVisible[iv4_orig] !== 0;
+        if (!vis) continue;
+      }
+
+      var ind1 = iv1_orig * 3;
+      var ind2 = iv2_orig * 3;
+      var ind3 = iv3_orig * 3;
       _TMP_V1[0] = vAr[ind1];
       _TMP_V1[1] = vAr[ind1 + 1];
       _TMP_V1[2] = vAr[ind1 + 2];
@@ -320,6 +332,9 @@ class Picking {
 
     for (var i = 0; i < nbVerts; ++i) {
       var ind = iVerts[i];
+      if (mesh._meshData._vertVisible && mesh._meshData._vertVisible[ind] === 0) {
+        continue;
+      }
       var j = ind * 3;
       var dx = itx - vAr[j];
       var dy = ity - vAr[j + 1];
@@ -394,6 +409,9 @@ class Picking {
         if (vertTagFlags[idv] === tagFlag)
           continue;
         vertTagFlags[idv] = tagFlag;
+        if (mesh._meshData._vertVisible && mesh._meshData._vertVisible[idv] === 0) {
+          continue;
+        }
 
         var id3 = idv * 3;
         var dx = itx - vAr[id3];

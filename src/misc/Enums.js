@@ -13,7 +13,8 @@ Enums.Action = {
   CAMERA_PAN: 5,
   CAMERA_PAN_ZOOM_ALT: 6,
   MEASURE_EDIT: 7,
-  CAMERA_ROLL: 8
+  CAMERA_ROLL: 8,
+  HIDE_EDIT: 9
 };
 
 // sculpt tools

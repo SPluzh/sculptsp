@@ -140,6 +140,8 @@ class MeshDynamic extends Mesh {
   updateWireframe(iFaces) {
     var wire = this._wireframe;
     var tris = this.getTriangles();
+    var fAr = this.getFaces();
+    var vertVisible = this._meshData._vertVisible;
     var full = iFaces === undefined;
     var useDA = this.isUsingDrawArrays();
     var nbTriangles = full ? this.getNbTriangles() : iFaces.length;
@@ -147,14 +149,37 @@ class MeshDynamic extends Mesh {
       var ind = full ? i : iFaces[i];
       var idw = ind * 6;
       var idt = ind * 3;
+
+      var visible = true;
+      if (vertVisible) {
+        var idf = ind * 4;
+        var iv1 = fAr[idf];
+        var iv2 = fAr[idf + 1];
+        var iv3 = fAr[idf + 2];
+        visible = vertVisible[iv1] !== 0 && vertVisible[iv2] !== 0 && vertVisible[iv3] !== 0;
+      }
+
       if (useDA) {
-        wire[idw] = wire[idw + 5] = idt;
-        wire[idw + 1] = wire[idw + 2] = idt + 2;
-        wire[idw + 3] = wire[idw + 4] = idt + 1;
+        if (visible) {
+          wire[idw] = wire[idw + 5] = idt;
+          wire[idw + 1] = wire[idw + 2] = idt + 2;
+          wire[idw + 3] = wire[idw + 4] = idt + 1;
+        } else {
+          wire[idw] = wire[idw + 5] = idt;
+          wire[idw + 1] = wire[idw + 2] = idt;
+          wire[idw + 3] = wire[idw + 4] = idt;
+        }
       } else {
-        wire[idw] = wire[idw + 5] = tris[idt];
-        wire[idw + 1] = wire[idw + 2] = tris[idt + 1];
-        wire[idw + 3] = wire[idw + 4] = tris[idt + 2];
+        if (visible) {
+          wire[idw] = wire[idw + 5] = tris[idt];
+          wire[idw + 1] = wire[idw + 2] = tris[idt + 1];
+          wire[idw + 3] = wire[idw + 4] = tris[idt + 2];
+        } else {
+          var iv1_val = tris[idt];
+          wire[idw] = wire[idw + 5] = iv1_val;
+          wire[idw + 1] = wire[idw + 2] = iv1_val;
+          wire[idw + 3] = wire[idw + 4] = iv1_val;
+        }
       }
     }
   }
@@ -240,6 +265,14 @@ class MeshDynamic extends Mesh {
       mdata._vertTagFlags = this.resizeArray(mdata._vertTagFlags, len);
       mdata._vertSculptFlags = this.resizeArray(mdata._vertSculptFlags, len);
       mdata._vertStateFlags = this.resizeArray(mdata._vertStateFlags, len);
+
+      var oldLen = mdata._vertVisible ? mdata._vertVisible.length : 0;
+      mdata._vertVisible = this.resizeArray(mdata._vertVisible, len);
+      if (mdata._vertVisible) {
+        for (var idx = oldLen; idx < mdata._vertVisible.length; ++idx) {
+          mdata._vertVisible[idx] = 1;
+        }
+      }
 
       // mdata._vertProxy = this.resizeArray(mdata._vertProxy, len * 3);
     }

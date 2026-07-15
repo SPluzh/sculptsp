@@ -1,6 +1,7 @@
 import { vec3, mat3, mat4 } from 'gl-matrix';
 import Geometry from '../../math3d/Geometry.js';
 import Utils from '../../misc/Utils.js';
+import Enums from '../../misc/Enums.js';
 import SculptBase from './SculptBase.js';
 import Paint from './Paint.js';
 import Smooth from './Smooth.js';
@@ -546,7 +547,10 @@ class Masking extends SculptBase {
 
   updateLassoColor(isAlt) {
     if (!this._svgPath) return;
-    if (isAlt) {
+    if (this._main._action === Enums.Action.HIDE_EDIT) {
+      this._svgPath.setAttribute('stroke', '#FF3333');
+      this._svgPath.setAttribute('fill', 'rgba(255, 51, 51, 0.15)');
+    } else if (isAlt) {
       this._svgPath.setAttribute('stroke', '#FFFFFF');
       this._svgPath.setAttribute('fill', 'rgba(255, 255, 255, 0.15)');
     } else {

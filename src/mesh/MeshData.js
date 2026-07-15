@@ -22,6 +22,7 @@ var MeshData = function () {
     _vertTagFlags: null, // general purposes flag, (<: Utils.TAG_FLAG) (Int32Array)
     _vertSculptFlags: null, // editing flag (tag vertices when starting sculpting session) (<: Utils.SCULPT_FLAG) (Int32Array),
     _vertStateFlags: null, // state flag (tag vertices to handle undo/redo) (<: Utils.STATE_FLAG) (Int32Array)
+    _vertVisible: null, // (1 :> visible, 0 :> hidden) (Uint8Array)
 
     _vertProxy: null, // vertex proxy, for sculpting limits (Float32Array)
 
