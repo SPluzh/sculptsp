@@ -29,6 +29,7 @@ class SculptSP extends Scene {
 
     // NOTHING, MASK_EDIT, SCULPT_EDIT, CAMERA_ZOOM, CAMERA_ROTATE, CAMERA_PAN, CAMERA_PAN_ZOOM_ALT
     this._action = Enums.Action.NOTHING;
+    this._isLeftMouseDown = false;
     this._lastNbPointers = 0;
     this._isWheelingIn = false;
 
@@ -414,6 +415,7 @@ class SculptSP extends Scene {
   // HANDLES EVENTS
   ////////////////
   onDeviceUp(data) {
+    this._isLeftMouseDown = false;
     if (this._refDragActive) {
       this._refDragActive = false;
       this._refDragMode = null;
@@ -555,6 +557,10 @@ class SculptSP extends Scene {
 
     var camera = this.getCamera();
     var button = data.which;
+
+    if (button === MOUSE_LEFT) {
+      this._isLeftMouseDown = true;
+    }
 
     if (camera.getRef2DMode()) {
       if (button === MOUSE_MIDDLE) {
@@ -789,6 +795,25 @@ class SculptSP extends Scene {
       this.render();
 
     } else if (action === Enums.Action.CAMERA_ROTATE) {
+      if (this._isLeftMouseDown && data.pointerType === 'pen') {
+        var canEdit = this._sculptManager.start(data.shiftKey);
+        if (canEdit) {
+          action = this._action = Enums.Action.SCULPT_EDIT;
+          this.setCanvasCursor('none');
+          this._lastMouseX = mouseX;
+          this._lastMouseY = mouseY;
+          
+          Multimesh.RENDER_HINT = Multimesh.PICKING;
+          this._sculptManager.preUpdate();
+          Multimesh.RENDER_HINT = Multimesh.SCULPT;
+          this._sculptManager.update(this);
+          var mesh = this.getMesh();
+          if (mesh && mesh.isDynamic)
+            this._gui.updateMeshInfo();
+          this.renderSelectOverRtt();
+          return;
+        }
+      }
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
       if (data.shiftKey) {
@@ -812,6 +837,16 @@ class SculptSP extends Scene {
 
       Multimesh.RENDER_HINT = Multimesh.PICKING;
       this._sculptManager.preUpdate();
+
+      if (action === Enums.Action.NOTHING && this._isLeftMouseDown) {
+        var canEdit = this._sculptManager.start(data.shiftKey);
+        if (canEdit) {
+          action = this._action = Enums.Action.SCULPT_EDIT;
+          this.setCanvasCursor('none');
+          this._lastMouseX = mouseX;
+          this._lastMouseY = mouseY;
+        }
+      }
 
       if (action === Enums.Action.SCULPT_EDIT) {
         Multimesh.RENDER_HINT = Multimesh.SCULPT;
