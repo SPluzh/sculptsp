@@ -98,6 +98,7 @@ class Scene {
     this._snapCubeLeft = null;
     this._snapCubeRight = null;
     this._antialias = window.localStorage.getItem('sculptsp_antialias') === '1';
+    this._isTakingScreenshot = false;
   }
 
   start() {
@@ -431,40 +432,42 @@ class Scene {
     }
     gl.viewport(vpX, 0, vpW, vpH);
 
-    this._sculptManager.postRender(camera, vpX); // draw sculpting gizmo stuffs
+    if (!this._isTakingScreenshot) {
+      this._sculptManager.postRender(camera, vpX); // draw sculpting gizmo stuffs
 
-    if (this._measureTool && this._measureRenderer) {
-      this._measureRenderer.render(
-        this._measureTool.getSegments(),
-        this._measureTool.getReferenceLength(),
-        this._measureTool.getPendingA(),
-        this._measureTool.getPendingB(),
-        camera,
-        this._pixelRatio,
-        this._mouseX,
-        this._mouseY,
-        this._measureTool.getHoveredSegment(),
-        this._measureTool.getHoveredVertexKey(),
-        this._measureTool._useDistanceThickness,
-        vpX
-      );
-    }
+      if (this._measureTool && this._measureRenderer) {
+        this._measureRenderer.render(
+          this._measureTool.getSegments(),
+          this._measureTool.getReferenceLength(),
+          this._measureTool.getPendingA(),
+          this._measureTool.getPendingB(),
+          camera,
+          this._pixelRatio,
+          this._mouseX,
+          this._mouseY,
+          this._measureTool.getHoveredSegment(),
+          this._measureTool.getHoveredVertexKey(),
+          this._measureTool._useDistanceThickness,
+          vpX
+        );
+      }
 
-    if (this._dividerTool && this._dividerRenderer) {
-      this._dividerRenderer.render(
-        this._dividerTool.getSegments(),
-        this._dividerTool.getPendingA(),
-        this._dividerTool.getPendingB(),
-        camera,
-        this._pixelRatio,
-        this._mouseX,
-        this._mouseY,
-        this._dividerTool.getHoveredSegment(),
-        this._dividerTool.getHoveredVertexKey(),
-        this._dividerTool.getDivisions(),
-        this._dividerTool._useDistanceThickness,
-        vpX
-      );
+      if (this._dividerTool && this._dividerRenderer) {
+        this._dividerRenderer.render(
+          this._dividerTool.getSegments(),
+          this._dividerTool.getPendingA(),
+          this._dividerTool.getPendingB(),
+          camera,
+          this._pixelRatio,
+          this._mouseX,
+          this._mouseY,
+          this._dividerTool.getHoveredSegment(),
+          this._dividerTool.getHoveredVertexKey(),
+          this._dividerTool.getDivisions(),
+          this._dividerTool._useDistanceThickness,
+          vpX
+        );
+      }
     }
 
     if (isSplit) {
@@ -665,6 +668,72 @@ class Scene {
       am.src = 'resources/alpha/' + alphas[i];
       am.onload = this.onLoadAlphaImage.bind(this, am, names[i]);
     }
+  }
+
+  takeScreenshot(width, height, options) {
+    options = options || {};
+    var gl = this._gl;
+    if (!gl) return;
+
+    // 1. Keep track of current dimensions and states
+    var oldWidth = this._canvasWidth;
+    var oldHeight = this._canvasHeight;
+    var oldCanvasW = this._canvas.width;
+    var oldCanvasH = this._canvas.height;
+    var oldSplitMode = this._splitMode;
+    var oldShowGrid = this._showGrid;
+    var oldShowContour = this._showContour;
+
+    // 2. Set temporary states
+    this._isTakingScreenshot = true;
+    this._splitMode = null; // force single view
+    this._showGrid = !!options.showGrid;
+    this._showContour = !!options.showContour;
+
+    // 3. Set the canvas physical size to the target screenshot resolution
+    this._canvas.width = width;
+    this._canvas.height = height;
+    this._canvasWidth = width;
+    this._canvasHeight = height;
+
+    // 4. Update camera and RTTs for the new resolution
+    var camera = this.getCamera(); // active camera
+    camera.onResize(width, height);
+    
+    if (this._background) this._background.onResize(width, height);
+    if (this._rttContour) this._rttContour.onResize(width, height);
+    if (this._rttMerge) this._rttMerge.onResize(width, height);
+    if (this._rttOpaque) this._rttOpaque.onResize(width, height);
+    if (this._rttTransparent) this._rttTransparent.onResize(width, height);
+    if (this._rttComposite) this._rttComposite.onResize(width, height);
+
+    // 5. Force a draw of the single view to composite target and copy it to null framebuffer (screen)
+    this._drawFullScene = true;
+    this._applyRenderSingle(camera, 0, width, height);
+
+    // 6. Read canvas image data url
+    var dataUrl = this._canvas.toDataURL('image/png');
+
+    // 7. Restore original dimensions and state
+    this._canvas.width = oldCanvasW;
+    this._canvas.height = oldCanvasH;
+    this._canvasWidth = oldWidth;
+    this._canvasHeight = oldHeight;
+    this._splitMode = oldSplitMode;
+    this._showGrid = oldShowGrid;
+    this._showContour = oldShowContour;
+    this._isTakingScreenshot = false;
+
+    // 8. Restore camera and RTT sizes
+    this.onCanvasResize();
+
+    // 9. Trigger the download of the screenshot
+    var link = document.createElement('a');
+    link.download = 'screenshot.png';
+    link.href = dataUrl;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
   }
 
   /** Called when the window is resized */

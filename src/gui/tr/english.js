@@ -29,6 +29,15 @@ var TR = {
   cameraSpeedRotate: 'Rotation speed',
   cameraSpeedRoll: 'Roll speed',
 
+  // screenshot
+  cameraScreenshotTitle: 'Viewport Screenshot',
+  cameraScreenshotPreset: 'Resolution Preset',
+  cameraScreenshotWidth: 'Width',
+  cameraScreenshotHeight: 'Height',
+  cameraScreenshotShowGrid: 'Show grid',
+  cameraScreenshotShowContour: 'Show selection outline',
+  cameraScreenshotAction: 'Take Screenshot',
+
   // reference images
   cameraRefTitle: 'Reference Images',
   cameraRef2DMode: '2D Pan/Zoom Mode',

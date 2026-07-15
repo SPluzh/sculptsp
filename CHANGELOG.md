@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **UI**: Added a viewport screenshot section in the Camera menu with customizable resolution settings, presets (Viewport size, 1080p, 2K, 4K, Custom), grid visibility toggle, and selection outline toggle. Saves a clean PNG image directly to the user's downloads folder.
 - **Import**: Added full support for importing `.gltf` and `.glb` (glTF 2.0) files, including parsing JSON/binary chunks, base64 data URIs, node transformation hierarchies, vertex colors/UVs, and automatic conversion of triangles to SculptSP quads/faces.
 - **Scene Outliner**: Added ZSphere Armatures to the Scene Outliner list, allowing users to view node counts, select the armature to enter ZSphere editing mode, and toggle its visibility in the viewport via the eye icon.
 - **ZSphere Tool**: Fixed a bug where the ZSphere armature (including the root ZSphere) was completely invisible when the tool was active.

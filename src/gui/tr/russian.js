@@ -29,6 +29,15 @@ var TR = {
   cameraSpeedRotate: 'Скорость вращения',
   cameraSpeedRoll: 'Скорость наклона',
 
+  // screenshot
+  cameraScreenshotTitle: 'Скриншот вьюпорта',
+  cameraScreenshotPreset: 'Шаблон разрешения',
+  cameraScreenshotWidth: 'Ширина (px)',
+  cameraScreenshotHeight: 'Высота (px)',
+  cameraScreenshotShowGrid: 'Показывать сетку',
+  cameraScreenshotShowContour: 'Показывать обводку',
+  cameraScreenshotAction: 'Сделать скриншот',
+
   // reference images
   cameraRefTitle: 'Референсные изображения',
   cameraRef2DMode: 'Режим 2D Панорамирования/Зума',

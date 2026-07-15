@@ -18,6 +18,13 @@ class GuiCamera {
     this._fovRefY = 0;
     this._initFovInd();
 
+    // Default screenshot settings
+    this._screenshotPreset = '1080p';
+    this._screenshotWidth = 1920;
+    this._screenshotHeight = 1080;
+    this._screenshotShowGrid = false;
+    this._screenshotShowContour = false;
+
     this.init(guiParent);
   }
 
@@ -87,6 +94,22 @@ class GuiCamera {
     menu.addSlider(TR('cameraSpeedZoom'), this._main, '_cameraSpeedZoom', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedRotate'), this._main, '_cameraSpeedRotate', 0.05, 5.0, 0.001);
     menu.addSlider(TR('cameraSpeedRoll'), this._main, '_cameraSpeedRoll', 0.05, 5.0, 0.001);
+
+    // screenshot settings
+    menu.addTitle(TR('cameraScreenshotTitle'));
+    var screenshotPresets = {
+      'viewport': 'Viewport size',
+      '1080p': '1080p (1920x1080)',
+      '2k': '2K (2560x1440)',
+      '4k': '4K (3840x2160)',
+      'custom': 'Custom'
+    };
+    this._ctrlScreenshotPreset = menu.addCombobox(TR('cameraScreenshotPreset'), this._screenshotPreset, this.onScreenshotPresetChange.bind(this), screenshotPresets);
+    this._ctrlScreenshotWidth = menu.addSlider(TR('cameraScreenshotWidth'), this._screenshotWidth, this.onScreenshotWidthChange.bind(this), 256, 7680, 1);
+    this._ctrlScreenshotHeight = menu.addSlider(TR('cameraScreenshotHeight'), this._screenshotHeight, this.onScreenshotHeightChange.bind(this), 256, 4320, 1);
+    this._ctrlScreenshotShowGrid = menu.addCheckbox(TR('cameraScreenshotShowGrid'), this._screenshotShowGrid, this.onScreenshotShowGridChange.bind(this));
+    this._ctrlScreenshotShowContour = menu.addCheckbox(TR('cameraScreenshotShowContour'), this._screenshotShowContour, this.onScreenshotShowContourChange.bind(this));
+    menu.addButton(TR('cameraScreenshotAction'), this, 'takeScreenshot');
 
     // split viewport
     menu.addTitle(TR('splitViewportTitle'));
@@ -548,6 +571,64 @@ class GuiCamera {
       }
     }
     this.refreshRefImagesList();
+  }
+
+  onScreenshotPresetChange(value) {
+    this._screenshotPreset = value;
+    if (value === 'viewport') {
+      var canvas = this._main.getCanvas();
+      var pr = this._main.getPixelRatio();
+      this._screenshotWidth = Math.round(canvas.clientWidth * pr);
+      this._screenshotHeight = Math.round(canvas.clientHeight * pr);
+      this._ctrlScreenshotWidth.setValue(this._screenshotWidth, true);
+      this._ctrlScreenshotHeight.setValue(this._screenshotHeight, true);
+    } else if (value === '1080p') {
+      this._screenshotWidth = 1920;
+      this._screenshotHeight = 1080;
+      this._ctrlScreenshotWidth.setValue(this._screenshotWidth, true);
+      this._ctrlScreenshotHeight.setValue(this._screenshotHeight, true);
+    } else if (value === '2k') {
+      this._screenshotWidth = 2560;
+      this._screenshotHeight = 1440;
+      this._ctrlScreenshotWidth.setValue(this._screenshotWidth, true);
+      this._ctrlScreenshotHeight.setValue(this._screenshotHeight, true);
+    } else if (value === '4k') {
+      this._screenshotWidth = 3840;
+      this._screenshotHeight = 2160;
+      this._ctrlScreenshotWidth.setValue(this._screenshotWidth, true);
+      this._ctrlScreenshotHeight.setValue(this._screenshotHeight, true);
+    }
+  }
+
+  onScreenshotWidthChange(value) {
+    this._screenshotWidth = Math.round(value);
+    if (this._screenshotPreset !== 'custom') {
+      this._screenshotPreset = 'custom';
+      this._ctrlScreenshotPreset.setValue('custom', true);
+    }
+  }
+
+  onScreenshotHeightChange(value) {
+    this._screenshotHeight = Math.round(value);
+    if (this._screenshotPreset !== 'custom') {
+      this._screenshotPreset = 'custom';
+      this._ctrlScreenshotPreset.setValue('custom', true);
+    }
+  }
+
+  onScreenshotShowGridChange(value) {
+    this._screenshotShowGrid = value;
+  }
+
+  onScreenshotShowContourChange(value) {
+    this._screenshotShowContour = value;
+  }
+
+  takeScreenshot() {
+    this._main.takeScreenshot(this._screenshotWidth, this._screenshotHeight, {
+      showGrid: this._screenshotShowGrid,
+      showContour: this._screenshotShowContour
+    });
   }
 }
 
