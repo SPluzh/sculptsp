@@ -3,7 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
-- **Masking Tool**: Increased the strength of mask blurring per step by performing 24 iterations of Laplacian smoothing instead of 1 (and expanded the vertex region accordingly), updated mask sharpening to be highly gradual in both directions with a symmetric step size of 0.05, and mapped mask sharpening to trigger when clicking directly on the masked area while holding **Ctrl + Alt**.
+- **Masking Tool**: Increased the strength of mask blurring per step by performing 24 iterations of Laplacian smoothing instead of 1 (and expanded the vertex region accordingly). Reimplemented mask sharpening using a stable Unsharp Masking (USM) approach to prevent feedback-loop instability (stripes/noise), and mapped mask sharpening to trigger when clicking directly on the masked area while holding **Ctrl + Alt**.
 - **Transform Tool**: Configured the coordinate axes (X, Y, and Z) and scale-all handles to highlight in bright, saturated versions of their own respective colors (bright red, bright green, bright blue, and bright yellow) when hovered, instead of using a single uniform yellow highlight.
 - **Transform Tool**: Changed coordinate axes rotation dragging (X, Y, and Z axes) to track the mouse cursor's angle around the gizmo's screen center, matching the intuitive circular dragging behavior of camera-plane rotation.
 - **Transform Tool**: Updated the coordinate axes rotation rings to render as complete 360-degree circles rather than semi-circles.
