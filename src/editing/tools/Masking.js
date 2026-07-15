@@ -24,6 +24,7 @@ class Masking extends SculptBase {
     this._svg = null;
     this._svgPath = null;
     this._useLasso = false;
+    this._sharpenBlurIterations = 24;
   }
 
   pushState() {
@@ -88,7 +89,7 @@ class Masking extends SculptBase {
     var iVerts = this.getMaskedVertices();
     if (iVerts.length === 0)
       return;
-    var numIterations = 24;
+    var numIterations = this._sharpenBlurIterations;
     iVerts = mesh.expandsVertices(iVerts, numIterations);
 
     this.pushState();
@@ -110,7 +111,7 @@ class Masking extends SculptBase {
     var iVerts = this.getMaskedVertices();
     if (iVerts.length === 0)
       return;
-    var numIterations = 24;
+    var numIterations = this._sharpenBlurIterations;
     iVerts = mesh.expandsVertices(iVerts, numIterations);
 
     this.pushState();

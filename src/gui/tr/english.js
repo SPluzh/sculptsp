@@ -187,6 +187,7 @@ var TR = {
   sculptMaskingBlur: 'Blur',
   sculptMaskingSharpen: 'Sharpen',
   sculptMaskingLasso: 'Lasso Selection',
+  sculptMaskingSteps: 'Steps / Iterations',
   sculptPBRTitle: 'PBR materials',
   sculptPaintAll: 'Paint all',
   sculptExtractTitle: 'Extract',
