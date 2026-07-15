@@ -495,7 +495,7 @@ class SculptSP extends Scene {
         if (maskingTool._lassoPoints && maskingTool._lassoPoints.length >= 3) {
           var selectedVertices = this.getVerticesInLasso(maskingTool._lassoPoints);
           if (selectedVertices && selectedVertices.length > 0) {
-            this.hideVertices(selectedVertices, altKey);
+            this.hideVertices(selectedVertices, !altKey);
           }
         }
       }
