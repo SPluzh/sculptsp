@@ -38,6 +38,7 @@ class GuiFiles {
     menu.addButton(TR('fileExportOBJ'), this, 'saveFileAsOBJ' /*, 'CTRL+E'*/ );
     menu.addButton(TR('fileExportPLY'), this, 'saveFileAsPLY');
     menu.addButton(TR('fileExportSTL'), this, 'saveFileAsSTL');
+    menu.addButton(TR('fileExportGLB'), this, 'saveFileAsGLB');
     menu.addCheckbox('OBJ color zbrush', this, '_objColorZbrush');
     menu.addCheckbox('OBJ color append', this, '_objColorAppended');
     menu.addButton(TR('sketchfabTitle'), this._ctrlGui, 'exportSketchfab');
@@ -195,6 +196,12 @@ class GuiFiles {
     var meshes = this._getExportMeshes();
     if (!meshes) return;
     this._save(Export.exportBinarySTL(meshes), 'yourMesh.stl');
+  }
+
+  saveFileAsGLB() {
+    var meshes = this._getExportMeshes();
+    if (!meshes) return;
+    this._save(Export.exportGLB(meshes), 'yourMesh.glb');
   }
 
   _save(data, fileName, useZip) {

@@ -815,8 +815,10 @@ class Scene {
     else if (fileType === 'sgl') newMeshes = Import.importSGL(fileData, this._gl, this);
     else if (fileType === 'stl') newMeshes = Import.importSTL(fileData, this._gl);
     else if (fileType === 'ply') newMeshes = Import.importPLY(fileData, this._gl);
+    else if (fileType === 'gltf') newMeshes = Import.importGLTF(fileData, this._gl);
+    else if (fileType === 'glb') newMeshes = Import.importGLB(fileData, this._gl);
 
-    var nbNewMeshes = newMeshes.length;
+    var nbNewMeshes = newMeshes ? newMeshes.length : 0;
     if (nbNewMeshes === 0) {
       return;
     }

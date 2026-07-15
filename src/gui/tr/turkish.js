@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: 'Kaydet .obj',
   fileExportPLY: 'Kaydet .ply',
   fileExportSTL: 'Kaydet .stl',
+  fileExportGLB: 'Kaydet .glb (glTF)',
 
   fileExportTextureTitle: null,
   fileExportTextureSize: null,

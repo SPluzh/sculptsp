@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: 'Speichern .obj',
   fileExportPLY: 'Speichern .ply',
   fileExportSTL: 'Speichern .stl',
+  fileExportGLB: 'Speichern .glb (glTF)',
 
   fileExportTextureTitle: 'Texturen exportieren',
   fileExportTextureSize: 'Größe',

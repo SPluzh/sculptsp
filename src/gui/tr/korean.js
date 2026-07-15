@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: '.obj 파일로 저장하기',
   fileExportPLY: '.ply 파일로 저장하기',
   fileExportSTL: '.stl 파일로 저장하기',
+  fileExportGLB: '.glb (glTF) 저장',
 
   fileExportTextureTitle: null,
   fileExportTextureSize: null,

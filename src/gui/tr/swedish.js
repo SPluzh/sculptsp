@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: 'Spara .obj',
   fileExportPLY: 'Spara .ply',
   fileExportSTL: 'Spara .stl',
+  fileExportGLB: 'Spara .glb (glTF)',
 
   fileExportTextureTitle: null,
   fileExportTextureSize: null,

@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: '儲存 .obj',
   fileExportPLY: '儲存 .ply',
   fileExportSTL: '儲存 .stl',
+  fileExportGLB: '保存 .glb (glTF)',
 
   fileExportTextureTitle: null,
   fileExportTextureSize: null,

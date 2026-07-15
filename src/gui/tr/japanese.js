@@ -34,6 +34,7 @@ var TR = {
   fileExportOBJ: null,
   fileExportPLY: null,
   fileExportSTL: null,
+  fileExportGLB: null,
 
   fileExportTextureTitle: null,
   fileExportTextureSize: null,

@@ -363,6 +363,8 @@ class SculptSP extends Scene {
     if (lower.endsWith('.sgl')) return 'sgl';
     if (lower.endsWith('.stl')) return 'stl';
     if (lower.endsWith('.ply')) return 'ply';
+    if (lower.endsWith('.gltf')) return 'gltf';
+    if (lower.endsWith('.glb')) return 'glb';
     return;
   }
 
@@ -389,7 +391,7 @@ class SculptSP extends Scene {
       document.getElementById('fileopen').value = '';
     };
 
-    if (fileType === 'obj')
+    if (fileType === 'obj' || fileType === 'gltf')
       reader.readAsText(file);
     else
       reader.readAsArrayBuffer(file);

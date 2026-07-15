@@ -61,6 +61,7 @@ var TR = {
   fileExportOBJ: 'Save .obj',
   fileExportPLY: 'Save .ply',
   fileExportSTL: 'Save .stl',
+  fileExportGLB: 'Save .glb (glTF)',
 
   fileExportTextureTitle: 'Export textures',
   fileExportTextureSize: 'Size',
