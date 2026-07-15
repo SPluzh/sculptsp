@@ -11,6 +11,19 @@ var COLOR_GREY = vec3.fromValues(0.4, 0.4, 0.4);
 var COLOR_SW = vec3.fromValues(0.8, 0.4, 0.2);
 var COLOR_YELLOW = vec3.fromValues(0.8, 0.8, 0.2);
 
+var COLOR_X_SELECT = vec3.fromValues(1.0, 0.4, 0.4);
+var COLOR_Y_SELECT = vec3.fromValues(0.4, 1.0, 0.4);
+var COLOR_Z_SELECT = vec3.fromValues(0.4, 0.4, 1.0);
+var COLOR_YELLOW_SELECT = vec3.fromValues(1.0, 1.0, 0.4);
+
+function getSelectColor(color) {
+  if (color === COLOR_X) return COLOR_X_SELECT;
+  if (color === COLOR_Y) return COLOR_Y_SELECT;
+  if (color === COLOR_Z) return COLOR_Z_SELECT;
+  if (color === COLOR_YELLOW) return COLOR_YELLOW_SELECT;
+  return vec3.fromValues(1.0, 1.0, 0.0);
+}
+
 // overall scale of the gizmo
 var GIZMO_SIZE = 80.0;
 // arrow
@@ -243,6 +256,7 @@ class Gizmo {
     mat4.rotate(mat, mat, Math.PI * 0.5, axis);
     mat4.translate(mat, mat, [0.0, ARROW_LENGTH * 0.5, 0.0]);
     vec3.copy(tra._color, color);
+    vec3.copy(tra._colorSelect, getSelectColor(color));
 
     tra._pickGeo = Primitives.createArrow(
       this._gl,
@@ -263,6 +277,7 @@ class Gizmo {
 
   _createPlane(pla, color, wx, wy, wz, hx, hy, hz) {
     vec3.copy(pla._color, color);
+    vec3.copy(pla._colorSelect, getSelectColor(color));
 
     pla._pickGeo = Primitives.createPlane(this._gl, 0.0, 0.0, 0.0, wx, wy, wz, hx, hy, hz);
     pla._pickGeo._gizmo = pla;
@@ -292,6 +307,7 @@ class Gizmo {
 
   _createCircle(rot, rad, color, radius = ROT_RADIUS, mthick = 1.0, nbRadial = 6, nbTubular = 64) {
     vec3.copy(rot._color, color);
+    vec3.copy(rot._colorSelect, getSelectColor(color));
     rot._pickGeo = Primitives.createTorus(
       this._gl,
       radius,
@@ -307,6 +323,7 @@ class Gizmo {
 
   _createCenterCube(sca, color, side) {
     vec3.copy(sca._color, color);
+    vec3.copy(sca._colorSelect, getSelectColor(color));
     sca._pickGeo = Primitives.createCube(this._gl, side * 1.2);
     sca._pickGeo._gizmo = sca;
     sca._drawGeo = Primitives.createCube(this._gl, side);
@@ -326,6 +343,7 @@ class Gizmo {
     mat4.rotate(mat, mat, Math.PI * 0.5, axis);
     mat4.translate(mat, mat, [0.0, ROT_RADIUS, 0.0]);
     vec3.copy(sca._color, color);
+    vec3.copy(sca._colorSelect, getSelectColor(color));
     sca._pickGeo = Primitives.createCube(this._gl, CUBE_SIDE_PICK);
     sca._pickGeo._gizmo = sca;
     sca._drawGeo = Primitives.createCube(this._gl, CUBE_SIDE);

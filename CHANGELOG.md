@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Transform Tool**: Configured the coordinate axes (X, Y, and Z) and scale-all handles to highlight in bright, saturated versions of their own respective colors (bright red, bright green, bright blue, and bright yellow) when hovered, instead of using a single uniform yellow highlight.
 - **Transform Tool**: Changed coordinate axes rotation dragging (X, Y, and Z axes) to track the mouse cursor's angle around the gizmo's screen center, matching the intuitive circular dragging behavior of camera-plane rotation.
 - **Transform Tool**: Updated the coordinate axes rotation rings to render as complete 360-degree circles rather than semi-circles.
 - **Transform Tool**: Fixed a bug where rotating or scaling the mesh (or the pivot itself) along the X, Y, or Z axes occurred incorrectly (along the wrong directions) after the pivot had been rotated. The rotation and scaling transformations now align perfectly with the tilted pivot axes.
