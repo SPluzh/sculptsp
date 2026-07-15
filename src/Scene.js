@@ -491,7 +491,6 @@ class Scene {
     var gl = this._gl;
     var i = 0;
     var meshes = this._meshes.slice();
-    this._sculptManager.addSculptToScene(meshes);
     var nbMeshes = meshes.length;
 
     // Scissor restricts rendering to this viewport's half
