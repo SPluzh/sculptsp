@@ -301,6 +301,7 @@ var TR = {
   dividerDivisions: 'Частей деления',
   dividerClear: 'Очистить все',
   sculptDivider: 'Делитель отрезков',
+  sculptVisibility: 'Видимость',
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',

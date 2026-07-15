@@ -38,7 +38,8 @@ Enums.Tools = {
   MEASURE: 16,
   ELASTIC: 17,
   CURVE_DEFORM: 18,
-  DIVIDER: 19
+  DIVIDER: 19,
+  VISIBILITY: 20
 };
 
 // display shader type

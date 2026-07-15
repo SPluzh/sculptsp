@@ -444,4 +444,13 @@ GuiTools[Enums.Tools.DIVIDER] = {
   }
 };
 
+GuiTools[Enums.Tools.VISIBILITY] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(fold.addButton(TR('sculptMaskingClear'), function () {
+      main.showAllHidden();
+    }));
+  }
+};
+
 export default GuiSculptingTools;

@@ -7,11 +7,11 @@ import Indicator from './Indicator.js';
 import Mesh from '../mesh/Mesh.js';
 import {
   createIcons,
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
 } from 'lucide';
 
 const toolIcons = {
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
 };
 
 var GuiTools = GuiSculptingTools.tools;
@@ -356,7 +356,7 @@ class GuiSculpting {
 
   _checkModifierKey(event) {
     var selectedTool = this.getSelectedTool();
-    if (selectedTool === Enums.Tools.ZSPHERE || selectedTool === Enums.Tools.MEASURE || selectedTool === Enums.Tools.CURVE_DEFORM || selectedTool === Enums.Tools.DIVIDER)
+    if (selectedTool === Enums.Tools.ZSPHERE || selectedTool === Enums.Tools.MEASURE || selectedTool === Enums.Tools.CURVE_DEFORM || selectedTool === Enums.Tools.DIVIDER || selectedTool === Enums.Tools.VISIBILITY)
       return false;
 
     if (this._main._action === Enums.Action.NOTHING) {

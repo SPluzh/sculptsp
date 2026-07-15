@@ -19,6 +19,7 @@ import MeasureTool from '../../measure/MeasureTool.js';
 import Elastic from './Elastic.js';
 import CurveDeformTool from './CurveDeformTool.js';
 import DividerTool from '../../measure/DividerTool.js';
+import Visibility from './Visibility.js';
 
 var Tools = [];
 
@@ -42,6 +43,7 @@ Tools[Enums.Tools.MEASURE] = MeasureTool;
 Tools[Enums.Tools.ELASTIC] = Elastic;
 Tools[Enums.Tools.CURVE_DEFORM] = CurveDeformTool;
 Tools[Enums.Tools.DIVIDER] = DividerTool;
+Tools[Enums.Tools.VISIBILITY] = Visibility;
 
 Tools[Enums.Tools.BRUSH].uiName = 'sculptBrush';
 Tools[Enums.Tools.INFLATE].uiName = 'sculptInflate';
@@ -63,6 +65,7 @@ Tools[Enums.Tools.MEASURE].uiName = 'measureTitle';
 Tools[Enums.Tools.ELASTIC].uiName = 'sculptElastic';
 Tools[Enums.Tools.CURVE_DEFORM].uiName = 'sculptCurveDeform';
 Tools[Enums.Tools.DIVIDER].uiName = 'dividerTitle';
+Tools[Enums.Tools.VISIBILITY].uiName = 'sculptVisibility';
 
 Tools[Enums.Tools.BRUSH].icon = 'Brush';
 Tools[Enums.Tools.INFLATE].icon = 'Wind';
@@ -84,5 +87,6 @@ Tools[Enums.Tools.MEASURE].icon = 'Ruler';
 Tools[Enums.Tools.ELASTIC].icon = 'Activity';
 Tools[Enums.Tools.CURVE_DEFORM].icon = 'Spline';
 Tools[Enums.Tools.DIVIDER].icon = 'Scissors';
+Tools[Enums.Tools.VISIBILITY].icon = 'Eye';
 
 export default Tools;

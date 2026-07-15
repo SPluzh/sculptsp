@@ -649,7 +649,8 @@ class SculptSP extends Scene {
 
     var canEdit = false;
     if (button === MOUSE_LEFT) {
-      if (data.ctrlKey && data.shiftKey) {
+      var isVisibilityTool = this._sculptManager.getToolIndex() === Enums.Tools.VISIBILITY;
+      if ((data.ctrlKey && data.shiftKey) || isVisibilityTool) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
         this._maskX = mouseX;
         this._maskY = mouseY;

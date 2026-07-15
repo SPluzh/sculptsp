@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Visibility Tool**: Added a dedicated Visibility tool to the sculpting tools list (assigned with the Lucide `Eye` icon and localized as 'Visibility' / 'Видимость'). Selecting the tool allows users to draw lasso selections directly on the canvas without holding modifier keys, and includes a settings panel with a 'Clear' button to show all hidden parts of the mesh.
 - **Masking / Visibility**: Added support for hiding selected parts of the mesh. Hold **Ctrl + Shift** and drag the mouse lasso (colored in green) to hide the unselected area (keeping the enclosed area). Hold **Ctrl + Shift + Alt** and drag the mouse lasso (colored in red) to hide the enclosed area. Hold **Ctrl + Shift** and click on empty viewport space to show all hidden parts. Fully integrated with undo/redo history and multiresolution level transitions.
 - **UI**: Added a viewport screenshot section in the Camera menu with customizable resolution settings, presets (Viewport size, 1080p, 2K, 4K, Custom), grid visibility toggle, and selection outline toggle. Saves a clean PNG image directly to the user's downloads folder.
 - **Import**: Added full support for importing `.gltf` and `.glb` (glTF 2.0) files, including parsing JSON/binary chunks, base64 data URIs, node transformation hierarchies, vertex colors/UVs, and automatic conversion of triangles to SculptSP quads/faces.

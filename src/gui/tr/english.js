@@ -301,6 +301,7 @@ var TR = {
   dividerDivisions: 'Divisions',
   dividerClear: 'Clear All',
   sculptDivider: 'Divider',
+  sculptVisibility: 'Visibility',
 
   alphaNone: 'None',
   alphaSquare: 'Square',
