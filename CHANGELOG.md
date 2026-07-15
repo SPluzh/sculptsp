@@ -5,7 +5,7 @@ All notable changes to this project will be documented in this file.
 ## [0.9.10]
 - **Navigation**: Clamped the Orbit camera's vertical rotation to prevent it from flipping over the poles.
 - **Navigation**: Suppressed unwanted roll rotation when dragging the camera in Spherical (Trackball) mode.
-- **Navigation**: Added camera roll rotation control by dragging while holding **Shift + Alt + Right Mouse Button**, active in trackball camera modes (Spherical and Plane).
+- **Navigation**: Added camera roll rotation control by dragging while holding **Shift + Alt + Right Mouse Button**, active in trackball camera modes (Spherical and Plane), with a dedicated "Roll speed" slider setting in the camera menu.
 - **Symmetry**: Upgraded the symmetry system to support multiple active symmetry axes (X, Y, and Z) simultaneously. Users can now enable any combination of axes (or all three together) for multi-directional mirroring.
 - **UI**: Updated the left toolbar shelf and sculpting sidebar to replace the single-axis selection dropdown with independent toggles for the X, Y, and Z axes.
 - **Symmetry**: Visual brush indicator circles/dots are now rendered at all active symmetrical mirroring points simultaneously across the mesh surface.

@@ -678,7 +678,7 @@ class SculptSP extends Scene {
         this._action = Enums.Action.SCULPT_EDIT;
     }
 
-    if (this._action === Enums.Action.CAMERA_ROTATE || this._action === Enums.Action.CAMERA_ZOOM)
+    if (this._action === Enums.Action.CAMERA_ROTATE || this._action === Enums.Action.CAMERA_ZOOM || this._action === Enums.Action.CAMERA_ROLL)
       this.getCamera().start(mouseX, mouseY);
 
     this._lastMouseX = mouseX;
@@ -784,7 +784,7 @@ class SculptSP extends Scene {
     } else if (action === Enums.Action.CAMERA_ROLL) {
 
       Multimesh.RENDER_HINT = Multimesh.CAMERA;
-      var dx = (mouseX - this._lastMouseX) * this.getSpeedTranslateFactor() * 60 * (this._cameraSpeedRoll / 0.5);
+      var dx = (mouseX - this._lastMouseX) * this.getSpeedTranslateFactor() * 6 * this._cameraSpeedRoll;
       this.getCamera().roll(dx);
       this.render();
 

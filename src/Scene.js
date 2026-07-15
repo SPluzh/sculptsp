@@ -32,7 +32,7 @@ class Scene {
     this._cameraSpeedTranslate = 0.4;
     this._cameraSpeedZoom = 2.0;
     this._cameraSpeedRotate = 0.5;
-    this._cameraSpeedRoll = 0.5;
+    this._cameraSpeedRoll = 1.0;
     this._cameraRmbOnly = true;
 
     // cache canvas stuffs
