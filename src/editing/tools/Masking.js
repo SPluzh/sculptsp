@@ -110,17 +110,40 @@ class Masking extends SculptBase {
     var iVerts = this.getMaskedVertices();
     if (iVerts.length === 0)
       return;
+    var numIterations = 24;
+    iVerts = mesh.expandsVertices(iVerts, numIterations);
 
     this.pushState();
     this._main.getStateManager().pushVertices(iVerts);
 
     var mAr = mesh.getMaterials();
     var nbVerts = iVerts.length;
+
+    // 1. Сохраняем исходные значения маски
+    var originalMask = new Float32Array(nbVerts);
     for (var i = 0; i < nbVerts; ++i) {
-      var idm = iVerts[i] * 3 + 2;
-      var val = mAr[idm];
-      mAr[idm] = val > 0.5 ? Math.min(val + 0.05, 1.0) : Math.max(val - 0.05, 0.0);
+      originalMask[i] = mAr[iVerts[i] * 3 + 2];
     }
+
+    // 2. Делаем точно такое же размытие маски (в mAr)
+    var smoothVerts = new Float32Array(nbVerts * 3);
+    for (var iter = 0; iter < numIterations; ++iter) {
+      this.laplacianSmooth(iVerts, smoothVerts, mAr);
+      for (var j = 0; j < nbVerts; ++j) {
+        mAr[iVerts[j] * 3 + 2] = smoothVerts[j * 3 + 2];
+      }
+    }
+
+    // 3. Вычитаем размытую маску из оригинальной для усиления деталей:
+    // sharp = original + factor * (original - blurred)
+    var factor = 1.0;
+    for (var k = 0; k < nbVerts; ++k) {
+      var idm = iVerts[k] * 3 + 2;
+      var orig = originalMask[k];
+      var blurred = mAr[idm];
+      mAr[idm] = Math.min(Math.max(orig + factor * (orig - blurred), 0.0), 1.0);
+    }
+
     this.updateAndRenderMask();
   }
 
