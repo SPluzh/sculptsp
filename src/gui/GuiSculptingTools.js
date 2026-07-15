@@ -330,7 +330,34 @@ GuiTools[Enums.Tools.MASKING] = {
 
 GuiTools[Enums.Tools.TRANSFORM] = {
   _ctrls: [],
-  init: function () {}
+  init: function (tool, fold, main) {
+    tool._editPivot = false;
+
+    var LOCK_CLOSED_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>';
+    var LOCK_OPEN_SVG = '<svg xmlns="http://www.w3.org/2000/svg" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="vertical-align: middle; margin-right: 6px;"><rect width="18" height="11" x="3" y="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 9.9-1"/></svg>';
+
+    var updateButton = this.updateButton = function () {
+      if (tool._editPivot) {
+        btnWidget.domButton.innerHTML = LOCK_OPEN_SVG + TR('sculptEditPivot');
+        btnWidget.domButton.style.backgroundColor = '#d32f2f';
+        btnWidget.domButton.style.color = '#ffffff';
+      } else {
+        btnWidget.domButton.innerHTML = LOCK_CLOSED_SVG + TR('sculptEditPivot');
+        btnWidget.domButton.style.backgroundColor = '';
+        btnWidget.domButton.style.color = '';
+      }
+    };
+
+    var btnWidget = fold.addButton(TR('sculptEditPivot'), function () {
+      tool._editPivot = !tool._editPivot;
+      updateButton();
+      main.render();
+    });
+
+    updateButton();
+    tool._updatePivotGui = updateButton;
+    this._ctrls.push(btnWidget);
+  }
 };
 
 GuiTools[Enums.Tools.CLAYBUILDUP] = {

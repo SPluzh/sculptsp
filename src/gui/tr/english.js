@@ -144,6 +144,7 @@ var TR = {
   sculptMove: 'Move',
   sculptLocalScale: 'Local scale',
   sculptTransform: 'Transform',
+  sculptEditPivot: 'Edit pivot',
   sculptClayBuildup: 'Clay Buildup',
   sculptZSphere: 'ZSphere',
   sculptZSphereMode: 'Mode',

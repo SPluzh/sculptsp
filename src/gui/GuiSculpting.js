@@ -227,6 +227,15 @@ class GuiSculpting {
   }
 
   onChangeTool(newValue) {
+    var transformTool = this._sculptManager.getTool(Enums.Tools.TRANSFORM);
+    if (transformTool && transformTool._editPivot) {
+      transformTool._editPivot = false;
+      var transformGui = GuiTools[Enums.Tools.TRANSFORM];
+      if (transformGui && transformGui.updateButton) {
+        transformGui.updateButton();
+      }
+    }
+
     GuiSculptingTools.hide(this._sculptManager.getToolIndex());
 
     var oldTool = this._sculptManager.getCurrentTool();

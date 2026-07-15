@@ -144,6 +144,7 @@ var TR = {
   sculptPaint: '2D Кисть',
   sculptMasking: '2D Маска (-Ctrl)',
   sculptTransform: 'Трансформация',
+  sculptEditPivot: 'Редактировать пивот',
   sculptClayBuildup: 'Clay Buildup',
   sculptZSphere: 'ZSphere',
   sculptZSphereMode: 'Режим',

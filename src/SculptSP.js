@@ -218,6 +218,17 @@ class SculptSP extends Scene {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA')
       return;
+
+    if (e.key === 'Alt') {
+      this._isAltDown = true;
+      var sculptMgr = this.getSculptManager();
+      var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+      if (transformTool && transformTool._gizmo) {
+        transformTool._gizmo.updateLockIcon();
+      }
+      this.render();
+    }
+
     this._gui.callFunc('onKeyDown', e);
   }
 
@@ -225,6 +236,17 @@ class SculptSP extends Scene {
     var tag = document.activeElement && document.activeElement.tagName;
     if (tag === 'SELECT' || tag === 'INPUT' || tag === 'TEXTAREA')
       return;
+
+    if (e.key === 'Alt') {
+      this._isAltDown = false;
+      var sculptMgr = this.getSculptManager();
+      var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+      if (transformTool && transformTool._gizmo) {
+        transformTool._gizmo.updateLockIcon();
+      }
+      this.render();
+    }
+
     this._gui.callFunc('onKeyUp', e);
   }
 

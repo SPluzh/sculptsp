@@ -8,6 +8,7 @@ class Transform extends SculptBase {
     super(main);
 
     this._gizmo = new Gizmo(main);
+    this._editPivot = false;
   }
 
   isIdentity(m) {
@@ -35,7 +36,7 @@ class Transform extends SculptBase {
 
     if (mesh && this._gizmo.onMouseDown()) {
       picking._mesh = mesh;
-      this._isMovingPivot = main._isAltDown;
+      this._isMovingPivot = main._isAltDown || this._editPivot;
       this._editType = this._gizmo._selected._type;
       if (this._isMovingPivot) {
         var meshes = main.getSelectedMeshes();
@@ -194,9 +195,16 @@ class Transform extends SculptBase {
 
   update() {}
 
+  onDeactivate() {
+    this._gizmo.onDeactivate();
+  }
+
   postRender(selection, camera) {
-    if (this.getMesh())
+    if (this.getMesh()) {
       this._gizmo.render(camera);
+    } else {
+      this._gizmo.hideDomLock();
+    }
   }
 
   addSculptToScene(scene) {

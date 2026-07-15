@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Transform Tool**: Integrated the Alt hotkey with the padlock lock icon state, so that holding Alt instantly activates the pivot-editing unlocked visual state (red background / open padlock) and releasing it reverts it back.
+- **Transform Tool**: Kept all gizmo handles persistently visible when editing the pivot (moving/rotating it), rather than hiding the inactive axes, to provide better feedback on pivot orientation.
+- **Transform Tool**: Configured the screen-space (camera-plane) overlays (translation square corners and outer rotation ring) to remain perfectly aligned with the screen plane without rotating when the mesh or pivot is rotated.
+- **Transform Tool**: Moved the 2D pivot edit lock icon/padlock overlay above the camera-plane translation square corners so that it is positioned outside of it, sized down to 20px, and positioned slightly above and to the left of the top-right corner to improve visibility and usability.
+- **Transform Tool**: Added a lock button in the transform settings and a clickable 2D lock overlay directly at the center of the 3D Transform Gizmo. Clicking either toggles pivot editing mode (unlocked shows an open lock on a red background and allows moving/rotating the pivot directly, locked returns to standard object transformation). The pivot edit mode is automatically reset to locked when switching to a different tool.
 - **Transform Tool**: Added pivot translation and rotation support by holding the **Alt** key, and aligned the transform gizmo to rotate dynamically to the mesh's orientation in both Alt-mode and normal rotation mode. This keeps local symmetry planes and gizmo handles perfectly aligned with the rotated mesh. All transformations are recorded in the undo/redo history.
 - **Move / Elastic Tools**: Fixed a bug where the brush cursor (red dot/circle) stayed behind at the initial click point instead of following the mesh deformation during drag operations. The visual indicator now tracks the deformed surface dynamically, matching the behavior of the Drag tool.
 - **Transform Tool**: Fixed a bug where a large red duplicate copy of the gizmo appeared briefly upon activating the tool, and a stale copy of the gizmo appeared on screen when zooming or moving the camera.

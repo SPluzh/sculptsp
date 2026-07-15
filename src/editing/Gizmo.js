@@ -1,6 +1,7 @@
 import { vec2, vec3, mat4, quat } from 'gl-matrix';
 import Primitives from '../drawables/Primitives.js';
 import Enums from '../misc/Enums.js';
+import GuiSculptingTools from '../gui/GuiSculptingTools.js';
 
 // configs colors
 var COLOR_X = vec3.fromValues(0.7, 0.2, 0.2);
@@ -195,6 +196,7 @@ class Gizmo {
     this._initRotate();
     this._initScale();
     this._initPickables();
+    this._initDomLock();
   }
 
   setActivatedType(type) {
@@ -386,11 +388,17 @@ class Gizmo {
     var traScale = mat4.create();
     mat4.translate(traScale, traScale, trMesh);
 
+    var traScaleCamera = mat4.create();
+    mat4.translate(traScaleCamera, traScaleCamera, trMesh);
+
     // Apply rotation from the mesh
     var mesh = this._main.getMesh();
     if (mesh) {
       var meshMat = mat4.create();
-      if (this._isMovingPivot && mesh._pivotEditMatrix) {
+      var sculptMgr = this._main.getSculptManager();
+      var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+      var isMovingPivot = this._isEditing ? this._isMovingPivot : (this._main._isAltDown || (transformTool && transformTool._editPivot));
+      if (isMovingPivot && mesh._pivotEditMatrix) {
         mat4.mul(meshMat, mesh.getMatrix(), mesh._pivotEditMatrix);
       } else {
         mat4.copy(meshMat, mesh.getMatrix());
@@ -414,6 +422,7 @@ class Gizmo {
     }
 
     mat4.scale(traScale, traScale, [scaleFactor, scaleFactor, scaleFactor]);
+    mat4.scale(traScaleCamera, traScaleCamera, [scaleFactor, scaleFactor, scaleFactor]);
 
     // manage arc stuffs
     this._updateArcRotation(vec3.normalize(eye, vec3.sub(eye, trMesh, eye)), camera);
@@ -422,7 +431,7 @@ class Gizmo {
     this._transY.updateFinalMatrix(traScale);
     this._transZ.updateFinalMatrix(traScale);
 
-    this._planeW.updateFinalMatrix(traScale);
+    this._planeW.updateFinalMatrix(traScaleCamera);
 
     // this._planeX.updateFinalMatrix(traScale);
     // this._planeY.updateFinalMatrix(traScale);
@@ -431,7 +440,7 @@ class Gizmo {
     this._rotX.updateFinalMatrix(traScale);
     this._rotY.updateFinalMatrix(traScale);
     this._rotZ.updateFinalMatrix(traScale);
-    this._rotW.updateFinalMatrix(traScale);
+    this._rotW.updateFinalMatrix(traScaleCamera);
 
     this._scaleX.updateFinalMatrix(traScale);
     this._scaleY.updateFinalMatrix(traScale);
@@ -878,8 +887,9 @@ class Gizmo {
 
   render(camera) {
     this._updateMatrices(camera);
+    this._updateDomLockPosition(camera);
 
-    var type = this._isEditing && this._selected ? this._selected._type : this._activatedType;
+    var type = (this._isEditing && this._selected && !this._isMovingPivot) ? this._selected._type : this._activatedType;
 
     if (type & ROT_W) this._drawGizmo(this._rotW, camera);
     if (type & PLANE_W) this._drawGizmo(this._planeW, camera);
@@ -940,7 +950,9 @@ class Gizmo {
     if (!sel) return false;
 
     this._isEditing = true;
-    this._isMovingPivot = this._main._isAltDown;
+    var sculptMgr = this._main.getSculptManager();
+    var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+    this._isMovingPivot = this._main._isAltDown || (transformTool && transformTool._editPivot);
     var type = sel._type;
     this._saveEditMatrices();
 
@@ -954,6 +966,143 @@ class Gizmo {
 
   onMouseUp() {
     this._isEditing = false;
+  }
+
+  _initDomLock() {
+    this._domLock = document.createElement('div');
+    this._domLock.style.position = 'absolute';
+    this._domLock.style.zIndex = '101'; // above SVG overlays
+    this._domLock.style.cursor = 'pointer';
+    this._domLock.style.width = '20px';
+    this._domLock.style.height = '20px';
+    this._domLock.style.borderRadius = '50%';
+    this._domLock.style.display = 'none'; // hidden by default
+    this._domLock.style.alignItems = 'center';
+    this._domLock.style.justifyContent = 'center';
+    this._domLock.style.boxShadow = '0 2px 8px rgba(0,0,0,0.5)';
+    this._domLock.style.transition = 'background-color 0.15s, transform 0.15s';
+
+    this._domLock.addEventListener('mouseenter', () => {
+      this._domLock.style.transform = 'scale(1.15)';
+    });
+    this._domLock.addEventListener('mouseleave', () => {
+      this._domLock.style.transform = 'scale(1.0)';
+    });
+
+    this._domLock.addEventListener('mousedown', (e) => {
+      e.stopPropagation();
+    });
+
+    this._domLock.addEventListener('click', (e) => {
+      e.stopPropagation();
+      e.preventDefault();
+      var sculptMgr = this._main.getSculptManager();
+      var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+      if (transformTool) {
+        transformTool._editPivot = !transformTool._editPivot;
+        var transformGui = GuiSculptingTools.tools[Enums.Tools.TRANSFORM];
+        if (transformGui && transformGui.updateButton) {
+          transformGui.updateButton();
+        }
+        this.updateLockIcon();
+        this._main.render();
+      }
+    });
+
+    this._main.getViewport().appendChild(this._domLock);
+    this.updateLockIcon();
+  }
+
+  updateLockIcon() {
+    if (!this._domLock) return;
+    var sculptMgr = this._main.getSculptManager();
+    var transformTool = sculptMgr ? sculptMgr.getTool(Enums.Tools.TRANSFORM) : null;
+    var editPivot = (transformTool && transformTool._editPivot) || this._main._isAltDown;
+    if (editPivot) {
+      this._domLock.style.backgroundColor = '#d32f2f';
+      this._domLock.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 9.9-1"/>
+        </svg>
+      `;
+    } else {
+      this._domLock.style.backgroundColor = 'rgba(30, 30, 30, 0.8)';
+      this._domLock.innerHTML = `
+        <svg xmlns="http://www.w3.org/2000/svg" width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <rect width="18" height="11" x="3" y="11" rx="2" ry="2"/>
+          <path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+        </svg>
+      `;
+    }
+  }
+
+  hideDomLock() {
+    if (this._domLock) {
+      this._domLock.style.display = 'none';
+    }
+  }
+
+  onDeactivate() {
+    this.hideDomLock();
+  }
+
+  destroy() {
+    if (this._domLock && this._domLock.parentNode) {
+      this._domLock.parentNode.removeChild(this._domLock);
+    }
+    this._domLock = null;
+  }
+
+  _updateDomLockPosition(camera) {
+    if (!this._domLock) return;
+
+    var mesh = this._main.getMesh();
+    if (!mesh || this._isEditing) {
+      this._domLock.style.display = 'none';
+      return;
+    }
+
+    var center = [0.0, 0.0, 0.0];
+    this._computeCenterGizmo(center);
+
+    camera = camera || this._main.getCamera();
+    var proj = camera.project2DAware(center);
+    var pixelRatio = this._main.getPixelRatio();
+
+    var x = proj[0] / pixelRatio;
+    var y = proj[1] / pixelRatio;
+
+    var width = this._main.getCanvasWidth() / pixelRatio;
+    var height = this._main.getCanvasHeight() / pixelRatio;
+
+    var isSplit = this._main.getSplitMode();
+    if (isSplit) {
+      var halfW = Math.floor(width / 2);
+      var activeVp = this._main._activeViewport;
+      if (activeVp === 0 && (x < 0 || x > halfW)) {
+        this._domLock.style.display = 'none';
+        return;
+      }
+      if (activeVp === 1 && (x < halfW || x > width)) {
+        this._domLock.style.display = 'none';
+        return;
+      }
+    } else {
+      if (x < 0 || x > width || y < 0 || y > height) {
+        this._domLock.style.display = 'none';
+        return;
+      }
+    }
+
+    if (proj[2] < 0.0 || proj[2] > 1.0) {
+      this._domLock.style.display = 'none';
+      return;
+    }
+
+    this._domLock.style.display = 'flex';
+    this._domLock.style.left = (x - 10 + 48) + 'px';
+    this._domLock.style.top = (y - 10 - 86) + 'px';
   }
 }
 
