@@ -8,7 +8,7 @@ class Move extends SculptBase {
     super(main);
 
     this._radius = 150;
-    this._intensity = 1.0;
+    this._intensity = 0.5;
     this._topoCheck = true;
     this._negative = false; // along normal
     this._focalShift = 0.6;
