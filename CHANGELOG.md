@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.10]
+- **Selection**: Changed viewport mesh selection to require holding the **Alt** key (Alt + stylus tap / left-click). Tapping another mesh without holding Alt will no longer select it, allowing you to sculpt without accidentally switching objects.
 - **Stylus / Pen**: Fixed an issue where starting a sculpt stroke with a tablet stylus/pen (or left-drag when navigation-on-click is disabled) outside the mesh silhouette would not sculpt when dragging onto the mesh. Sculpting now begins automatically as soon as the pointer enters the mesh bounds.
 - **Navigation**: Clamped the Orbit camera's vertical rotation to prevent it from flipping over the poles.
 - **Navigation**: Restored the clean mathematical virtual trackball for Spherical and Plane trackball modes, and implemented a virtual mouse tracking integration method to eliminate camera roll drift at high rotation speeds. Scaling screenspace drag deltas before sphere projection keeps trackball kinematics mathematically 1:1 with the virtual cursor, allowing faster rotation speeds (e.g. 0.5) with zero unnatural roll or alignment drift.

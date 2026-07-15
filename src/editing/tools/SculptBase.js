@@ -53,10 +53,27 @@ class SculptBase {
     if (!hit)
       return false;
 
-    var mesh = main.setOrUnsetMesh(picking.getMesh(), ctrl);
-    console.log('[SculptBase] start: setOrUnsetMesh returned mesh:', mesh ? mesh.getID() : 'null');
-    if (!mesh)
-      return false;
+    var hitMesh = picking.getMesh();
+    var mesh = main.getMesh();
+    if (hitMesh !== mesh) {
+      if (main._isAltDown) {
+        mesh = main.setOrUnsetMesh(hitMesh, ctrl);
+        if (!mesh)
+          return false;
+      } else {
+        if (mesh) {
+          var hitCurrent = picking.intersectionMouseMesh(mesh);
+          if (!hitCurrent)
+            return false;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      mesh = main.setOrUnsetMesh(hitMesh, ctrl);
+      if (!mesh)
+        return false;
+    }
 
     picking.initAlpha();
     if (main.getSculptManager().getSymmetry()) {

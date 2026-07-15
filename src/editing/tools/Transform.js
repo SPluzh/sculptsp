@@ -41,8 +41,25 @@ class Transform extends SculptBase {
     if (!picking.intersectionMouseMeshes(main.getMeshes(), main._mouseX, main._mouseY))
       return false;
 
-    if (!main.setOrUnsetMesh(picking.getMesh(), ctrl))
-      return false;
+    var hitMesh = picking.getMesh();
+    if (hitMesh !== main.getMesh()) {
+      if (main._isAltDown) {
+        if (!main.setOrUnsetMesh(hitMesh, ctrl))
+          return false;
+      } else {
+        var currentMesh = main.getMesh();
+        if (currentMesh) {
+          var hitCurrent = picking.intersectionMouseMesh(currentMesh, main._mouseX, main._mouseY);
+          if (!hitCurrent)
+            return false;
+        } else {
+          return false;
+        }
+      }
+    } else {
+      if (!main.setOrUnsetMesh(hitMesh, ctrl))
+        return false;
+    }
 
     this._lastMouseX = main._mouseX;
     this._lastMouseY = main._mouseY;
