@@ -40,16 +40,16 @@ var readShortcuts = function (str) {
   shortcuts['E'.charCodeAt(0)] = keyAction.CREASE;
   shortcuts['R'.charCodeAt(0)] = keyAction.PINCH;
 
-  shortcuts['0'.charCodeAt(0)] = keyAction.MOVE;
+  shortcuts['0'.charCodeAt(0)] = keyAction.PAINT;
   shortcuts['1'.charCodeAt(0)] = keyAction.BRUSH;
   shortcuts['2'.charCodeAt(0)] = keyAction.INFLATE;
   shortcuts['3'.charCodeAt(0)] = keyAction.TWIST;
-  shortcuts['4'.charCodeAt(0)] = keyAction.SMOOTH;
-  shortcuts['5'.charCodeAt(0)] = keyAction.FLATTEN;
-  shortcuts['6'.charCodeAt(0)] = keyAction.PINCH;
-  shortcuts['7'.charCodeAt(0)] = keyAction.CREASE;
-  shortcuts['8'.charCodeAt(0)] = keyAction.DRAG;
-  shortcuts['9'.charCodeAt(0)] = keyAction.PAINT;
+  shortcuts['4'.charCodeAt(0)] = keyAction.TRANSFORM;
+  shortcuts['5'.charCodeAt(0)] = keyAction.SMOOTH;
+  shortcuts['6'.charCodeAt(0)] = keyAction.FLATTEN;
+  shortcuts['7'.charCodeAt(0)] = keyAction.PINCH;
+  shortcuts['8'.charCodeAt(0)] = keyAction.CREASE;
+  shortcuts['9'.charCodeAt(0)] = keyAction.DRAG;
 
   // sculpting
   shortcuts['A'.charCodeAt(0)] = keyAction.INTENSITY;

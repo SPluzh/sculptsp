@@ -17,6 +17,7 @@ class GuiHotkeysHUD {
       { key: 'w', descKey: 'hudClayBuildup' },
       { key: 'e', descKey: 'hudCrease' },
       { key: 'r', descKey: 'hudPinch' },
+      { key: '4', descKey: 'hudTransformTool' },
       { key: 'a', descKey: 'hudBrushIntensity' },
       { key: 's', descKey: 'hudBrushSize' },
       { key: 'd', descKey: 'hudFocalShift' },

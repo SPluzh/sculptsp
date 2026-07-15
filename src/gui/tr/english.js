@@ -310,6 +310,7 @@ var TR = {
   hudClayBuildup: 'clay buildup',
   hudCrease: 'crease',
   hudPinch: 'pinch',
+  hudTransformTool: 'transform tool',
   hudBrushIntensity: 'brush intensity',
   hudBrushSize: 'brush size',
   hudRemeshResolution: 'remesh resolution',
