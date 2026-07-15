@@ -548,8 +548,13 @@ class Masking extends SculptBase {
   updateLassoColor(isAlt) {
     if (!this._svgPath) return;
     if (this._main._action === Enums.Action.HIDE_EDIT) {
-      this._svgPath.setAttribute('stroke', '#FF3333');
-      this._svgPath.setAttribute('fill', 'rgba(255, 51, 51, 0.15)');
+      if (isAlt) {
+        this._svgPath.setAttribute('stroke', '#00E676');
+        this._svgPath.setAttribute('fill', 'rgba(0, 230, 118, 0.15)');
+      } else {
+        this._svgPath.setAttribute('stroke', '#FF3333');
+        this._svgPath.setAttribute('fill', 'rgba(255, 51, 51, 0.15)');
+      }
     } else if (isAlt) {
       this._svgPath.setAttribute('stroke', '#FFFFFF');
       this._svgPath.setAttribute('fill', 'rgba(255, 255, 255, 0.15)');

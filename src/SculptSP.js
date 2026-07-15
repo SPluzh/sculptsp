@@ -495,7 +495,7 @@ class SculptSP extends Scene {
         if (maskingTool._lassoPoints && maskingTool._lassoPoints.length >= 3) {
           var selectedVertices = this.getVerticesInLasso(maskingTool._lassoPoints);
           if (selectedVertices && selectedVertices.length > 0) {
-            this.hideVertices(selectedVertices);
+            this.hideVertices(selectedVertices, altKey);
           }
         }
       }
@@ -654,7 +654,7 @@ class SculptSP extends Scene {
         this._maskX = mouseX;
         this._maskY = mouseY;
         this._action = Enums.Action.HIDE_EDIT;
-        maskingTool.startLasso(mouseX, mouseY, false);
+        maskingTool.startLasso(mouseX, mouseY, data.altKey);
         this.setCanvasCursor('default');
         this._lastMouseX = mouseX;
         this._lastMouseY = mouseY;
@@ -930,7 +930,7 @@ class SculptSP extends Scene {
         maskingTool.addLassoPoint(mouseX, mouseY, data.altKey);
       } else if (action === Enums.Action.HIDE_EDIT) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
-        maskingTool.addLassoPoint(mouseX, mouseY, false);
+        maskingTool.addLassoPoint(mouseX, mouseY, data.altKey);
       }
     }
 
@@ -1012,7 +1012,7 @@ class SculptSP extends Scene {
     return selectedVertices;
   }
 
-  hideVertices(selectedVertices) {
+  hideVertices(selectedVertices, hideUnselected) {
     var mesh = this.getMesh();
     if (!mesh) return;
 
@@ -1040,8 +1040,17 @@ class SculptSP extends Scene {
       });
     }
 
-    for (var i = 0; i < selectedVertices.length; ++i) {
-      vertVisible[selectedVertices[i]] = 0;
+    if (hideUnselected) {
+      for (var i = 0; i < vertVisible.length; ++i) {
+        vertVisible[i] = 0;
+      }
+      for (var i = 0; i < selectedVertices.length; ++i) {
+        vertVisible[selectedVertices[i]] = 1;
+      }
+    } else {
+      for (var i = 0; i < selectedVertices.length; ++i) {
+        vertVisible[selectedVertices[i]] = 0;
+      }
     }
 
     if (mesh instanceof Multimesh) {
