@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 
 ## [0.9.10]
 - **Navigation**: Clamped the Orbit camera's vertical rotation to prevent it from flipping over the poles.
-- **Navigation**: Suppressed unwanted roll rotation when dragging the camera in Spherical (Trackball) mode.
+- **Navigation**: Restored the clean mathematical virtual trackball for Spherical and Plane trackball modes, and implemented a virtual mouse tracking integration method to eliminate camera roll drift at high rotation speeds. Scaling screenspace drag deltas before sphere projection keeps trackball kinematics mathematically 1:1 with the virtual cursor, allowing faster rotation speeds (e.g. 0.5) with zero unnatural roll or alignment drift.
 - **Navigation**: Added camera roll rotation control by dragging while holding **Shift + Alt + Right Mouse Button**, active in trackball camera modes (Spherical and Plane), with a dedicated "Roll speed" slider setting in the camera menu.
 - **Symmetry**: Upgraded the symmetry system to support multiple active symmetry axes (X, Y, and Z) simultaneously. Users can now enable any combination of axes (or all three together) for multi-directional mirroring.
 - **UI**: Updated the left toolbar shelf and sculpting sidebar to replace the single-axis selection dropdown with independent toggles for the X, Y, and Z axes.

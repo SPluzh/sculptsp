@@ -15,6 +15,7 @@ var DELAY_TRANSLATE = -1;
 var DELAY_MOVE_TO = 200;
 
 var _TMP_VEC2 = [0.0, 0.0];
+var _TMP_VEC2_2 = [0.0, 0.0];
 var _TMP_VEC3 = [0.0, 0.0, 0.0];
 var _TMP_VEC3_2 = [0.0, 0.0, 0.0];
 var _UP = [0.0, 1.0, 0.0];
@@ -173,6 +174,7 @@ class Camera {
 
   start(mouseX, mouseY) {
     this._lastNormalizedMouseXY = Geometry.normalizedMouse(mouseX, mouseY, this._width, this._height);
+    this._virtualNormalizedMouseXY = vec2.clone(this._lastNormalizedMouseXY);
     if (!this._usePivot)
       return;
     var main = this._main;
@@ -216,30 +218,49 @@ class Camera {
       this.rotateDelay([-diff[1] * 6 * (speedRotate / 0.25), diff[0] * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
 
     } else if (this._mode === Enums.CameraMode.PLANE) {
-      var length = vec2.dist(this._lastNormalizedMouseXY, normalizedMouseXY);
-      vec2.sub(diff, normalizedMouseXY, this._lastNormalizedMouseXY);
-      vec3.normalize(axisRot, vec3.set(axisRot, -diff[1], diff[0], 0.0));
-      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, length * 2.0 * (speedRotate / 0.25)), this._quatRot);
+      if (!this._virtualNormalizedMouseXY) {
+        this._virtualNormalizedMouseXY = vec2.clone(this._lastNormalizedMouseXY);
+      }
+      var realDiff = _TMP_VEC2;
+      vec2.sub(realDiff, normalizedMouseXY, this._lastNormalizedMouseXY);
+      var scaledDiff = _TMP_VEC2;
+      vec2.scale(scaledDiff, realDiff, speedRotate / 0.25);
+      var nextVirtualMouseXY = _TMP_VEC2_2;
+      vec2.add(nextVirtualMouseXY, this._virtualNormalizedMouseXY, scaledDiff);
+      var len = vec2.len(nextVirtualMouseXY);
+      if (len > 1.0) {
+        vec2.scale(nextVirtualMouseXY, nextVirtualMouseXY, 1.0 / len);
+      }
 
-      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], length * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
+      var length = vec2.dist(this._virtualNormalizedMouseXY, nextVirtualMouseXY);
+      vec3.normalize(axisRot, vec3.set(axisRot, -scaledDiff[1], scaledDiff[0], 0.0));
+      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, length * 2.0), this._quatRot);
+      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], length * 6], DELAY_ROTATE);
+      vec2.copy(this._virtualNormalizedMouseXY, nextVirtualMouseXY);
 
     } else if (this._mode === Enums.CameraMode.SPHERICAL) {
-      var mouseOnSphereBefore = Geometry.mouseOnUnitSphere(this._lastNormalizedMouseXY);
-      var mouseOnSphereAfter = Geometry.mouseOnUnitSphere(normalizedMouseXY);
-      var angle = Math.acos(Math.min(1.0, vec3.dot(mouseOnSphereBefore, mouseOnSphereAfter)));
-      vec3.cross(axisRot, mouseOnSphereBefore, mouseOnSphereAfter);
-
-      // Suppress roll: zero out the camera-forward (Z) component of the axis
-      // by projecting it onto the camera's XY plane (view-space).
-      axisRot[2] = 0.0; // kill Z in view-space — prevents roll
-      if (vec3.length(axisRot) < 1e-6) {
-        this._lastNormalizedMouseXY = normalizedMouseXY;
-        return;
+      if (!this._virtualNormalizedMouseXY) {
+        this._virtualNormalizedMouseXY = vec2.clone(this._lastNormalizedMouseXY);
       }
-      vec3.normalize(axisRot, axisRot);
+      var realDiff = _TMP_VEC2;
+      vec2.sub(realDiff, normalizedMouseXY, this._lastNormalizedMouseXY);
+      var scaledDiff = _TMP_VEC2;
+      vec2.scale(scaledDiff, realDiff, speedRotate / 0.25);
+      var nextVirtualMouseXY = _TMP_VEC2_2;
+      vec2.add(nextVirtualMouseXY, this._virtualNormalizedMouseXY, scaledDiff);
+      var len = vec2.len(nextVirtualMouseXY);
+      if (len > 1.0) {
+        vec2.scale(nextVirtualMouseXY, nextVirtualMouseXY, 1.0 / len);
+      }
 
-      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0 * (speedRotate / 0.25)), this._quatRot);
-      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], angle * 6 * (speedRotate / 0.25)], DELAY_ROTATE);
+      var mouseOnSphereBefore = Geometry.mouseOnUnitSphere(this._virtualNormalizedMouseXY);
+      var mouseOnSphereAfter = Geometry.mouseOnUnitSphere(nextVirtualMouseXY);
+      var angle = Math.acos(Math.min(1.0, vec3.dot(mouseOnSphereBefore, mouseOnSphereAfter)));
+      vec3.normalize(axisRot, vec3.cross(axisRot, mouseOnSphereBefore, mouseOnSphereAfter));
+
+      quat.mul(this._quatRot, quat.setAxisAngle(_TMP_QUAT, axisRot, angle * 2.0), this._quatRot);
+      this.rotateDelay([axisRot[0], axisRot[1], axisRot[2], angle * 6], DELAY_ROTATE);
+      vec2.copy(this._virtualNormalizedMouseXY, nextVirtualMouseXY);
     }
 
     this._lastNormalizedMouseXY = normalizedMouseXY;
