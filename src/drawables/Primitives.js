@@ -236,6 +236,78 @@ var createTorusArray = function (radiusOut = 0.5, radiusWidth = 0.1, arc = Math.
   };
 };
 
+var createTorusXYArray = function (radiusOut = 0.5, radiusWidth = 0.1, arc = Math.PI * 2, nbRadial = 32, nbTubular = 128, rotationAngle = 0) {
+  var isFull = Math.PI * 2 - arc < 1e-2;
+
+  var nbVertices = nbRadial * nbTubular;
+  var nbFaces = nbVertices;
+  if (!isFull) {
+    nbVertices += 2;
+    nbFaces += nbRadial * 2;
+  }
+  var endTubular = isFull ? nbTubular : nbTubular - 1;
+
+  var vAr = new Float32Array(nbVertices * 3);
+  var fAr = new Uint32Array(nbFaces * 4);
+  var id = 0;
+  var k = 0;
+  var i = 0;
+  var j = 0;
+  for (i = 0; i < nbTubular; ++i) {
+    for (j = 0; j < nbRadial; ++j) {
+      var u = i / endTubular * arc + rotationAngle;
+      var v = j / nbRadial * Math.PI * 2;
+      k = 3 * id++;
+      vAr[k] = (radiusOut + radiusWidth * Math.cos(v)) * Math.cos(u);
+      vAr[k + 1] = (radiusOut + radiusWidth * Math.cos(v)) * Math.sin(u);
+      vAr[k + 2] = radiusWidth * Math.sin(v);
+    }
+  }
+
+  id = 0;
+  for (i = 0; i < endTubular; ++i) {
+    var offi = i === nbTubular - 1 ? 0 : i + 1;
+    for (j = 0; j < nbRadial; ++j) {
+      k = 4 * id++;
+      fAr[k] = nbRadial * i + j;
+      var offj = j === nbRadial - 1 ? 0 : j + 1;
+      fAr[k + 1] = nbRadial * i + offj;
+      fAr[k + 2] = nbRadial * offi + offj;
+      fAr[k + 3] = nbRadial * offi + j;
+    }
+  }
+
+  if (!isFull) {
+    var last = (vAr.length - 6) / 3;
+    vAr[last * 3] = radiusOut * Math.cos(rotationAngle);
+    vAr[last * 3 + 1] = radiusOut * Math.sin(rotationAngle);
+    for (j = 0; j < nbRadial; j++) {
+      k = 4 * id++;
+      fAr[k] = last;
+      fAr[k + 1] = j === nbRadial - 1 ? 0 : j + 1;
+      fAr[k + 2] = j;
+      fAr[k + 3] = Utils.TRI_INDEX;
+    }
+
+    ++last;
+    vAr[last * 3] = radiusOut * Math.cos(arc + rotationAngle);
+    vAr[last * 3 + 1] = radiusOut * Math.sin(arc + rotationAngle);
+    var end = nbRadial * i;
+    for (j = 0; j < nbRadial; j++) {
+      k = 4 * id++;
+      fAr[k] = last;
+      fAr[k + 1] = end + j;
+      fAr[k + 2] = j === nbRadial - 1 ? end : end + j + 1;
+      fAr[k + 3] = Utils.TRI_INDEX;
+    }
+  }
+
+  return {
+    vertices: vAr,
+    faces: fAr
+  };
+};
+
 var createGridArray = function (
   cx = -0.5, cy = 0.0, cz = -0.5,
   wx = 1.0, wy = 0.0, wz = 0.0,
@@ -318,6 +390,10 @@ Primitives.createTorus = function (gl) {
   return createMesh(gl, createTorusArray.apply(this, slice.call(arguments, 1)));
 };
 
+Primitives.createTorusXY = function (gl) {
+  return createMesh(gl, createTorusXYArray.apply(this, slice.call(arguments, 1)));
+};
+
 Primitives.createPlane = function (gl) {
   return createMesh(gl, createPlaneArray.apply(this, slice.call(arguments, 1)));
 };
@@ -338,6 +414,35 @@ Primitives.createArrow = function (gl, thick = 0.5, height = 2.0, rConeT = 5.0, 
 Primitives.createLine2D = function (gl, lx = 0.0, ly = 0.0, ux = 0.0, uy = 0.0) {
   var mesh = createMesh(gl, {
     vertices: new Float32Array([lx, ly, 0.0, ux, uy, 0.0])
+  });
+  if (gl) {
+    mesh.setMode(gl.LINES);
+    mesh.setUseDrawArrays(true);
+    mesh.setAlreadyDrawArrays();
+  }
+  return mesh;
+};
+
+Primitives.createSquareCorners = function (gl, radius, d) {
+  var R = radius;
+  var mesh = createMesh(gl, {
+    vertices: new Float32Array([
+      // Top-Left corner
+      -R, R, 0.0,    -R + d, R, 0.0,
+      -R, R, 0.0,    -R, R - d, 0.0,
+
+      // Top-Right corner
+      R, R, 0.0,     R - d, R, 0.0,
+      R, R, 0.0,     R, R - d, 0.0,
+
+      // Bottom-Right corner
+      R, -R, 0.0,    R - d, -R, 0.0,
+      R, -R, 0.0,    R, -R + d, 0.0,
+
+      // Bottom-Left corner
+      -R, -R, 0.0,   -R + d, -R, 0.0,
+      -R, -R, 0.0,   -R, -R + d, 0.0
+    ])
   });
   if (gl) {
     mesh.setMode(gl.LINES);

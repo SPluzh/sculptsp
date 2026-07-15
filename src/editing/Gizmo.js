@@ -8,6 +8,7 @@ var COLOR_Y = vec3.fromValues(0.2, 0.7, 0.2);
 var COLOR_Z = vec3.fromValues(0.2, 0.2, 0.7);
 var COLOR_GREY = vec3.fromValues(0.4, 0.4, 0.4);
 var COLOR_SW = vec3.fromValues(0.8, 0.4, 0.2);
+var COLOR_YELLOW = vec3.fromValues(0.8, 0.8, 0.2);
 
 // overall scale of the gizmo
 var GIZMO_SIZE = 80.0;
@@ -64,6 +65,7 @@ var SCALE_X = 1 << 10;
 var SCALE_Y = 1 << 11;
 var SCALE_Z = 1 << 12;
 var SCALE_W = 1 << 13;
+var PLANE_W = 1 << 14;
 
 var TRANS_XYZ = TRANS_X | TRANS_Y | TRANS_Z;
 var ROT_XYZ = ROT_X | ROT_Y | ROT_Z;
@@ -113,6 +115,9 @@ class Gizmo {
   static get SCALE_W() {
     return SCALE_W;
   }
+  static get PLANE_W() {
+    return PLANE_W;
+  }
 
   static get TRANS_XYZ() {
     return TRANS_XYZ;
@@ -133,7 +138,7 @@ class Gizmo {
 
     // activated gizmos
     this._activatedType =
-      Gizmo.TRANS_XYZ | Gizmo.ROT_XYZ | Gizmo.PLANE_XYZ | Gizmo.SCALE_XYZW | Gizmo.ROT_W;
+      Gizmo.TRANS_XYZ | Gizmo.ROT_XYZ | Gizmo.SCALE_XYZW | Gizmo.ROT_W | Gizmo.PLANE_W;
 
     // trans arrow 1 dim
     this._transX = createGizmo(Gizmo.TRANS_X, 0);
@@ -151,6 +156,9 @@ class Gizmo {
     this._scaleZ = createGizmo(Gizmo.SCALE_Z, 2);
     // scale cube 3 dim
     this._scaleW = createGizmo(Gizmo.SCALE_W);
+
+    // trans camera plane 2 dim
+    this._planeW = createGizmo(Gizmo.PLANE_W);
 
     // rot arc 1 dim
     this._rotX = createGizmo(Gizmo.ROT_X, 0);
@@ -203,13 +211,15 @@ class Gizmo {
     if (type & TRANS_Y) pickables.push(this._transY._pickGeo);
     if (type & TRANS_Z) pickables.push(this._transZ._pickGeo);
 
-    if (type & PLANE_X) pickables.push(this._planeX._pickGeo);
-    if (type & PLANE_Y) pickables.push(this._planeY._pickGeo);
-    if (type & PLANE_Z) pickables.push(this._planeZ._pickGeo);
+    // if (type & PLANE_X) pickables.push(this._planeX._pickGeo);
+    // if (type & PLANE_Y) pickables.push(this._planeY._pickGeo);
+    // if (type & PLANE_Z) pickables.push(this._planeZ._pickGeo);
 
     if (type & ROT_X) pickables.push(this._rotX._pickGeo);
     if (type & ROT_Y) pickables.push(this._rotY._pickGeo);
     if (type & ROT_Z) pickables.push(this._rotZ._pickGeo);
+    if (type & ROT_W) pickables.push(this._rotW._pickGeo);
+    if (type & PLANE_W) pickables.push(this._planeW._pickGeo);
 
     if (type & SCALE_X) pickables.push(this._scaleX._pickGeo);
     if (type & SCALE_Y) pickables.push(this._scaleY._pickGeo);
@@ -259,21 +269,37 @@ class Gizmo {
     this._createPlane(this._planeX, COLOR_X, 0.0, s, 0.0, 0.0, 0.0, s);
     this._createPlane(this._planeY, COLOR_Y, s, 0.0, 0.0, 0.0, 0.0, s);
     this._createPlane(this._planeZ, COLOR_Z, s, 0.0, 0.0, 0.0, s, 0.0);
+
+    // camera plane translation
+    vec3.copy(this._planeW._color, COLOR_GREY);
+    this._planeW._drawGeo = Primitives.createSquareCorners(this._gl, ROT_RADIUS, 0.4);
+    this._planeW._drawGeo.setShaderType(Enums.Shader.FLAT);
+    this._planeW._pickGeo = Primitives.createTorusXY(this._gl, Math.SQRT2 * ROT_RADIUS, THICKNESS_PICK * 2.0, Math.PI * 2, 6, 4, Math.PI * 0.25);
+    this._planeW._pickGeo._gizmo = this._planeW;
+    vec3.set(this._planeW._colorSelect, 1.0, 1.0, 1.0);
   }
 
-  _createCircle(rot, rad, color, radius = ROT_RADIUS, mthick = 1.0) {
+  _createCircle(rot, rad, color, radius = ROT_RADIUS, mthick = 1.0, nbRadial = 6, nbTubular = 64) {
     vec3.copy(rot._color, color);
     rot._pickGeo = Primitives.createTorus(
       this._gl,
       radius,
       THICKNESS_PICK * mthick,
       rad,
-      6,
-      64
+      nbRadial,
+      nbTubular
     );
     rot._pickGeo._gizmo = rot;
-    rot._drawGeo = Primitives.createTorus(this._gl, radius, THICKNESS * mthick, rad, 6, 64);
+    rot._drawGeo = Primitives.createTorus(this._gl, radius, THICKNESS * mthick, rad, nbRadial, nbTubular);
     rot._drawGeo.setShaderType(Enums.Shader.FLAT);
+  }
+
+  _createCenterCube(sca, color, side) {
+    vec3.copy(sca._color, color);
+    sca._pickGeo = Primitives.createCube(this._gl, side * 1.2);
+    sca._pickGeo._gizmo = sca;
+    sca._drawGeo = Primitives.createCube(this._gl, side);
+    sca._drawGeo.setShaderType(Enums.Shader.FLAT);
   }
 
   _initRotate() {
@@ -281,6 +307,7 @@ class Gizmo {
     this._createCircle(this._rotY, Math.PI, COLOR_Y);
     this._createCircle(this._rotZ, Math.PI, COLOR_Z);
     this._createCircle(this._rotW, Math.PI * 2, COLOR_GREY);
+    vec3.set(this._rotW._colorSelect, 1.0, 1.0, 1.0);
   }
 
   _createCube(sca, axis, color) {
@@ -299,10 +326,10 @@ class Gizmo {
     this._createCube(this._scaleX, vec3.set(axis, 0.0, 0.0, -1.0), COLOR_X);
     this._createCube(this._scaleY, vec3.set(axis, 0.0, 1.0, 0.0), COLOR_Y);
     this._createCube(this._scaleZ, vec3.set(axis, 1.0, 0.0, 0.0), COLOR_Z);
-    this._createCircle(this._scaleW, Math.PI * 2, COLOR_SW, SCALE_RADIUS, 2.0);
+    this._createCenterCube(this._scaleW, COLOR_YELLOW, 0.5);
   }
 
-  _updateArcRotation(eye) {
+  _updateArcRotation(eye, camera) {
     // xyz arc
     _TMP_QUAT[0] = eye[2];
     _TMP_QUAT[1] = 0.0;
@@ -310,7 +337,13 @@ class Gizmo {
     _TMP_QUAT[3] = 1.0 + eye[1];
     quat.normalize(_TMP_QUAT, _TMP_QUAT);
     mat4.fromQuat(this._rotW._baseMatrix, _TMP_QUAT);
-    mat4.fromQuat(this._scaleW._baseMatrix, _TMP_QUAT);
+
+    var V = camera.getView();
+    var mat = this._planeW._baseMatrix;
+    mat4.identity(mat);
+    mat[0] = V[0]; mat[1] = V[4]; mat[2] = V[8];
+    mat[4] = V[1]; mat[5] = V[5]; mat[6] = V[9];
+    mat[8] = V[2]; mat[9] = V[6]; mat[10] = V[10];
 
     // x arc
     quat.rotateZ(_TMP_QUAT, quat.identity(_TMP_QUAT), Math.PI * 0.5);
@@ -355,15 +388,17 @@ class Gizmo {
     mat4.scale(traScale, traScale, [scaleFactor, scaleFactor, scaleFactor]);
 
     // manage arc stuffs
-    this._updateArcRotation(vec3.normalize(eye, vec3.sub(eye, trMesh, eye)));
+    this._updateArcRotation(vec3.normalize(eye, vec3.sub(eye, trMesh, eye)), camera);
 
     this._transX.updateFinalMatrix(traScale);
     this._transY.updateFinalMatrix(traScale);
     this._transZ.updateFinalMatrix(traScale);
 
-    this._planeX.updateFinalMatrix(traScale);
-    this._planeY.updateFinalMatrix(traScale);
-    this._planeZ.updateFinalMatrix(traScale);
+    this._planeW.updateFinalMatrix(traScale);
+
+    // this._planeX.updateFinalMatrix(traScale);
+    // this._planeY.updateFinalMatrix(traScale);
+    // this._planeZ.updateFinalMatrix(traScale);
 
     this._rotX.updateFinalMatrix(traScale);
     this._rotY.updateFinalMatrix(traScale);
@@ -433,6 +468,17 @@ class Gizmo {
     this._computeCenterGizmo(projCenter);
     vec3.copy(projCenter, camera.project(projCenter));
 
+    this._editProjCenter = vec2.clone(projCenter);
+
+    if (this._selected._type === Gizmo.ROT_W) {
+      var trMesh = [0.0, 0.0, 0.0];
+      this._computeCenterGizmo(trMesh);
+      var eye = camera.computePosition();
+      this._editRotateAxis = vec3.normalize(vec3.create(), vec3.sub(eye, trMesh, eye));
+      this._editAngleStart = Math.atan2(main._mouseY - projCenter[1], main._mouseX - projCenter[0]);
+      return;
+    }
+
     // compute tangent direction and project it on screen
     var dir = this._editLineDirection;
     var sign = this._selected._nbAxis === 0 ? -1.0 : 1.0;
@@ -483,6 +529,11 @@ class Gizmo {
     // 3d origin (center of gizmo)
     this._computeCenterGizmo(origin);
 
+    if (this._selected._type === Gizmo.PLANE_W) {
+      var eye = camera.computePosition();
+      this._editPlaneNormal = vec3.normalize(vec3.create(), vec3.sub(eye, origin, eye));
+    }
+
     vec3.copy(origin, camera.project(origin));
 
     var offset = this._editOffset;
@@ -493,39 +544,52 @@ class Gizmo {
 
   _startScaleEdit() {
     this._startTranslateEdit();
+    this._editScaleMouseStart = [this._main._mouseX, this._main._mouseY];
   }
 
   _updateRotateEdit() {
     var main = this._main;
 
-    var origin = this._editLineOrigin;
-    var dir = this._editLineDirection;
+    var meshes = this._main.getSelectedMeshes();
 
-    var vec = [main._mouseX, main._mouseY, 0.0];
-    vec2.sub(vec, vec, origin);
-    var dist = vec2.dot(vec, dir);
-
-    // helper line
     this._updateLineHelper(
-      origin[0],
-      origin[1],
-      origin[0] + dir[0] * dist,
-      origin[1] + dir[1] * dist
+      this._editProjCenter[0],
+      this._editProjCenter[1],
+      main._mouseX,
+      main._mouseY
     );
 
-    var angle = (7 * dist) / Math.min(main.getCanvasWidth(), main.getCanvasHeight());
-    angle %= Math.PI * 2;
-    var nbAxis = this._selected._nbAxis;
+    if (this._selected._type === Gizmo.ROT_W) {
+      var currentAngle = Math.atan2(main._mouseY - this._editProjCenter[1], main._mouseX - this._editProjCenter[0]);
+      var angle = currentAngle - this._editAngleStart;
 
-    var meshes = this._main.getSelectedMeshes();
-    for (var i = 0; i < meshes.length; ++i) {
-      var mrot = meshes[i].getEditMatrix();
-      mat4.identity(mrot);
-      if (nbAxis === 0) mat4.rotateX(mrot, mrot, -angle);
-      else if (nbAxis === 1) mat4.rotateY(mrot, mrot, -angle);
-      else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, -angle);
+      for (var i = 0; i < meshes.length; ++i) {
+        var mrot = meshes[i].getEditMatrix();
+        mat4.identity(mrot);
+        mat4.rotate(mrot, mrot, angle, this._editRotateAxis);
+        this._scaleRotateEditMatrix(mrot, i);
+      }
+    } else {
+      var origin = this._editLineOrigin;
+      var dir = this._editLineDirection;
 
-      this._scaleRotateEditMatrix(mrot, i);
+      var vec = [main._mouseX, main._mouseY, 0.0];
+      vec2.sub(vec, vec, origin);
+      var dist = vec2.dot(vec, dir);
+
+      var angle = (7 * dist) / Math.min(main.getCanvasWidth(), main.getCanvasHeight());
+      angle %= Math.PI * 2;
+      var nbAxis = this._selected._nbAxis;
+
+      for (var i = 0; i < meshes.length; ++i) {
+        var mrot = meshes[i].getEditMatrix();
+        mat4.identity(mrot);
+        if (nbAxis === 0) mat4.rotateX(mrot, mrot, -angle);
+        else if (nbAxis === 1) mat4.rotateY(mrot, mrot, -angle);
+        else if (nbAxis === 2) mat4.rotateZ(mrot, mrot, -angle);
+
+        this._scaleRotateEditMatrix(mrot, i);
+      }
     }
 
     main.render();
@@ -592,19 +656,25 @@ class Gizmo {
     vec3.transformMat4(far, far, this._editTransInv);
 
     // intersection line plane
-    var inter = [0.0, 0.0, 0.0];
-    inter[this._selected._nbAxis] = 1.0;
+    var normal = [0.0, 0.0, 0.0];
+    if (this._selected._type === Gizmo.PLANE_W) {
+      vec3.copy(normal, this._editPlaneNormal);
+    } else {
+      normal[this._selected._nbAxis] = 1.0;
+    }
 
-    var dist1 = vec3.dot(near, inter);
-    var dist2 = vec3.dot(far, inter);
-    // ray copplanar to triangle
+    var dist1 = vec3.dot(near, normal);
+    var dist2 = vec3.dot(far, normal);
+    // ray coplanar to plane
     if (dist1 === dist2) return false;
 
-    // intersection between ray and triangle
+    // intersection between ray and plane
     var val = -dist1 / (dist2 - dist1);
-    inter[0] = near[0] + (far[0] - near[0]) * val;
-    inter[1] = near[1] + (far[1] - near[1]) * val;
-    inter[2] = near[2] + (far[2] - near[2]) * val;
+    var inter = [
+      near[0] + (far[0] - near[0]) * val,
+      near[1] + (far[1] - near[1]) * val,
+      near[2] + (far[2] - near[2]) * val
+    ];
 
     this._updateMatrixTranslate(inter);
 
@@ -643,7 +713,16 @@ class Gizmo {
 
     var distOffset = vec3.len(this._editOffset);
     var inter = [1.0, 1.0, 1.0];
-    var scaleMult = Math.max(-0.99, (vec2.dist(origin, vec) - distOffset) / distOffset);
+    var scaleMult = 0.0;
+    if (nbAxis === -1) {
+      var dx = main._mouseX - this._editScaleMouseStart[0];
+      var dy = main._mouseY - this._editScaleMouseStart[1];
+      scaleMult = (dx - dy) * 0.005;
+    } else {
+      scaleMult = (vec2.dist(origin, vec) - distOffset) / distOffset;
+    }
+    scaleMult = Math.max(-0.99, scaleMult);
+
     if (nbAxis === -1) {
       inter[0] += scaleMult;
       inter[1] += scaleMult;
@@ -677,14 +756,16 @@ class Gizmo {
     scene.push(this._transY._drawGeo);
     scene.push(this._transZ._drawGeo);
 
-    scene.push(this._planeX._drawGeo);
-    scene.push(this._planeY._drawGeo);
-    scene.push(this._planeZ._drawGeo);
+    // scene.push(this._planeX._drawGeo);
+    // scene.push(this._planeY._drawGeo);
+    // scene.push(this._planeZ._drawGeo);
 
     scene.push(this._rotX._drawGeo);
     scene.push(this._rotY._drawGeo);
     scene.push(this._rotZ._drawGeo);
     scene.push(this._rotW._drawGeo);
+
+    scene.push(this._planeW._drawGeo);
 
     scene.push(this._scaleX._drawGeo);
     scene.push(this._scaleY._drawGeo);
@@ -700,14 +781,15 @@ class Gizmo {
     var type = this._isEditing && this._selected ? this._selected._type : this._activatedType;
 
     if (type & ROT_W) this._drawGizmo(this._rotW, camera);
+    if (type & PLANE_W) this._drawGizmo(this._planeW, camera);
 
     if (type & TRANS_X) this._drawGizmo(this._transX, camera);
     if (type & TRANS_Y) this._drawGizmo(this._transY, camera);
     if (type & TRANS_Z) this._drawGizmo(this._transZ, camera);
 
-    if (type & PLANE_X) this._drawGizmo(this._planeX, camera);
-    if (type & PLANE_Y) this._drawGizmo(this._planeY, camera);
-    if (type & PLANE_Z) this._drawGizmo(this._planeZ, camera);
+    // if (type & PLANE_X) this._drawGizmo(this._planeX, camera);
+    // if (type & PLANE_Y) this._drawGizmo(this._planeY, camera);
+    // if (type & PLANE_Z) this._drawGizmo(this._planeZ, camera);
 
     if (type & ROT_X) this._drawGizmo(this._rotX, camera);
     if (type & ROT_Y) this._drawGizmo(this._rotY, camera);
@@ -724,9 +806,9 @@ class Gizmo {
   onMouseOver() {
     if (this._isEditing) {
       var type = this._selected._type;
-      if (type & ROT_XYZ) this._updateRotateEdit();
+      if (type & (ROT_XYZ | ROT_W)) this._updateRotateEdit();
       else if (type & TRANS_XYZ) this._updateTranslateEdit();
-      else if (type & PLANE_XYZ) this._updatePlaneEdit();
+      else if (type & (PLANE_XYZ | PLANE_W)) this._updatePlaneEdit();
       else if (type & SCALE_XYZW) this._updateScaleEdit();
 
       return true;
@@ -760,9 +842,9 @@ class Gizmo {
     var type = sel._type;
     this._saveEditMatrices();
 
-    if (type & ROT_XYZ) this._startRotateEdit();
+    if (type & (ROT_XYZ | ROT_W)) this._startRotateEdit();
     else if (type & TRANS_XYZ) this._startTranslateEdit();
-    else if (type & PLANE_XYZ) this._startPlaneEdit();
+    else if (type & (PLANE_XYZ | PLANE_W)) this._startPlaneEdit();
     else if (type & SCALE_XYZW) this._startScaleEdit();
 
     return true;
