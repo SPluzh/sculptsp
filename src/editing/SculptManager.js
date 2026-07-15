@@ -7,7 +7,7 @@ class SculptManager {
   constructor(main) {
     this._main = main;
 
-    this._toolIndex = Enums.Tools.BRUSH; // sculpting mode
+    this._toolIndex = Enums.Tools.CLAYBUILDUP; // sculpting mode
     this._tools = []; // the sculpting tools
 
     // symmetry stuffs
