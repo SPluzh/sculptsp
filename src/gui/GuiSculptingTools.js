@@ -315,6 +315,7 @@ GuiTools[Enums.Tools.MASKING] = {
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
     this._ctrls.push(fold.addSlider(TR('sculptMaskingSteps'), tool, '_sharpenBlurIterations', 1, 100, 1));
+    this._ctrls.push(fold.addSlider(TR('sculptMaskingSharpenFactor'), tool, '_sharpenFactor', 0.1, 5.0, 0.05));
     this._ctrls.push(fold.addCheckbox(TR('sculptMaskingLasso'), tool, '_useLasso'));
     this._main = main;
     this._tool = tool;

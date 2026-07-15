@@ -188,6 +188,7 @@ var TR = {
   sculptMaskingSharpen: 'Резко',
   sculptMaskingLasso: 'Выделение лассо',
   sculptMaskingSteps: 'Шагов сглаживания/резкости',
+  sculptMaskingSharpenFactor: 'Сила резкости',
   sculptPBRTitle: 'PBR материал',
   sculptPaintAll: 'Краска',
   sculptExtractTitle: 'Извлечь',

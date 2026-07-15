@@ -25,6 +25,7 @@ class Masking extends SculptBase {
     this._svgPath = null;
     this._useLasso = false;
     this._sharpenBlurIterations = 24;
+    this._sharpenFactor = 1.0;
   }
 
   pushState() {
@@ -137,7 +138,7 @@ class Masking extends SculptBase {
 
     // 3. Вычитаем размытую маску из оригинальной для усиления деталей:
     // sharp = original + factor * (original - blurred)
-    var factor = 1.0;
+    var factor = this._sharpenFactor;
     for (var k = 0; k < nbVerts; ++k) {
       var idm = iVerts[k] * 3 + 2;
       var orig = originalMask[k];
