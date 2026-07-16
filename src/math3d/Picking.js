@@ -185,13 +185,10 @@ class Picking {
     var nearMesh = null;
     var nearFace = -1;
 
-    console.log('[Picking] intersectionMouseMeshes: mouseX =', mouseX, 'mouseY =', mouseY, 'meshes count =', meshes.length);
-
     for (var i = 0, nbMeshes = meshes.length; i < nbMeshes; ++i) {
       var mesh = meshes[i];
       var activeVp = (this._main && this._main._activeViewport !== undefined) ? this._main._activeViewport : 0;
       if (!mesh.isVisible(activeVp)) {
-        console.log('[Picking] intersectionMouseMeshes: mesh', mesh.getID(), 'is not visible in viewport', activeVp);
         continue;
       }
 
@@ -199,7 +196,6 @@ class Picking {
       vec3.transformMat4(_TMP_NEAR_1, vNear, _TMP_INV);
       vec3.transformMat4(_TMP_FAR, vFar, _TMP_INV);
       var hit = this.intersectionRayMesh(mesh, _TMP_NEAR_1, _TMP_FAR);
-      console.log('[Picking] intersectionMouseMeshes: mesh', mesh.getID(), 'intersectionRayMesh result =', hit);
       if (!hit)
         continue;
 
@@ -218,7 +214,6 @@ class Picking {
     this._pickedFace = nearFace;
     if (nearFace !== -1)
       this.updateLocalAndWorldRadius2();
-    console.log('[Picking] intersectionMouseMeshes: selected nearMesh:', nearMesh ? nearMesh.getID() : 'null', 'nearFace:', nearFace);
     return !!nearMesh;
   }
 
@@ -260,7 +255,6 @@ class Picking {
     var iFacesCandidates = mesh.intersectRay(_TMP_NEAR, eyeDir);
     var distance = Infinity;
     var nbFacesCandidates = iFacesCandidates.length;
-    console.log('[Picking] intersectionRayMesh: mesh', mesh.getID(), 'number of faces candidates:', nbFacesCandidates);
     for (var i = 0; i < nbFacesCandidates; ++i) {
       var indFace = iFacesCandidates[i] * 4;
       var iv1_orig = fAr[indFace];

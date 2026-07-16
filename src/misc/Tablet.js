@@ -61,7 +61,6 @@ Tablet.initWintab = function () {
       Tablet.tiltY    = data.tiltY;
 
       if (data.penDown !== lastPenDown || (data.penDown && data.pressure > 0.0)) {
-        console.log('[Tablet] Received data: pressure=' + data.pressure.toFixed(3) + ', penDown=' + data.penDown + ', tiltX=' + data.tiltX + ', tiltY=' + data.tiltY);
         lastPenDown = data.penDown;
       }
     }

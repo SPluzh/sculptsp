@@ -26,7 +26,6 @@ class SculptManager {
     // Activate the default tool
     var defaultTool = this.getCurrentTool();
     if (defaultTool) {
-      console.log('Activating default tool:', this._toolIndex);
       if (defaultTool.onActivate) {
         defaultTool.onActivate();
       }
@@ -36,7 +35,6 @@ class SculptManager {
   setToolIndex(id) {
     var oldTool = this.getCurrentTool();
     if (oldTool) {
-      console.log('Deactivating tool:', this._toolIndex);
       if (oldTool.onDeactivate) {
         oldTool.onDeactivate();
       }
@@ -44,7 +42,6 @@ class SculptManager {
     this._toolIndex = id;
     var newTool = this.getCurrentTool();
     if (newTool) {
-      console.log('Activating tool:', id);
       if (newTool.onActivate) {
         newTool.onActivate();
       }
@@ -111,9 +108,7 @@ class SculptManager {
 
   start(ctrl) {
     var tool = this.getCurrentTool();
-    console.log('[SculptManager] start: tool is', tool ? tool.constructor.name : 'null');
     var canEdit = tool.start(ctrl);
-    console.log('[SculptManager] start: tool.start returned', canEdit, 'mesh is', this._main.getMesh() ? this._main.getMesh().getID() : 'null', 'total meshes in scene:', this._main.getMeshes().length);
     if (this._main.getPicking().getMesh() && this.isUsingContinuous())
       this._sculptTimer = window.setInterval(tool._cbContinuous, 16.6);
     return canEdit;
