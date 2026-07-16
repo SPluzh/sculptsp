@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **UI**: Removed drop shadow (box-shadow) from the left vertical toolbar (shelf) for a cleaner appearance.
+- **UI**: Positioned HUD elements (viewport stats and hotkey guide) closer to the viewport edges (3px instead of 20px).
+- **UI**: Decreased vertical spacing (gap) between buttons to 3px and top/bottom edge padding to 3px on the left vertical toolbar (shelf) to optimize screen space.
 - **Camera**: Added a dedicated perspective projection toggle button (represented by a 3D box icon) to the left vertical toolbar (shelf) and mapped the **P** hotkey to switch between perspective and orthographic camera views.
 - **UI**: Added a perspective toggle command button to the command shelf layout configuration.
 - **UI**: Added a dedicated **Solo/Isolate** (Изолировать / Показать) button to the left vertical toolbar directly under the symmetry settings button, allowing users to toggle isolation mode for the active object with a single click. Toggling isolation mode works even when only one object exists (or when all objects are selected), acting as a toggle switch where the single object remains visible.
