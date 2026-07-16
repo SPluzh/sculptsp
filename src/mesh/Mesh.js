@@ -482,10 +482,16 @@ class Mesh {
     this._meshData._vertTagFlags = new Int32Array(nbVertices);
     this._meshData._vertSculptFlags = new Int32Array(nbVertices);
     this._meshData._vertStateFlags = new Int32Array(nbVertices);
-    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbVertices) {
-      this._meshData._vertVisible = new Uint8Array(nbVertices);
-      for (var iVis = 0; iVis < nbVertices; ++iVis) {
-        this._meshData._vertVisible[iVis] = 1;
+    var nbTexCoords = this.hasUV() ? this._meshData._texCoordsST.length / 2 : nbVertices;
+    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbTexCoords) {
+      var oldVertVisible = this._meshData._vertVisible;
+      this._meshData._vertVisible = new Uint8Array(nbTexCoords);
+      if (oldVertVisible) {
+        this._meshData._vertVisible.set(oldVertVisible);
+      } else {
+        for (var iVis = 0; iVis < nbTexCoords; ++iVis) {
+          this._meshData._vertVisible[iVis] = 1;
+        }
       }
     }
     this._meshData._vertProxy = new Float32Array(nbVertices * 3);
@@ -524,10 +530,16 @@ class Mesh {
         mAr[j + 2] = 1.0;
       }
     }
-    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbVertices) {
-      var vVis = this._meshData._vertVisible = new Uint8Array(nbVertices);
-      for (i = 0; i < nbVertices; ++i) {
-        vVis[i] = 1;
+    var nbTexCoords = this.hasUV() ? this._meshData._texCoordsST.length / 2 : nbVertices;
+    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbTexCoords) {
+      var oldVertVisible = this._meshData._vertVisible;
+      this._meshData._vertVisible = new Uint8Array(nbTexCoords);
+      if (oldVertVisible) {
+        this._meshData._vertVisible.set(oldVertVisible);
+      } else {
+        for (i = 0; i < nbTexCoords; ++i) {
+          this._meshData._vertVisible[i] = 1;
+        }
       }
     }
   }
@@ -1160,6 +1172,7 @@ class Mesh {
     var cAr = this.getColors();
     var mAr = this.getMaterials();
     var nAr = this.getNormals();
+    var vertVisible = this._meshData._vertVisible;
     var startCount = this.getVerticesDuplicateStartCount();
 
     var full = iVerts === undefined;
@@ -1184,6 +1197,7 @@ class Mesh {
       var mx = mAr[idOrig];
       var my = mAr[idOrig + 1];
       var mz = mAr[idOrig + 2];
+      var visVal = vertVisible ? vertVisible[ind] : 1;
       for (var j = start; j < end; ++j) {
         var idDup = j * 3;
         vAr[idDup] = vx;
@@ -1198,6 +1212,9 @@ class Mesh {
         mAr[idDup] = mx;
         mAr[idDup + 1] = my;
         mAr[idDup + 2] = mz;
+        if (vertVisible) {
+          vertVisible[j] = visVal;
+        }
       }
     }
   }
