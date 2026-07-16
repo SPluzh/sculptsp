@@ -16,6 +16,7 @@ import ShaderContour from '../render/shaders/ShaderContour.js';
 import UIPopup from './UIPopup.js';
 import VerticalToolbar from './VerticalToolbar.js';
 import PanelContainer from './PanelContainer.js';
+import GuiSymmetry from './GuiSymmetry.js';
 
 import Export from '../files/Export.js';
 import Tools from '../editing/tools/Tools.js';
@@ -58,6 +59,7 @@ class Gui {
     this._ctrlSculpting = null;
     this._ctrlTopology = null;
     this._ctrlRendering = null;
+    this._ctrlSymmetry = null;
 
     this._ctrlNotification = null;
 
@@ -120,6 +122,11 @@ class Gui {
     this._toolbar.registerPanel('rendering', panelRendering);
     ctrls[idc++] = this._ctrlRendering = new GuiRendering(panelRendering, this);
 
+    var panelSymmetry = new PanelContainer('symmetry', this._toolbar);
+    panelSymmetry.setMain(main);
+    this._toolbar.registerPanel('symmetry', panelSymmetry);
+    ctrls[idc++] = this._ctrlSymmetry = new GuiSymmetry(panelSymmetry, this);
+
     var panelCamera = new PanelContainer('camera', this._toolbar);
     panelCamera.setMain(main);
     this._toolbar.registerPanel('camera', panelCamera);
@@ -166,9 +173,9 @@ class Gui {
       TR('sculptSymmetry'),
       () => {
         var value = !this._main.getSculptManager().getSymmetry();
-        this._ctrlSculpting.onSymmetryChange(value);
-        if (this._ctrlSculpting._ctrlSymmetry) {
-          this._ctrlSculpting._ctrlSymmetry.setValue(value, true);
+        this._ctrlSymmetry.onSymmetryChange(value);
+        if (this._ctrlSymmetry._ctrlSymmetry) {
+          this._ctrlSymmetry._ctrlSymmetry.setValue(value, true);
         }
       },
       initialSymmetry
@@ -287,6 +294,9 @@ class Gui {
     this._ctrlTopology.updateMesh();
     this._ctrlSculpting.updateMesh();
     this._ctrlScene.updateMesh();
+    if (this._ctrlSymmetry) {
+      this._ctrlSymmetry.updateMesh();
+    }
     if (this._ctrlScene && this._ctrlScene.refreshOutliner) {
       this._ctrlScene.refreshOutliner();
     }

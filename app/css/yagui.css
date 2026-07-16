@@ -1102,7 +1102,7 @@ body {
 .vtb-btn-sub {
   width: 36px;
   height: 16px;
-  background: var(--color-bg-button);
+  background: transparent;
   border-radius: var(--radius-sm);
   display: flex;
   align-items: center;
@@ -1136,4 +1136,29 @@ body {
 .vtb-btn-sub-row .vtb-btn-sub {
   flex: 1;
   width: auto;
+}
+
+.vtb-btn-sub svg {
+  width: 10px;
+  height: 10px;
+  stroke-width: 2px;
+  display: block;
+}
+
+.gui-button-toggle.gui-button-toggle {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--color-text-muted) !important;
+  border: 1px solid rgba(255, 255, 255, 0.05) !important;
+  text-shadow: none !important;
+  box-shadow: none !important;
+}
+
+.gui-button-toggle.gui-button-toggle:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: var(--color-text-primary) !important;
+}
+
+.gui-button-toggle.gui-button-toggle.active {
+  background: var(--color-accent) !important;
+  color: #fff !important;
 }

@@ -94,6 +94,9 @@ class VerticalToolbar {
     panel.show();
     var btn = this._buttons.get(id);
     if (btn) btn.classList.add('active');
+    if (id === 'symmetry' && this._symmetrySettingsBtn) {
+      this._symmetrySettingsBtn.classList.add('active');
+    }
     if (id === 'sculpting' && this._activeToolBtn) {
       this._activeToolBtn.classList.add('active');
     }
@@ -104,8 +107,11 @@ class VerticalToolbar {
     if (this._activeId) {
       var activePanel = this._panels.get(this._activeId);
       if (activePanel) activePanel.hide();
-      var activeBtn = this._buttons.get(this._activeId);
+       var activeBtn = this._buttons.get(this._activeId);
       if (activeBtn) activeBtn.classList.remove('active');
+      if (this._activeId === 'symmetry' && this._symmetrySettingsBtn) {
+        this._symmetrySettingsBtn.classList.remove('active');
+      }
       if (this._activeId === 'sculpting' && this._activeToolBtn) {
         this._activeToolBtn.classList.remove('active');
       }
@@ -172,8 +178,8 @@ class VerticalToolbar {
     spaceBtn.addEventListener('click', () => {
       var nextMode = Mesh.symmetryMode === 'world' ? 'local' : 'world';
       Mesh.symmetryMode = nextMode;
-      if (this._main._gui && this._main._gui._ctrlSculpting && this._main._gui._ctrlSculpting._ctrlSymmetryMode) {
-        this._main._gui._ctrlSculpting._ctrlSymmetryMode.setValue(nextMode === 'world' ? 1 : 0, true);
+      if (this._main._gui && this._main._gui._ctrlSymmetry && this._main._gui._ctrlSymmetry._ctrlSymmetryMode) {
+        this._main._gui._ctrlSymmetry._ctrlSymmetryMode.setValue(nextMode === 'world' ? 1 : 0, true);
       }
       this.updateSymmetrySettings();
       this._main.render();
@@ -194,8 +200,8 @@ class VerticalToolbar {
       aBtn.addEventListener('click', () => {
         var active = !Mesh.symmetryAxes[axis];
         Mesh.symmetryAxes[axis] = active;
-        if (this._main._gui && this._main._gui._ctrlSculpting) {
-          var ctrl = this._main._gui._ctrlSculpting;
+        if (this._main._gui && this._main._gui._ctrlSymmetry) {
+          var ctrl = this._main._gui._ctrlSymmetry;
           if (axis === 'x' && ctrl._ctrlSymmetryX) ctrl._ctrlSymmetryX.setValue(active, true);
           if (axis === 'y' && ctrl._ctrlSymmetryY) ctrl._ctrlSymmetryY.setValue(active, true);
           if (axis === 'z' && ctrl._ctrlSymmetryZ) ctrl._ctrlSymmetryZ.setValue(active, true);
@@ -209,6 +215,19 @@ class VerticalToolbar {
       axisRow.appendChild(aBtn);
     });
 
+    var settingsBtn = document.createElement('div');
+    settingsBtn.className = 'vtb-btn-sub vtb-btn-sub--settings';
+    settingsBtn.setAttribute('data-tooltip', 'Symmetry Settings');
+    settingsBtn.innerHTML = '<i data-lucide="settings"></i>';
+    settingsBtn.addEventListener('click', () => {
+      this._toggle('symmetry');
+      settingsBtn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._symmetrySettingsBtn = settingsBtn;
+    subContainer.appendChild(settingsBtn);
+
     this.updateSymmetrySettings();
 
     if (this._activeToolBtn) {
@@ -221,9 +240,8 @@ class VerticalToolbar {
   }
 
   updateSymmetrySettings() {
-    var active = this._main.getSculptManager().getSymmetry();
     if (this._symSubContainer) {
-      this._symSubContainer.style.display = active ? 'flex' : 'none';
+      this._symSubContainer.style.display = 'flex';
     }
     if (this._spaceBtn) {
       var isWorld = Mesh.symmetryMode === 'world';

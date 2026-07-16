@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **UI**: Added a symmetry settings button (a small settings gear icon styled in gray like a normal utility button) under the symmetry button on the left vertical toolbar. Clicking it opens/toggles a dedicated "Symmetry" settings floating panel.
+- **UI/Symmetry**: Consolidated all symmetry-related controls into the new Symmetry settings panel, including the main symmetry toggle, space selection (Local/World), active axes toggles (X, Y, Z), viewport symmetry line visibility, and the symmetry offset slider. The sub-buttons on the shelf (X, Y, Z, Space, Settings) and the panel controls now remain persistently visible when symmetry is disabled, allowing configuration updates prior to activation.
 - **UI**: Updated the active tool button on the vertical toolbar (shelf) to display **Dynamic** when the dynamic brush size option is enabled, and no label (removing the uninformative "Active" text) when disabled.
 - **Sculpting**: Added a **Dynamic brush size** option (Динамический размер кисти) under the Common sculpting settings (enabled by default). When enabled, the brush radius remains constant in world space (relative to the model), causing the selection circle to automatically scale on screen when zooming the camera in or out, while maintaining a consistent sculpting impact size on the model.
 - **Import/Export**: Fixed a bug where loaded vertex-snapped Measure and Segment Divider anchors shifted their 3D locations upon reopening a `.sgl` file, caused by pre-transform mesh vertex reordering during initialization. The vertex indices are now correctly remapped using the optimized vertex index lookup table.

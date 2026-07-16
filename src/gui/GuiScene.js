@@ -121,21 +121,11 @@ class GuiScene {
     menu.addCheckbox(TR('darkenUnselected'), ShaderBase.darkenUnselected, this.onDarkenUnselected.bind(this));
     menu.addCheckbox(TR('contourShow'), this._main._showContour, this.onShowContour.bind(this));
     menu.addCheckbox(TR('renderingGrid'), this._main._showGrid, this.onShowGrid.bind(this));
-    menu.addCheckbox(TR('renderingSymmetryLine'), ShaderBase.showSymmetryLine, this.onShowSymmetryLine.bind(this));
-    this._ctrlOffSym = menu.addSlider('SymOffset', 0.0, this.onOffsetSymmetry.bind(this), -1.0, 1.0, 0.001);
   }
 
   clearScene() {
     if (window.confirm(TR('sceneResetConfirm'))) {
       this._main.clearScene();
-    }
-  }
-
-  onOffsetSymmetry(val) {
-    var mesh = this._main.getMesh();
-    if (mesh) {
-      mesh.setSymmetryOffset(val);
-      this._main.render();
     }
   }
 
@@ -221,9 +211,6 @@ class GuiScene {
     this._ctrlIsolate.setVisibility(this.hasHiddenMeshes() || (nbMeshes !== nbSelected && nbSelected >= 1));
     this._ctrlMerge.setVisibility(nbSelected > 1);
 
-    var mesh = this._main.getMesh();
-    this._ctrlOffSym.setValue(mesh ? mesh.getSymmetryOffset() : 0);
-
     this.refreshOutliner();
   }
 
@@ -299,11 +286,6 @@ class GuiScene {
 
   onDarkenUnselected(val) {
     ShaderBase.darkenUnselected = val;
-    this._main.render();
-  }
-
-  onShowSymmetryLine(val) {
-    ShaderBase.showSymmetryLine = val;
     this._main.render();
   }
 
