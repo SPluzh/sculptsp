@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Import/Export**: Fixed a bug where incorrect areas of a mesh were hidden upon loading a `.sgl` file due to the vertex visibility array not being remapped during pre-transform vertex index optimization.
 - **Voxel Remesh**: Fixed a bug where a hidden mesh became visible in the viewport when changing the voxel remesh resolution or after executing the remesh. Viewport visibility states are now correctly preserved during the remesh process, and the voxel resolution preview checkerboard is only rendered for meshes that are visible in the active viewport.
 - **Import/Export**: Added viewport visibility (independent for Viewport 1 and Viewport 2) and partial mesh visibility (individual hidden/visible parts of the mesh) serialization to the `.sgl` file format, bumping the format to version 5. Fixed a bug where partial visibility was not correctly restored upon import for meshes with texture coordinates (UVs) due to lack of visibility duplication mapping.
 - **Scene Outliner**: Added independent visibility toggle buttons for Viewport 1 and Viewport 2 in the outliner list, allowing users to control object rendering separately for each screen half.

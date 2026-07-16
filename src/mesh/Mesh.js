@@ -2463,6 +2463,34 @@ class Mesh {
     if (nbUnusedVertex > 0)
       this.setNbVertices(acc);
 
+    var vertVis = this._meshData._vertVisible;
+    if (vertVis) {
+      if (this.hasUV()) {
+        var nbUV = this.getNbTexCoords();
+        var nbUVNew = nbUV - nbUnusedVertex;
+        var vertVisNew = new Uint8Array(nbUVNew);
+        for (i = 0; i < nbVertices; ++i) {
+          var newiv = idvPos[i] - 1;
+          if (newiv >= 0) {
+            vertVisNew[newiv] = vertVis[i];
+          }
+        }
+        for (i = nbVertices; i < nbUV; ++i) {
+          vertVisNew[i - nbUnusedVertex] = vertVis[i];
+        }
+        this._meshData._vertVisible = vertVisNew;
+      } else {
+        var vertVisNew = new Uint8Array(acc);
+        for (i = 0; i < nbVertices; ++i) {
+          var newiv = idvPos[i] - 1;
+          if (newiv >= 0) {
+            vertVisNew[newiv] = vertVis[i];
+          }
+        }
+        this._meshData._vertVisible = vertVisNew;
+      }
+    }
+
     // Only the unique "positioned" vertices are pre transform, because sculptsp 
     // requires the duplicate vertices to be after the uniques positioned vertices
     if (this.hasUV()) {
