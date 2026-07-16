@@ -27,6 +27,7 @@ class Masking extends SculptBase {
     this._useLasso = false;
     this._sharpenBlurIterations = 24;
     this._sharpenFactor = 1.0;
+    this._lastInvertTime = 0;
   }
 
   pushState() {
@@ -245,8 +246,15 @@ class Masking extends SculptBase {
   invert(isState, meshState) {
     var mesh = meshState;
     if (!mesh) mesh = this.getMesh();
-    if (!isState)
+    if (!isState) {
+      var now = Date.now();
+      if (now - this._lastInvertTime < 250) {
+        console.log('[Masking] invert ignored due to debounce');
+        return;
+      }
+      this._lastInvertTime = now;
       this._main.getStateManager().pushStateCustom(this.invert.bind(this, true, mesh));
+    }
 
     var mAr = mesh.getMaterials();
     for (var i = 0, nb = mesh.getNbVertices(); i < nb; ++i)
