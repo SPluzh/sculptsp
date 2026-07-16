@@ -96,6 +96,7 @@ var TR = {
   meshTitle: 'Сетка',
   meshNbVertices: 'Активные точки: ',
   meshNbFaces: 'Всего точек: ',
+  meshFPS: 'FPS: ',
 
   // topology
   topologyTitle: 'Топология',
