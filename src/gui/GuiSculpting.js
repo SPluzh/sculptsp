@@ -7,11 +7,11 @@ import Indicator from './Indicator.js';
 import Mesh from '../mesh/Mesh.js';
 import {
   createIcons,
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Blend
 } from 'lucide';
 
 const toolIcons = {
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Blend
 };
 
 var GuiTools = GuiSculptingTools.tools;

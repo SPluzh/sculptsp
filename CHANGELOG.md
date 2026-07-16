@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Masking**: Added a **Gradient Mask Blur** tool (Градиентный блюр маски) that allows users to draw a line in the screen plane to interactively blend and smooth the mask transition between the start and end of the line, with real-time viewport updates and support for draggable handles, adjustable smoothing iterations, symmetry mirroring, and full undo/redo history.
 - **UI**: Added a real-time FPS counter to the mesh statistics HUD in the bottom-right corner of the viewport, enabling users to monitor performance during active sculpting and brush interactions.
 - **Performance**: Reverted to direct browser event listeners for mouse actions with throttled mousemove updates, and removed the custom `InputManager` wrapper class. This eliminates input loop overhead and stuttering, restoring fluid stroke tracking at 60 FPS.
 - **Masking**: Added a 250ms debounce filter to the mask invert operation (triggered on Ctrl + clicking empty space or via the UI button) to prevent accidental double-firing from a single pointer click.

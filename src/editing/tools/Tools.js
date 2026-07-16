@@ -20,6 +20,7 @@ import Elastic from './Elastic.js';
 import CurveDeformTool from './CurveDeformTool.js';
 import DividerTool from '../../measure/DividerTool.js';
 import Visibility from './Visibility.js';
+import MaskGradientBlur from './MaskGradientBlur.js';
 
 var Tools = [];
 
@@ -44,6 +45,7 @@ Tools[Enums.Tools.ELASTIC] = Elastic;
 Tools[Enums.Tools.CURVE_DEFORM] = CurveDeformTool;
 Tools[Enums.Tools.DIVIDER] = DividerTool;
 Tools[Enums.Tools.VISIBILITY] = Visibility;
+Tools[Enums.Tools.MASK_GRADIENT_BLUR] = MaskGradientBlur;
 
 Tools[Enums.Tools.BRUSH].uiName = 'sculptBrush';
 Tools[Enums.Tools.INFLATE].uiName = 'sculptInflate';
@@ -66,6 +68,7 @@ Tools[Enums.Tools.ELASTIC].uiName = 'sculptElastic';
 Tools[Enums.Tools.CURVE_DEFORM].uiName = 'sculptCurveDeform';
 Tools[Enums.Tools.DIVIDER].uiName = 'dividerTitle';
 Tools[Enums.Tools.VISIBILITY].uiName = 'sculptVisibility';
+Tools[Enums.Tools.MASK_GRADIENT_BLUR].uiName = 'sculptMaskGradientBlur';
 
 Tools[Enums.Tools.BRUSH].icon = 'Brush';
 Tools[Enums.Tools.INFLATE].icon = 'Wind';
@@ -88,5 +91,6 @@ Tools[Enums.Tools.ELASTIC].icon = 'Activity';
 Tools[Enums.Tools.CURVE_DEFORM].icon = 'Spline';
 Tools[Enums.Tools.DIVIDER].icon = 'Scissors';
 Tools[Enums.Tools.VISIBILITY].icon = 'Eye';
+Tools[Enums.Tools.MASK_GRADIENT_BLUR].icon = 'Blend';
 
 export default Tools;

@@ -471,4 +471,17 @@ GuiTools[Enums.Tools.VISIBILITY] = {
   }
 };
 
+GuiTools[Enums.Tools.MASK_GRADIENT_BLUR] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(fold.addSlider(TR('sculptMaskingSteps'), tool._sharpenBlurIterations, function (val) {
+      tool._sharpenBlurIterations = val;
+      tool.precomputeMasks();
+      if (tool._pointA && tool._pointB) {
+        tool.applyGradientBlur();
+      }
+    }, 1, 100, 1));
+  }
+};
+
 export default GuiSculptingTools;

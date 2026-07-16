@@ -310,6 +310,7 @@ var TR = {
   dividerClear: 'Очистить все',
   sculptDivider: 'Делитель отрезков',
   sculptVisibility: 'Видимость',
+  sculptMaskGradientBlur: 'Градиентный блюр маски',
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',
