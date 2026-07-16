@@ -3,6 +3,13 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Sculpting/Dynamic Topology**: Added an "Affect dynamic topology" (Влияние на дин. топол.) checkbox option (disabled by default) to the UI settings of all sculpting brushes except the Topology brush. When disabled, the brush will not perform any subdivision or decimation (recalculation of dynamic topology) and will only deform/paint on existing vertices.
+- **Performance**: Optimized dynamic topology mesh updates by skipping index buffer and wireframe buffer rebuilds when no actual topological changes (subdivision/decimation) occurred during the stroke, matching the performance of static mesh sculpting.
+- **Shortcuts**: Mapped the **T** key to select the Topology brush. Pressing **T** or clicking the Topology shelf button while the brush is already active will toggle it off, restoring the previously selected sculpting tool.
+- **Topology**: Automatically enable wireframe mode when selecting the Topology brush (either via key **T** or the shelf button) and restore the previous wireframe state when switching away.
+- **UI**: Added a low-profile (half-height) quick-access button (represented by a **disc** icon) to select/toggle the Topology brush directly underneath the Dynamic Topology shelf toggle button, with active state highlighting.
+- **Topology**: Updated default values for Dynamic Topology subdivision and decimation factors to 100.
+- **UI**: Added a dedicated Dynamic Topology toggle button (represented by a network icon) to the left vertical toolbar (shelf) to easily toggle dynamic topology on and off, synchronized with the checkbox in the Topology settings panel.
 - **UI**: Removed drop shadow (box-shadow) from the left vertical toolbar (shelf) for a cleaner appearance.
 - **UI**: Positioned HUD elements (viewport stats and hotkey guide) closer to the viewport edges (3px instead of 20px).
 - **UI**: Decreased vertical spacing (gap) between buttons to 3px and top/bottom edge padding to 3px on the left vertical toolbar (shelf) to optimize screen space.

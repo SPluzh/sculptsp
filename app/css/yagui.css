@@ -1089,6 +1089,13 @@ body {
   width: 36px;
   gap: 2px;
 }
+.vtb-dyn-group {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 36px;
+  gap: 2px;
+}
 
 .vtb-btn-sub-container {
   display: flex;

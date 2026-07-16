@@ -32,6 +32,8 @@ class Mesh {
     this._renderData = null;
     this._isVisible = true;
     this._isVisibleViewport2 = true;
+    this.isDynamic = false;
+    this.topologyChanged = false;
   }
 
   static sortFunction(meshA, meshB) {
@@ -2431,8 +2433,11 @@ class Mesh {
     this.updateColorBuffer();
     this.updateMaterialBuffer();
     this.updateTexCoordBuffer();
-    this.updateIndexBuffer();
-    this.updateWireframeBuffer();
+    if (!this.isDynamic || this.topologyChanged) {
+      this.updateIndexBuffer();
+      this.updateWireframeBuffer();
+      this.topologyChanged = false;
+    }
   }
 
   release() {

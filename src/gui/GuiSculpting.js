@@ -183,6 +183,23 @@ class GuiSculpting {
   }
 
   onChangeTool(newValue) {
+    var oldToolIndex = this._sculptManager.getToolIndex();
+    if (newValue === Enums.Tools.TOPOLOGY) {
+      if (oldToolIndex !== Enums.Tools.TOPOLOGY) {
+        this._prevTool = oldToolIndex;
+        if (this._ctrlGui && this._ctrlGui._ctrlRendering && this._ctrlGui._ctrlRendering._ctrlShowWireframe) {
+          this._prevWireframe = this._ctrlGui._ctrlRendering._ctrlShowWireframe.getValue();
+          this._ctrlGui._ctrlRendering._ctrlShowWireframe.setValue(true);
+        }
+      }
+    } else {
+      if (oldToolIndex === Enums.Tools.TOPOLOGY) {
+        if (this._prevWireframe !== undefined && this._ctrlGui && this._ctrlGui._ctrlRendering && this._ctrlGui._ctrlRendering._ctrlShowWireframe) {
+          this._ctrlGui._ctrlRendering._ctrlShowWireframe.setValue(this._prevWireframe);
+        }
+      }
+    }
+
     var transformTool = this._sculptManager.getTool(Enums.Tools.TRANSFORM);
     if (transformTool && transformTool._editPivot) {
       transformTool._editPivot = false;
@@ -223,6 +240,7 @@ class GuiSculpting {
     if (this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setSymmetryVisibility(showSym);
       this._ctrlGui._toolbar.updateActiveToolText();
+      this._ctrlGui._toolbar.setTopologyToolActive(newValue === Enums.Tools.TOPOLOGY);
     }
 
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);
@@ -369,8 +387,15 @@ class GuiSculpting {
     if (main._action !== Enums.Action.NOTHING)
       return;
 
-    if (shk !== undefined && Tools[shk])
-      return this._ctrlSculpt.setValue(shk);
+    if (shk !== undefined && Tools[shk]) {
+      if (shk === Enums.Tools.TOPOLOGY && this.getSelectedTool() === Enums.Tools.TOPOLOGY) {
+        var prev = this._prevTool !== undefined ? this._prevTool : Enums.Tools.BRUSH;
+        this.onChangeTool(prev);
+      } else {
+        this._ctrlSculpt.setValue(shk);
+      }
+      return;
+    }
 
     var cur = GuiTools[this.getSelectedTool()];
 

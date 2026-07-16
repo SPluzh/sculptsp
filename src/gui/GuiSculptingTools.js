@@ -84,6 +84,9 @@ var addCtrlNegative = function (tool, fold, widget, name) {
   };
   return ctrl;
 };
+var addCtrlDynTopoInfluence = function (tool, fold) {
+  return fold.addCheckbox(TR('sculptDynTopoInfluence'), tool, '_dynTopoInfluence');
+};
 
 var importAlpha = function () {
   document.getElementById('alphaopen').click();
@@ -109,6 +112,7 @@ GuiTools[Enums.Tools.BRUSH] = {
     this._ctrls.push(fold.addCheckbox(TR('sculptAccumulate'), tool, '_accumulate'));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -123,6 +127,7 @@ GuiTools[Enums.Tools.CREASE] = {
     this._ctrls.push(addCtrlNegative(tool, fold, this));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -133,6 +138,7 @@ GuiTools[Enums.Tools.DRAG] = {
     this._ctrls.push(addCtrlRadius(tool, fold, this, main));
     this._ctrls.push(addCtrlFocalShift(tool, fold, this, main));
     this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -147,6 +153,7 @@ GuiTools[Enums.Tools.FLATTEN] = {
     this._ctrls.push(addCtrlNegative(tool, fold, this));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -161,6 +168,7 @@ GuiTools[Enums.Tools.INFLATE] = {
     this._ctrls.push(addCtrlNegative(tool, fold, this));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -236,6 +244,7 @@ GuiTools[Enums.Tools.PAINT] = {
     window.addEventListener('keyup', this.resetMaterialOverride.bind(this, main, tool));
     window.addEventListener('mouseup', this.resetMaterialOverride.bind(this, main, tool));
 
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -250,6 +259,7 @@ GuiTools[Enums.Tools.PINCH] = {
     this._ctrls.push(addCtrlNegative(tool, fold, this));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -262,6 +272,7 @@ GuiTools[Enums.Tools.TWIST] = {
     this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -274,6 +285,7 @@ GuiTools[Enums.Tools.LOCALSCALE] = {
     this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -287,6 +299,7 @@ GuiTools[Enums.Tools.MOVE] = {
     this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
     this._ctrls.push(fold.addCheckbox(TR('sculptTopologicalCheck'), tool, '_topoCheck'));
     this._ctrls.push(addCtrlNegative(tool, fold, this, TR('sculptMoveAlongNormal')));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -301,6 +314,7 @@ GuiTools[Enums.Tools.SMOOTH] = {
     this._ctrls.push(fold.addCheckbox(TR('sculptTangentialSmoothing'), tool, '_tangent'));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -326,6 +340,7 @@ GuiTools[Enums.Tools.MASKING] = {
     this._ctrls.push(fold.addTitle(TR('sculptExtractTitle')));
     this._ctrls.push(fold.addSlider(TR('sculptExtractThickness'), tool, '_thickness', -5, 5, 0.001));
     this._ctrls.push(fold.addButton(TR('sculptExtractAction'), tool, 'extract'));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -373,6 +388,7 @@ GuiTools[Enums.Tools.CLAYBUILDUP] = {
     this._ctrls.push(fold.addCheckbox(TR('sculptAccumulate'), tool, '_accumulate'));
     this._ctrls.push(addCtrlCulling(tool, fold));
     this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -418,6 +434,7 @@ GuiTools[Enums.Tools.ELASTIC] = {
     this._ctrls.push(fold.addSlider(TR('sculptElasticity'), tool._elasticity * 100, setOnChange.bind(tool, '_elasticity', 100), 10, 300, 1));
     this._ctrls.push(fold.addCheckbox(TR('sculptTopologicalCheck'), tool, '_topoCheck'));
     this._ctrls.push(addCtrlNegative(tool, fold, this, TR('sculptMoveAlongNormal')));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
     addCtrlAlpha(this._ctrls, fold, tool, this);
   }
 };
@@ -430,6 +447,7 @@ GuiTools[Enums.Tools.CURVE_DEFORM] = {
     this._ctrls.push(addCtrlRadius(tool, fold, this, main));
     this._ctrls.push(addCtrlIntensity(tool, fold, this));
     this._ctrls.push(fold.addButton(TR('sculptCurveDeformClear'), tool, 'clear'));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
   }
 };
 

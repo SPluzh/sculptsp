@@ -10,6 +10,7 @@ class Topology extends SculptBase {
 
     this._radius = 50;
     this._spacing = 0.15;
+    this._dynTopoInfluence = true;
   }
 
   stroke(picking, sym) {

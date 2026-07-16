@@ -124,6 +124,7 @@ class MeshDynamic extends Mesh {
     this.updateVerticesOnEdge(iVerts);
     if (this.getShowWireframe()) this.updateWireframe(iFaces);
     if (this.isUsingDrawArrays()) this.updateDrawArrays(iFaces);
+    this.topologyChanged = true;
   }
 
   getWireframe() {
@@ -351,8 +352,8 @@ class MeshDynamic extends Mesh {
   }
 }
 
-MeshDynamic.SUBDIVISION_FACTOR = 75; // subdivision factor
-MeshDynamic.DECIMATION_FACTOR = 0; // decimation factor
+MeshDynamic.SUBDIVISION_FACTOR = 100; // subdivision factor
+MeshDynamic.DECIMATION_FACTOR = 100; // decimation factor
 MeshDynamic.LINEAR = false; // linear subdivision
 
 export default MeshDynamic;

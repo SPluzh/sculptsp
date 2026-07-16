@@ -21,6 +21,11 @@ class SculptBase {
     this._spacing = 0.15; // stroke spacing as fraction of radius (0.0–2.0)
     this._focalShift = 0.0;
     this._focalShiftFalloff = true;
+    this._dynTopoInfluence = false;
+  }
+
+  getDynTopoInfluence() {
+    return this._dynTopoInfluence;
   }
 
   getFallOff(dist) {
@@ -215,7 +220,7 @@ class SculptBase {
       picking.computePickedNormal();
     }
     // if dyn topo, we need to the picking and the sculpting altogether
-    var dynTopo = mesh.isDynamic && !this._lockPosition;
+    var dynTopo = mesh.isDynamic && !this._lockPosition && this._dynTopoInfluence;
     if (dynTopo && pick1)
       this.stroke(picking, false);
 
@@ -417,7 +422,7 @@ class SculptBase {
   dynamicTopology(picking) {
     var mesh = this.getMesh();
     var iVerts = picking.getPickedVertices();
-    if (!mesh.isDynamic)
+    if (!mesh.isDynamic || !this._dynTopoInfluence)
       return iVerts;
 
     var subFactor = mesh.getSubdivisionFactor();

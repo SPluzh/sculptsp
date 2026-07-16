@@ -175,6 +175,7 @@ var TR = {
   mirrorDirRightToLeft: 'Right to Left (+ to -)',
   sculptContinuous: 'Continuous',
   sculptDynamicBrushSize: 'Dynamic brush size',
+  sculptDynTopoInfluence: 'Affect dynamic topology',
   sculptRadius: 'Radius (-S)',
   sculptIntensity: 'Intensity (-A)',
   sculptFocalShift: 'Focal Shift',

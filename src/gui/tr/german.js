@@ -114,6 +114,7 @@ var TR = {
   sculptTool: 'Werkzeuge',
   sculptSymmetry: 'Symmetrie',
   sculptContinuous: 'Kontinuierlich',
+  sculptDynTopoInfluence: 'Einfluss auf dyn. Topo.',
   sculptRadius: 'Radius (-X)',
   sculptIntensity: 'Intensität (-C)',
   sculptHardness: 'Härte',

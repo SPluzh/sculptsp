@@ -175,6 +175,7 @@ var TR = {
   mirrorDirRightToLeft: 'Справа налево (+ в -)',
   sculptContinuous: 'Спрей',
   sculptDynamicBrushSize: 'Динамический размер кисти',
+  sculptDynTopoInfluence: 'Влияние на дин. топол.',
   sculptRadius: 'Размер (-S)',
   sculptIntensity: 'Сила (-A)',
   sculptFocalShift: 'Фокус (Focal Shift)',

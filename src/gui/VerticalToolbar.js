@@ -1,12 +1,13 @@
 import PanelContainer from './PanelContainer.js';
 import Mesh from '../mesh/Mesh.js';
+import Enums from '../misc/Enums.js';
 import {
   createIcons,
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Box
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Box, Disc
 } from 'lucide';
 
 const toolIcons = {
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Disc
 };
 
 class VerticalToolbar {
@@ -365,6 +366,84 @@ class VerticalToolbar {
         this._perspectiveBtn.classList.add('active');
       } else {
         this._perspectiveBtn.classList.remove('active');
+      }
+    }
+  }
+
+  addDynamicTopologyButton(tooltip, topoTooltip, onToggleFn, initialValue) {
+    var group = document.createElement('div');
+    group.className = 'vtb-dyn-group';
+
+    var btn = document.createElement('div');
+    btn.className = 'vtb-btn';
+    if (initialValue) {
+      btn.classList.add('active');
+    }
+    btn.setAttribute('data-tooltip', tooltip);
+    btn.innerHTML = '<i data-lucide="network"></i>';
+    btn.addEventListener('click', () => {
+      onToggleFn();
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._dynamicTopologyBtn = btn;
+    group.appendChild(btn);
+
+    var subContainer = document.createElement('div');
+    subContainer.className = 'vtb-btn-sub-container';
+    group.appendChild(subContainer);
+
+    var topoBtn = document.createElement('div');
+    topoBtn.className = 'vtb-btn-sub vtb-btn-sub--topo-tool';
+    topoBtn.setAttribute('data-tooltip', topoTooltip);
+    topoBtn.innerHTML = '<i data-lucide="disc"></i>';
+    topoBtn.addEventListener('click', () => {
+      if (this._main._gui && this._main._gui._ctrlSculpting) {
+        var sculptGui = this._main._gui._ctrlSculpting;
+        if (sculptGui.getSelectedTool() === Enums.Tools.TOPOLOGY) {
+          var prev = sculptGui._prevTool !== undefined ? sculptGui._prevTool : Enums.Tools.BRUSH;
+          sculptGui.onChangeTool(prev);
+        } else {
+          sculptGui.onChangeTool(Enums.Tools.TOPOLOGY);
+        }
+      }
+      topoBtn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._topoToolBtn = topoBtn;
+    subContainer.appendChild(topoBtn);
+
+    if (this._perspectiveBtn) {
+      this._dom.insertBefore(group, this._perspectiveBtn.nextSibling);
+    } else if (this._soloBtn) {
+      this._dom.insertBefore(group, this._soloBtn.nextSibling);
+    } else if (this._symmetryBtn && this._symmetryBtn.parentNode) {
+      var symGroup = this._symmetryBtn.parentNode;
+      this._dom.insertBefore(group, symGroup.nextSibling);
+    } else {
+      this._dom.appendChild(group);
+    }
+    return group;
+  }
+
+  setDynamicTopologyActive(active) {
+    if (this._dynamicTopologyBtn) {
+      if (active) {
+        this._dynamicTopologyBtn.classList.add('active');
+      } else {
+        this._dynamicTopologyBtn.classList.remove('active');
+      }
+    }
+  }
+
+  setTopologyToolActive(active) {
+    if (this._topoToolBtn) {
+      if (active) {
+        this._topoToolBtn.classList.add('active');
+      } else {
+        this._topoToolBtn.classList.remove('active');
       }
     }
   }

@@ -36,14 +36,18 @@ class StateManager {
   }
 
   pushStateColorAndMaterial(mesh) {
-    if (mesh.isDynamic)
+    var tool = this._main.getSculptManager().getCurrentTool();
+    var dynTopoInfluence = tool && tool.getDynTopoInfluence && tool.getDynTopoInfluence();
+    if (mesh.isDynamic && dynTopoInfluence)
       this.pushState(new StDynamic(this._main, mesh));
     else
       this.pushState(new StColorAndMaterial(this._main, mesh));
   }
 
   pushStateGeometry(mesh) {
-    if (mesh.isDynamic)
+    var tool = this._main.getSculptManager().getCurrentTool();
+    var dynTopoInfluence = tool && tool.getDynTopoInfluence && tool.getDynTopoInfluence();
+    if (mesh.isDynamic && dynTopoInfluence)
       this.pushState(new StDynamic(this._main, mesh));
     else
       this.pushState(new StGeometry(this._main, mesh));

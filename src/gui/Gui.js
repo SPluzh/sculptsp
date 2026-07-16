@@ -39,7 +39,9 @@ import {
   Grid,
   FlipHorizontal2,
   Eye,
-  Box
+  Box,
+  Network,
+  Disc
 } from 'lucide';
 
 class Gui {
@@ -204,6 +206,17 @@ class Gui {
       this._main.getCamera().getProjectionType() === Enums.Projection.PERSPECTIVE
     );
 
+    this._toolbar.addDynamicTopologyButton(
+      TR('dynamicTitle'),
+      TR('sculptTopology'),
+      () => {
+        if (this._ctrlTopology && this._ctrlTopology.dynamicToggleActivate) {
+          this._ctrlTopology.dynamicToggleActivate();
+        }
+      },
+      !!(this._main.getMesh() && this._main.getMesh().isDynamic)
+    );
+
     this.updateMesh();
     this.setVisibility(true);
 
@@ -218,7 +231,9 @@ class Gui {
         Settings,
         FlipHorizontal2,
         Eye,
-        Box
+        Box,
+        Network,
+        Disc
       },
       root: this._toolbar._dom
     });
@@ -323,6 +338,10 @@ class Gui {
     }
     if (this._ctrlScene && this._ctrlScene.refreshOutliner) {
       this._ctrlScene.refreshOutliner();
+    }
+    if (this._toolbar) {
+      var mesh = this._main.getMesh();
+      this._toolbar.setDynamicTopologyActive(!!(mesh && mesh.isDynamic));
     }
     this.updateMeshInfo();
   }
