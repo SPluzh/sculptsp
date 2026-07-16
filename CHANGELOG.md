@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Symmetry**: Added a **Flip Object** (Отразить объект) section to the Symmetry settings panel with **X**, **Y**, and **Z** buttons. Clicking an axis mirrors the selected mesh(es) in-place along that axis in local space.
+- **Symmetry/Undo**: Fully integrated the Flip Object operation with the undo/redo history, allowing users to reverse and redo flips seamlessly.
 - **UI**: Added a symmetry settings button (a small settings gear icon styled in gray like a normal utility button) under the symmetry button on the left vertical toolbar. Clicking it opens/toggles a dedicated "Symmetry" settings floating panel.
 - **UI/Symmetry**: Consolidated all symmetry-related controls into the new Symmetry settings panel, including the main symmetry toggle, space selection (Local/World), active axes toggles (X, Y, Z), viewport symmetry line visibility, and the symmetry offset slider. The sub-buttons on the shelf (X, Y, Z, Space, Settings) and the panel controls now remain persistently visible when symmetry is disabled, allowing configuration updates prior to activation.
 - **UI**: Updated the active tool button on the vertical toolbar (shelf) to display **Dynamic** when the dynamic brush size option is enabled, and no label (removing the uninformative "Active" text) when disabled.

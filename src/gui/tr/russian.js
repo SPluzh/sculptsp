@@ -169,6 +169,7 @@ var TR = {
   sculptSymmetryAxis: 'Ось симметрии',
   sculptSymmetryLocal: 'Локальные',
   sculptSymmetryWorld: 'Мировые',
+  sculptSymmetryFlip: 'Отразить объект',
   sculptContinuous: 'Спрей',
   sculptDynamicBrushSize: 'Динамический размер кисти',
   sculptRadius: 'Размер (-S)',

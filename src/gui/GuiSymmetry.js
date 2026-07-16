@@ -19,6 +19,11 @@ class GuiSymmetry {
     this._ctrlSymmetryLine = null;
     this._ctrlOffSym = null;
 
+    this._ctrlFlipTitle = null;
+    this._ctrlFlipX = null;
+    this._ctrlFlipY = null;
+    this._ctrlFlipZ = null;
+
     this.init(guiParent);
   }
 
@@ -45,9 +50,9 @@ class GuiSymmetry {
     btn3.style.width = '32%';
     btn3.addEventListener('click', cb3);
 
-    domLine.appendChild(btn1);
-    domLine.appendChild(btn2);
     domLine.appendChild(btn3);
+    domLine.appendChild(btn2);
+    domLine.appendChild(btn1);
 
     var widget1 = { domButton: btn1, setEnable: (b) => btn1.disabled = !b };
     var widget2 = { domButton: btn2, setEnable: (b) => btn2.disabled = !b };
@@ -110,6 +115,21 @@ class GuiSymmetry {
     this._ctrlSymmetryZ.setValue = () => {
       this.updateSymmetryStates();
     };
+
+    // Flip Object (X, Y, Z)
+    this._ctrlFlipTitle = menu.addTitle(TR('sculptSymmetryFlip'));
+    var flipCtrls = this.addTripleButton(
+      menu,
+      'X',
+      'Y',
+      'Z',
+      () => this.onFlipObject('x'),
+      () => this.onFlipObject('y'),
+      () => this.onFlipObject('z')
+    );
+    this._ctrlFlipX = flipCtrls[0];
+    this._ctrlFlipY = flipCtrls[1];
+    this._ctrlFlipZ = flipCtrls[2];
 
     menu.addTitle(TR('renderingExtra'));
     // Show mirror line button
@@ -193,6 +213,24 @@ class GuiSymmetry {
     }
   }
 
+  onFlipObject(axis) {
+    var meshes = this._main.getSelectedMeshes().slice();
+    if (meshes.length === 0) return;
+
+    var flipFn = () => {
+      for (var i = 0; i < meshes.length; ++i) {
+        meshes[i].flip(axis);
+      }
+      this._main.render();
+      if (this._ctrlGui) {
+        this._ctrlGui.updateMesh();
+      }
+    };
+
+    flipFn();
+    this._main.getStateManager().pushStateCustom(flipFn, flipFn);
+  }
+
   updateSymmetryVisibility(toolIndex) {
     var showSym = toolIndex !== Enums.Tools.TRANSFORM && toolIndex !== Enums.Tools.MEASURE && toolIndex !== Enums.Tools.DIVIDER;
 
@@ -213,6 +251,12 @@ class GuiSymmetry {
     }
     if (this._ctrlOffSym) {
       this._ctrlOffSym.setVisibility(showSym);
+    }
+    if (this._ctrlFlipTitle) {
+      this._ctrlFlipTitle.setVisibility(showSym);
+    }
+    if (this._ctrlFlipX) {
+      this._ctrlFlipX.setVisibility(showSym);
     }
   }
 

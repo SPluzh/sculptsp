@@ -169,6 +169,7 @@ var TR = {
   sculptSymmetryAxis: 'Symmetry Axis',
   sculptSymmetryLocal: 'Local',
   sculptSymmetryWorld: 'World',
+  sculptSymmetryFlip: 'Flip Object',
   sculptContinuous: 'Continuous',
   sculptDynamicBrushSize: 'Dynamic brush size',
   sculptRadius: 'Radius (-S)',

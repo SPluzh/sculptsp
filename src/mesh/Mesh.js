@@ -375,6 +375,67 @@ class Mesh {
     this._transformData._symmetryOffset = offset;
   }
 
+  flip(axis) {
+    var nbVertices = this.getNbVertices();
+    var vAr = this.getVertices();
+    var center = this.getCenter();
+    var offset = 0;
+    if (axis === 'y') offset = 1;
+    else if (axis === 'z') offset = 2;
+
+    // Flip coordinates in local space relative to local center
+    var cVal = center[offset];
+    for (var i = 0; i < nbVertices; ++i) {
+      var id = i * 3 + offset;
+      vAr[id] = 2.0 * cVal - vAr[id];
+    }
+
+    // Flip winding order of faces
+    var fAr = this.getFaces();
+    var nbFaces = this.getNbFaces();
+    for (var i = 0; i < nbFaces; ++i) {
+      var id = i * 4;
+      var iv1 = fAr[id];
+      var iv2 = fAr[id + 1];
+      var iv3 = fAr[id + 2];
+      var iv4 = fAr[id + 3];
+      if (iv4 === Utils.TRI_INDEX) {
+        // Triangle: [iv1, iv2, iv3, TRI_INDEX] -> [iv1, iv3, iv2, TRI_INDEX]
+        fAr[id + 1] = iv3;
+        fAr[id + 2] = iv2;
+      } else {
+        // Quad: [iv1, iv2, iv3, iv4] -> [iv1, iv4, iv3, iv2]
+        fAr[id + 1] = iv4;
+        fAr[id + 3] = iv2;
+      }
+    }
+
+    // Flip winding order of UV faces if present
+    if (this.hasUV()) {
+      var uvAr = this.getFacesTexCoord();
+      for (var i = 0; i < nbFaces; ++i) {
+        var id = i * 4;
+        var uv1 = uvAr[id];
+        var uv2 = uvAr[id + 1];
+        var uv3 = uvAr[id + 2];
+        var uv4 = uvAr[id + 3];
+        if (uv4 === Utils.TRI_INDEX) {
+          uvAr[id + 1] = uv3;
+          uvAr[id + 2] = uv2;
+        } else {
+          uvAr[id + 1] = uv4;
+          uvAr[id + 3] = uv2;
+        }
+      }
+    }
+
+    // Rebuild topology, geometry, and update buffers
+    this.initTopology();
+    this.updateGeometry();
+    this.updateCenter();
+    this.updateBuffers();
+  }
+
   getSymmetryNormalForAxis(axis) {
     var normalVec = [1.0, 0.0, 0.0];
     if (axis === 'y') normalVec = [0.0, 1.0, 0.0];
