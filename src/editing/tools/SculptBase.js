@@ -180,7 +180,7 @@ class SculptBase {
     if (minSpacing <= 0.0) {
       if (dist > 0.0)
         this.makeStroke(main._mouseX, main._mouseY, picking, pickingSyms);
-      this.updateRender();
+      this.scheduleRender();
       this._lastMouseX = main._mouseX;
       this._lastMouseY = main._mouseY;
       this._strokeInProgress = false;
@@ -203,17 +203,63 @@ class SculptBase {
     var mouseX = this._lastMouseX + dx;
     var mouseY = this._lastMouseY + dy;
 
-    for (var i = 0; i < numSteps; i++) {
-      if (!this.makeStroke(mouseX, mouseY, picking, pickingSyms))
-        break;
-      mouseX += dx;
-      mouseY += dy;
+    this._strokeStep = 0;
+    this._numSteps = numSteps;
+    this._stepDx = dx;
+    this._stepDy = dy;
+    this._currentStrokeX = mouseX;
+    this._currentStrokeY = mouseY;
+    this._targetX = main._mouseX;
+    this._targetY = main._mouseY;
+
+    this.runStrokeLoop(picking, pickingSyms);
+  }
+
+  runStrokeLoop(picking, pickingSyms) {
+    if (!this.getMesh()) {
+      this._strokeInProgress = false;
+      return;
     }
 
-    this.scheduleRender();
+    var BUDGET_MS = 8; // 8ms budget per frame
+    var startTime = performance.now();
 
-    this._lastMouseX = main._mouseX;
-    this._lastMouseY = main._mouseY;
+    var numSteps = this._numSteps;
+    var dx = this._stepDx;
+    var dy = this._stepDy;
+    var mouseX = this._currentStrokeX;
+    var mouseY = this._currentStrokeY;
+
+    var i = this._strokeStep;
+    for (; i < numSteps; i++) {
+      if (!this.makeStroke(mouseX, mouseY, picking, pickingSyms)) {
+        break;
+      }
+      mouseX += dx;
+      mouseY += dy;
+
+      if (performance.now() - startTime > BUDGET_MS && i < numSteps - 1) {
+        // Budget exceeded, yield to next frame
+        this._strokeStep = i + 1;
+        this._currentStrokeX = mouseX;
+        this._currentStrokeY = mouseY;
+        this.scheduleRender();
+        requestAnimationFrame(() => {
+          this.runStrokeLoop(picking, pickingSyms);
+        });
+        return;
+      }
+    }
+
+    // Finished all steps or failed early
+    this.scheduleRender();
+    if (i < numSteps) {
+      this._lastMouseX = mouseX;
+      this._lastMouseY = mouseY;
+    } else {
+      this._lastMouseX = this._targetX;
+      this._lastMouseY = this._targetY;
+    }
     this._strokeInProgress = false;
   }
 

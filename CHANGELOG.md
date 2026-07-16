@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Performance**: Implemented non-blocking, time-budgeted brush stroke updates in `SculptBase.js`. If making brush strokes exceeds 8ms, execution yields to the next animation frame via `requestAnimationFrame` to keep the UI completely responsive.
 - **Performance**: Removed high-frequency debug log statements from hot paths, including spline overlay drawing in `CurveDeformTool`, click actions in `Masking`, tool activation in `ZSphereTool`, brush startup in `SculptManager`, and voxel processing in `Remesh` and `SculptSP`.
 - **Performance**: Capped the maximum spacing steps computed in a single stroke event to 8 in the base sculpting logic, preventing interface freezes and lag during fast brush strokes at large sizes.
 - **Performance**: Shifted synchronous viewport render calls to an asynchronous requestAnimationFrame queue in base brush stroke and tool alignment routines to prevent heavy draw operations from blocking mouse input events.
