@@ -2,6 +2,8 @@ import TR from './GuiTR.js';
 import Mesh from '../mesh/Mesh.js';
 import Enums from '../misc/Enums.js';
 import ShaderBase from '../render/shaders/ShaderBase.js';
+import MeshStatic from '../mesh/meshStatic/MeshStatic.js';
+import MeshDynamic from '../mesh/dynamic/MeshDynamic.js';
 
 class GuiSymmetry {
   constructor(guiParent, ctrlGui) {
@@ -23,6 +25,16 @@ class GuiSymmetry {
     this._ctrlFlipX = null;
     this._ctrlFlipY = null;
     this._ctrlFlipZ = null;
+
+    this._ctrlMirrorTitle = null;
+    this._ctrlMirrorX = null;
+    this._ctrlMirrorY = null;
+    this._ctrlMirrorZ = null;
+    this._ctrlMirrorDir = null;
+    this._ctrlMirrorAction = null;
+
+    this._mirrorAxis = 'x';
+    this._mirrorPositiveToNegative = true;
 
     this.init(guiParent);
   }
@@ -131,6 +143,32 @@ class GuiSymmetry {
     this._ctrlFlipY = flipCtrls[1];
     this._ctrlFlipZ = flipCtrls[2];
 
+    // Mirror Object (X, Y, Z)
+    this._ctrlMirrorTitle = menu.addTitle(TR('sculptSymmetryMirror'));
+    var mirrorCtrls = this.addTripleButton(
+      menu,
+      'X',
+      'Y',
+      'Z',
+      () => this.onSelectMirrorAxis('x'),
+      () => this.onSelectMirrorAxis('y'),
+      () => this.onSelectMirrorAxis('z')
+    );
+    this._ctrlMirrorX = mirrorCtrls[0];
+    this._ctrlMirrorY = mirrorCtrls[1];
+    this._ctrlMirrorZ = mirrorCtrls[2];
+
+    this._ctrlMirrorDir = menu.addDualButton(
+      TR('mirrorDirLeftToRight'),
+      TR('mirrorDirRightToLeft'),
+      () => this.onSelectMirrorDirection(false),
+      () => this.onSelectMirrorDirection(true)
+    );
+    this._ctrlMirrorDir[0].domButton.classList.add('gui-button-toggle');
+    this._ctrlMirrorDir[1].domButton.classList.add('gui-button-toggle');
+
+    this._ctrlMirrorAction = baseAddButton.call(menu, TR('sculptSymmetryMirror'), this.onMirrorObject.bind(this));
+
     menu.addTitle(TR('renderingExtra'));
     // Show mirror line button
     this._ctrlSymmetryLine = baseAddButton.call(
@@ -231,6 +269,83 @@ class GuiSymmetry {
     this._main.getStateManager().pushStateCustom(flipFn, flipFn);
   }
 
+  onSelectMirrorAxis(axis) {
+    this._mirrorAxis = axis;
+    this.updateSymmetryStates();
+  }
+
+  onSelectMirrorDirection(positiveToNegative) {
+    this._mirrorPositiveToNegative = positiveToNegative;
+    this.updateSymmetryStates();
+  }
+
+  onMirrorObject() {
+    var main = this._main;
+    var mesh = main.getMesh();
+    if (!mesh) return;
+
+    var selMeshes = main.getSelectedMeshes().slice();
+    if (selMeshes.length === 0) {
+      selMeshes = [mesh];
+    }
+
+    var axis = this._mirrorAxis;
+    var posToNeg = this._mirrorPositiveToNegative;
+
+    var newMeshes = [];
+    var oldMeshes = [];
+
+    for (var i = 0; i < selMeshes.length; ++i) {
+      var oldM = selMeshes[i];
+      var wasDynamic = oldM.isDynamic;
+
+      var staticM = this.convertToStaticMesh(oldM);
+      staticM.mirror(axis, posToNeg);
+
+      var finalM = wasDynamic ? new MeshDynamic(staticM) : staticM;
+      newMeshes.push(finalM);
+      oldMeshes.push(oldM);
+    }
+
+    for (var i = 0; i < oldMeshes.length; ++i) {
+      main.replaceMesh(oldMeshes[i], newMeshes[i]);
+    }
+
+    main.getStateManager().pushStateAddRemove(newMeshes, oldMeshes);
+
+    main.render();
+    if (this._ctrlGui) {
+      this._ctrlGui.updateMesh();
+    }
+  }
+
+  convertToStaticMesh(mesh) {
+    var isMulti = !!(mesh && mesh._meshes);
+    if (!mesh.isDynamic && !isMulti) {
+      var newMesh = new MeshStatic(mesh.getGL());
+      newMesh.copyData(mesh);
+      return newMesh;
+    }
+
+    var newMesh = new MeshStatic(mesh.getGL());
+    newMesh.setID(mesh.getID());
+    newMesh.setTransformData(mesh.getTransformData());
+    newMesh.setVertices(mesh.getVertices().subarray(0, mesh.getNbVertices() * 3));
+    if (mesh.getColors()) newMesh.setColors(mesh.getColors().subarray(0, mesh.getNbVertices() * 3));
+    if (mesh.getMaterials()) newMesh.setMaterials(mesh.getMaterials().subarray(0, mesh.getNbVertices() * 3));
+    newMesh.setFaces(mesh.getFaces().subarray(0, mesh.getNbFaces() * 4));
+
+    Mesh.OPTIMIZE = false;
+    newMesh.init();
+    Mesh.OPTIMIZE = true;
+
+    newMesh.setRenderData(mesh.getRenderData());
+    newMesh.initRender();
+    newMesh.setVisible(mesh.isVisible(0), 0);
+    newMesh.setVisible(mesh.isVisible(1), 1);
+    return newMesh;
+  }
+
   updateSymmetryVisibility(toolIndex) {
     var showSym = toolIndex !== Enums.Tools.TRANSFORM && toolIndex !== Enums.Tools.MEASURE && toolIndex !== Enums.Tools.DIVIDER;
 
@@ -257,6 +372,19 @@ class GuiSymmetry {
     }
     if (this._ctrlFlipX) {
       this._ctrlFlipX.setVisibility(showSym);
+    }
+
+    if (this._ctrlMirrorTitle) {
+      this._ctrlMirrorTitle.setVisibility(showSym);
+    }
+    if (this._ctrlMirrorX) {
+      this._ctrlMirrorX.setVisibility(showSym);
+    }
+    if (this._ctrlMirrorDir) {
+      this._ctrlMirrorDir[0].setVisibility(showSym);
+    }
+    if (this._ctrlMirrorAction) {
+      this._ctrlMirrorAction.setVisibility(showSym);
     }
   }
 
@@ -301,6 +429,31 @@ class GuiSymmetry {
     if (this._ctrlSymmetryLine && this._ctrlSymmetryLine.domButton) {
       if (ShaderBase.showSymmetryLine) this._ctrlSymmetryLine.domButton.classList.add('active');
       else this._ctrlSymmetryLine.domButton.classList.remove('active');
+    }
+
+    // 5. Highlight Mirror Axis
+    if (this._ctrlMirrorX && this._ctrlMirrorX.domButton) {
+      if (this._mirrorAxis === 'x') this._ctrlMirrorX.domButton.classList.add('active');
+      else this._ctrlMirrorX.domButton.classList.remove('active');
+    }
+    if (this._ctrlMirrorY && this._ctrlMirrorY.domButton) {
+      if (this._mirrorAxis === 'y') this._ctrlMirrorY.domButton.classList.add('active');
+      else this._ctrlMirrorY.domButton.classList.remove('active');
+    }
+    if (this._ctrlMirrorZ && this._ctrlMirrorZ.domButton) {
+      if (this._mirrorAxis === 'z') this._ctrlMirrorZ.domButton.classList.add('active');
+      else this._ctrlMirrorZ.domButton.classList.remove('active');
+    }
+
+    // 6. Highlight Mirror Direction
+    if (this._ctrlMirrorDir) {
+      if (this._mirrorPositiveToNegative) {
+        this._ctrlMirrorDir[0].domButton.classList.remove('active');
+        this._ctrlMirrorDir[1].domButton.classList.add('active');
+      } else {
+        this._ctrlMirrorDir[0].domButton.classList.add('active');
+        this._ctrlMirrorDir[1].domButton.classList.remove('active');
+      }
     }
   }
 

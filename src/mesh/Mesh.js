@@ -436,6 +436,221 @@ class Mesh {
     this.updateBuffers();
   }
 
+  mirror(axis, positiveToNegative) {
+    var nbVertices = this.getNbVertices();
+    var vAr = this.getVertices();
+    var cAr = this.getColors();
+    var mAr = this.getMaterials();
+    var fAr = this.getFaces();
+    var nbFaces = this.getNbFaces();
+
+    var origin = this.getSymmetryOriginForAxis(axis);
+    var normal = this.getSymmetryNormalForAxis(axis);
+
+    // 1. Calculate signed distance to the plane for each vertex
+    var distances = new Float32Array(nbVertices);
+    for (var i = 0; i < nbVertices; ++i) {
+      var idx = i * 3;
+      var vx = vAr[idx] - origin[0];
+      var vy = vAr[idx + 1] - origin[1];
+      var vz = vAr[idx + 2] - origin[2];
+      distances[i] = vx * normal[0] + vy * normal[1] + vz * normal[2];
+    }
+
+    // 2. Identify which faces are kept
+    var keptFaces = [];
+    for (var i = 0; i < nbFaces; ++i) {
+      var idx = i * 4;
+      var iv1 = fAr[idx];
+      var iv2 = fAr[idx + 1];
+      var iv3 = fAr[idx + 2];
+      var iv4 = fAr[idx + 3];
+
+      var dSum = distances[iv1] + distances[iv2] + distances[iv3];
+      var count = 3;
+      if (iv4 !== Utils.TRI_INDEX) {
+        dSum += distances[iv4];
+        count = 4;
+      }
+      var avgDist = dSum / count;
+
+      var keep = positiveToNegative ? (avgDist >= 0) : (avgDist <= 0);
+      if (keep) {
+        keptFaces.push(i);
+      }
+    }
+
+    // 3. For all kept faces, mark their vertices.
+    // If a vertex in a kept face is on the destination side, snap it to the plane.
+    var newVertsMap = new Int32Array(nbVertices);
+    newVertsMap.fill(-1);
+
+    var tempVertices = [];
+    var tempColors = cAr ? [] : null;
+    var tempMaterials = mAr ? [] : null;
+    var boundaryFlags = []; // true if snapped to the plane or close
+
+    var originalFacesUV = this.hasUV() ? this.getFacesTexCoord() : null;
+
+    // Helper to add or retrieve vertex
+    var addVertex = (origIdx) => {
+      if (newVertsMap[origIdx] !== -1) {
+        return newVertsMap[origIdx];
+      }
+
+      var newIdx = tempVertices.length / 3;
+      newVertsMap[origIdx] = newIdx;
+
+      var o3 = origIdx * 3;
+      var vx = vAr[o3];
+      var vy = vAr[o3 + 1];
+      var vz = vAr[o3 + 2];
+
+      var dist = distances[origIdx];
+      var onBoundary = false;
+      // If it's on the destination side, project it to the plane
+      if (positiveToNegative ? (dist < 0) : (dist > 0)) {
+        vx = vx - dist * normal[0];
+        vy = vy - dist * normal[1];
+        vz = vz - dist * normal[2];
+        onBoundary = true;
+      } else if (Math.abs(dist) < 1e-5) {
+        onBoundary = true;
+      }
+
+      tempVertices.push(vx, vy, vz);
+      if (cAr) tempColors.push(cAr[o3], cAr[o3 + 1], cAr[o3 + 2]);
+      if (mAr) tempMaterials.push(mAr[o3], mAr[o3 + 1], mAr[o3 + 2]);
+
+      boundaryFlags.push(onBoundary);
+      return newIdx;
+    };
+
+    // Construct the list of kept vertices (snapping where necessary)
+    var newFacesOriginal = [];
+    var newFacesUVOriginal = originalFacesUV ? [] : null;
+
+    for (var i = 0; i < keptFaces.length; ++i) {
+      var fIdx = keptFaces[i];
+      var idx = fIdx * 4;
+      var iv1 = fAr[idx];
+      var iv2 = fAr[idx + 1];
+      var iv3 = fAr[idx + 2];
+      var iv4 = fAr[idx + 3];
+
+      var nv1 = addVertex(iv1);
+      var nv2 = addVertex(iv2);
+      var nv3 = addVertex(iv3);
+      var nv4 = (iv4 !== Utils.TRI_INDEX) ? addVertex(iv4) : Utils.TRI_INDEX;
+
+      newFacesOriginal.push(nv1, nv2, nv3, nv4);
+
+      if (originalFacesUV) {
+        newFacesUVOriginal.push(originalFacesUV[idx], originalFacesUV[idx + 1], originalFacesUV[idx + 2], originalFacesUV[idx + 3]);
+      }
+    }
+
+    // 4. Duplicate and mirror strictly-source vertices
+    var numKeptVerts = tempVertices.length / 3;
+    var mirrorMap = new Int32Array(numKeptVerts);
+    for (var i = 0; i < numKeptVerts; ++i) {
+      if (boundaryFlags[i]) {
+        // Shared on the plane, mirrored index is itself
+        mirrorMap[i] = i;
+      } else {
+        // Strictly source vertex, needs a mirrored duplicate
+        var newIdx = tempVertices.length / 3;
+        mirrorMap[i] = newIdx;
+
+        var i3 = i * 3;
+        var vx = tempVertices[i3];
+        var vy = tempVertices[i3 + 1];
+        var vz = tempVertices[i3 + 2];
+
+        // Mirror position across the plane: V - 2 * dist * Normal
+        var dx = vx - origin[0];
+        var dy = vy - origin[1];
+        var dz = vz - origin[2];
+        var d = dx * normal[0] + dy * normal[1] + dz * normal[2];
+
+        var mx = vx - 2.0 * d * normal[0];
+        var my = vy - 2.0 * d * normal[1];
+        var mz = vz - 2.0 * d * normal[2];
+
+        tempVertices.push(mx, my, mz);
+
+        if (cAr) {
+          tempColors.push(tempColors[i3], tempColors[i3 + 1], tempColors[i3 + 2]);
+        }
+        if (mAr) {
+          tempMaterials.push(tempMaterials[i3], tempMaterials[i3 + 1], tempMaterials[i3 + 2]);
+        }
+      }
+    }
+
+    // 5. Build final face array with original and mirrored faces
+    var finalFaces = [];
+    var finalFacesUV = originalFacesUV ? [] : null;
+
+    // Add all original kept faces
+    for (var i = 0; i < newFacesOriginal.length; ++i) {
+      finalFaces.push(newFacesOriginal[i]);
+    }
+    if (newFacesUVOriginal) {
+      for (var i = 0; i < newFacesUVOriginal.length; ++i) {
+        finalFacesUV.push(newFacesUVOriginal[i]);
+      }
+    }
+
+    // Add mirrored faces with reversed winding order
+    var numKeptFaces = newFacesOriginal.length / 4;
+    for (var i = 0; i < numKeptFaces; ++i) {
+      var idx = i * 4;
+      var nv1 = newFacesOriginal[idx];
+      var nv2 = newFacesOriginal[idx + 1];
+      var nv3 = newFacesOriginal[idx + 2];
+      var nv4 = newFacesOriginal[idx + 3];
+
+      var mv1 = mirrorMap[nv1];
+      var mv2 = mirrorMap[nv2];
+      var mv3 = mirrorMap[nv3];
+      var mv4 = (nv4 !== Utils.TRI_INDEX) ? mirrorMap[nv4] : Utils.TRI_INDEX;
+
+      if (mv4 === Utils.TRI_INDEX) {
+        finalFaces.push(mv1, mv3, mv2, Utils.TRI_INDEX);
+      } else {
+        finalFaces.push(mv1, mv4, mv3, mv2);
+      }
+
+      if (finalFacesUV) {
+        var uv1 = newFacesUVOriginal[idx];
+        var uv2 = newFacesUVOriginal[idx + 1];
+        var uv3 = newFacesUVOriginal[idx + 2];
+        var uv4 = newFacesUVOriginal[idx + 3];
+        if (uv4 === Utils.TRI_INDEX) {
+          finalFacesUV.push(uv1, uv3, uv2, Utils.TRI_INDEX);
+        } else {
+          finalFacesUV.push(uv1, uv4, uv3, uv2);
+        }
+      }
+    }
+
+    // 6. Update mesh data
+    this.setVertices(new Float32Array(tempVertices));
+    if (cAr) this.setColors(new Float32Array(tempColors));
+    if (mAr) this.setMaterials(new Float32Array(tempMaterials));
+    this.setFaces(new Uint32Array(finalFaces));
+
+    if (this.hasUV()) {
+      this.initTexCoordsDataFromOBJData(this.getTexCoords(), new Uint32Array(finalFacesUV));
+    }
+
+    this.initTopology();
+    this.updateGeometry();
+    this.updateCenter();
+    this.updateBuffers();
+  }
+
   getSymmetryNormalForAxis(axis) {
     var normalVec = [1.0, 0.0, 0.0];
     if (axis === 'y') normalVec = [0.0, 1.0, 0.0];

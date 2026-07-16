@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Symmetry**: Added a **Mirror Object** (Симметрировать объект) section to the Symmetry settings panel. Users can choose the mirroring axis (**X**, **Y**, **Z**), select the direction of the mirror operation (**Left to Right (- to +)** or **Right to Left (+ to -)**), and click the Mirror Object button to slice the mesh along the symmetry plane and mirror the selected half to the other side.
+- **Symmetry/Undo**: Fully integrated the Mirror Object operation with the undo/redo history, and supported mirroring multiple selected meshes, dynamic meshes, and multiresolution meshes.
 - **Symmetry**: Added a **Flip Object** (Отразить объект) section to the Symmetry settings panel with **X**, **Y**, and **Z** buttons. Clicking an axis mirrors the selected mesh(es) in-place along that axis in local space.
 - **Symmetry/Undo**: Fully integrated the Flip Object operation with the undo/redo history, allowing users to reverse and redo flips seamlessly.
 - **UI**: Added a symmetry settings button (a small settings gear icon styled in gray like a normal utility button) under the symmetry button on the left vertical toolbar. Clicking it opens/toggles a dedicated "Symmetry" settings floating panel.
