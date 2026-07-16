@@ -30,7 +30,7 @@ ShaderSelection.fragment = [
   '}'
 ].join('\n');
 
-ShaderSelection.draw = function (geom, drawCircle, drawSym) {
+ShaderSelection.draw = function (geom, drawCircle, drawSym, drawInner = true) {
   var gl = geom.getGL();
   gl.useProgram(this.program);
 
@@ -49,6 +49,11 @@ ShaderSelection.draw = function (geom, drawCircle, drawSym) {
     gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getCircleMVP());
     ShaderSelection.attributes.aVertex.bindToBuffer(geom.getCircleBuffer());
     gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
+
+    if (drawInner) {
+      gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getInnerCircleMVP());
+      gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
+    }
   }
 
   gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getDotMVP());
