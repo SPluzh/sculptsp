@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Import/Export**: Fixed a bug where loaded vertex-snapped Measure and Segment Divider anchors shifted their 3D locations upon reopening a `.sgl` file, caused by pre-transform mesh vertex reordering during initialization. The vertex indices are now correctly remapped using the optimized vertex index lookup table.
+- **Import/Export**: Fixed a bug where loading a `.sgl` file filtered out Measure Tool and Segment Divider anchors before they could be resolved to the newly loaded meshes, causing them to disappear from both the viewport and the outliner.
 - **Import/Export**: Added save and restore support for the Measure Tool and Segment Divider configurations (including viewport visibility and segment lines) in the native `.sgl` format, incrementing the file version to 6.
 - **Scene Outliner**: Fixed an issue where the loaded Measure Tool and Segment Divider segments did not appear in the scene outliner after reopening a `.sgl` file.
 - **Import/Export**: Fixed a bug where incorrect areas of a mesh were hidden upon loading a `.sgl` file due to the vertex visibility array not being remapped during pre-transform vertex index optimization.

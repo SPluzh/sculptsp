@@ -2540,6 +2540,7 @@ class Mesh {
     cArOld.set(cArNew);
     mArOld.set(mArNew);
 
+    this._vertexMap = idvPos;
   }
 }
 

@@ -225,10 +225,6 @@ Import.importSGL = function (buffer, gl, main) {
     }
   }
 
-  if (main.getGui() && main.getGui().updateMesh) {
-    main.getGui().updateMesh();
-  }
-
   return meshes;
 };
 

@@ -944,27 +944,47 @@ class Scene {
       this.normalizeAndCenterMeshes(newMeshes);
     }
 
-    this._stateManager.pushStateAdd(newMeshes);
-    this.setMesh(meshes[meshes.length - 1]);
-    this.resetCameraMeshes(newMeshes);
-
     var resolveToolAnchors = (tool, newWrappedMeshes) => {
-      if (!tool || !tool.getSegments) return;
-      var segments = tool.getSegments();
+      if (!tool || !tool._segments) return;
+      var segments = tool._segments;
       for (var s = 0; s < segments.length; ++s) {
         var seg = segments[s];
         if (seg.vertA && seg.vertA.type === 'vertex' && seg.vertA.meshIndex !== undefined) {
-          seg.vertA.mesh = newWrappedMeshes[seg.vertA.meshIndex];
+          var mesh = newWrappedMeshes[seg.vertA.meshIndex];
+          seg.vertA.mesh = mesh;
+          if (mesh && mesh._vertexMap) {
+            var oldIdx = seg.vertA.vertIdx;
+            var newIdx = mesh._vertexMap[oldIdx] - 1;
+            if (newIdx >= 0) {
+              seg.vertA.vertIdx = newIdx;
+            }
+          }
           delete seg.vertA.meshIndex;
         }
         if (seg.vertB && seg.vertB.type === 'vertex' && seg.vertB.meshIndex !== undefined) {
-          seg.vertB.mesh = newWrappedMeshes[seg.vertB.meshIndex];
+          var mesh = newWrappedMeshes[seg.vertB.meshIndex];
+          seg.vertB.mesh = mesh;
+          if (mesh && mesh._vertexMap) {
+            var oldIdx = seg.vertB.vertIdx;
+            var newIdx = mesh._vertexMap[oldIdx] - 1;
+            if (newIdx >= 0) {
+              seg.vertB.vertIdx = newIdx;
+            }
+          }
           delete seg.vertB.meshIndex;
         }
       }
     };
     resolveToolAnchors(this._measureTool, newMeshes);
     resolveToolAnchors(this._dividerTool, newMeshes);
+
+    for (var i = 0; i < newMeshes.length; ++i) {
+      delete newMeshes[i]._vertexMap;
+    }
+
+    this._stateManager.pushStateAdd(newMeshes);
+    this.setMesh(meshes[meshes.length - 1]);
+    this.resetCameraMeshes(newMeshes);
 
     return newMeshes;
   }
