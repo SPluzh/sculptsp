@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Performance**: Reverted to direct browser event listeners for mouse actions with throttled mousemove updates, and removed the custom `InputManager` wrapper class. This eliminates input loop overhead and stuttering, restoring fluid stroke tracking at 60 FPS.
 - **Performance**: Implemented caching for local mesh radius calculations and eliminated temporary array allocations during bounding box distance checks to optimize viewport rendering and brush tracking frame rates.
 - **Performance**: Removed diagnostic logging in mouse picking, tool activation, and tablet input polling loops to eliminate input latency and prevent stroke lag or skipping.
 - **Shortcuts**: Mapped the **F** key to frame the camera. Pressing **F** or clicking the **Frame Selection** button in the Camera menu translates and zooms the camera so that the active object (or all objects if no selection exists) fully fits within the viewport bounds from the current camera angle.

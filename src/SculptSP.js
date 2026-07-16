@@ -7,7 +7,6 @@ import Enums from './misc/Enums.js';
 import Utils from './misc/Utils.js';
 import Scene from './Scene.js';
 import Multimesh from './mesh/multiresolution/Multimesh.js';
-import InputManager from './misc/InputManager.js';
 
 var MOUSE_LEFT = 1;
 var MOUSE_MIDDLE = 2;
@@ -44,16 +43,13 @@ class SculptSP extends Scene {
 
     this._eventProxy = {};
 
-    this._input = new InputManager(
-      this._canvas,
-      () => this._pixelRatio,
-      () => this._canvasOffsetLeft,
-      () => this._canvasOffsetTop
-    );
+    this._isDragged = false;
+    this._downX = 0;
+    this._downY = 0;
+    this._lastPointerType = 'mouse';
 
     this.initHammer();
     this.addEvents();
-    this.initInputCallbacks();
 
     this._refDragActive = false;
     this._refDragMode = null;
@@ -64,61 +60,24 @@ class SculptSP extends Scene {
     this._refImageDragLastY = 0;
   }
 
-  initInputCallbacks() {
-    this._input.on('down', (data) => {
-      var event = {
-        pageX: data.pageX,
-        pageY: data.pageY,
-        which: data.which,
-        ctrlKey: data.ctrlKey,
-        altKey: data.altKey,
-        shiftKey: data.shiftKey,
-        stopPropagation: () => {},
-        preventDefault: () => {}
-      };
-      this._gui.callFunc('onMouseDown', event);
-      this.onDeviceDown(data);
-    });
-
-    this._input.on('move', (data) => {
-      var event = {
-        pageX: data.pageX,
-        pageY: data.pageY,
-        which: data.which,
-        ctrlKey: data.ctrlKey,
-        altKey: data.altKey,
-        shiftKey: data.shiftKey,
-        stopPropagation: () => {},
-        preventDefault: () => {}
-      };
-      this._gui.callFunc('onMouseMove', event);
-      this.onDeviceMove(data);
-    });
-
-    this._input.on('up', (data) => {
-      var event = {
-        pageX: data.pageX,
-        pageY: data.pageY,
-        which: data.which,
-        ctrlKey: data.ctrlKey,
-        altKey: data.altKey,
-        shiftKey: data.shiftKey,
-        stopPropagation: () => {},
-        preventDefault: () => {}
-      };
-      this._gui.callFunc('onMouseUp', event);
-      this.onDeviceUp(data);
-    });
-  }
-
   addEvents() {
     var canvas = this._canvas;
 
     var cbMouseWheel = this.onMouseWheel.bind(this);
+    var cbOnPointer = this.onPointer.bind(this);
 
-    // mouse (focus and wheel only, button/move events are in InputManager)
+    // pointer events for pressure (when wintab is disabled/not active)
+    window.addEventListener('pointerdown', cbOnPointer, false);
+    window.addEventListener('pointermove', cbOnPointer, false);
+    window.addEventListener('pointerup', cbOnPointer, false);
+    window.addEventListener('pointercancel', cbOnPointer, false);
+
+    // mouse
+    canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
+    canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
     canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
     canvas.addEventListener('mouseover', this.onMouseOver.bind(this), false);
+    canvas.addEventListener('mousemove', Utils.throttle(this.onMouseMove.bind(this), 16.66), false);
     canvas.addEventListener('mousewheel', cbMouseWheel, false);
     canvas.addEventListener('DOMMouseScroll', cbMouseWheel, false);
 
@@ -142,6 +101,18 @@ class SculptSP extends Scene {
         e.target.blur();
       }
     }, true);
+  }
+
+  onPointer(event) {
+    this._lastPointerType = event.pointerType;
+    if (!(Tablet.isWintabActive && Tablet.useWintab)) {
+      if (event.type === 'pointerup' || event.type === 'pointercancel') {
+        Tablet.pressure = 0.0;
+      } else {
+        Tablet.pressure = event.pressure;
+      }
+      console.log('[WinInk] pointer event: pressure = ' + event.pressure.toFixed(3) + ', type = ' + event.type + ', pointerType = ' + event.pointerType);
+    }
   }
 
   initHammer() {
@@ -439,7 +410,7 @@ class SculptSP extends Scene {
     event.preventDefault();
 
     this._gui.callFunc('onMouseUp', event);
-    this.onDeviceUp();
+    this.onDeviceUp(event);
   }
 
   onMouseWheel(event) {
@@ -483,9 +454,10 @@ class SculptSP extends Scene {
     }
     this._snapTriggered = false;
 
+    var wasClick = !this._isDragged;
+
     if (this._action === Enums.Action.HIDE_EDIT) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
-      var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
       if (wasClick) {
         var hit = this.getPicking().intersectionMouseMeshes(this.getMeshes(), this._maskX, this._maskY);
         if (!hit) {
@@ -504,7 +476,6 @@ class SculptSP extends Scene {
     } else if (this._action === Enums.Action.MASK_EDIT) {
       var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
       if (this._mesh) {
-        var wasClick = data ? data.wasClick : (this._lastMouseX === this._maskX && this._lastMouseY === this._maskY);
         if (wasClick) {
           maskingTool.clickAction(this._maskX, this._maskY, false, ctrlKey, altKey);
         } else {
@@ -519,10 +490,9 @@ class SculptSP extends Scene {
       maskingTool.destroyLassoOverlay();
     } else if (this._action === Enums.Action.SCULPT_EDIT) {
       var smgr = this.getSculptManager();
-      console.log('[onDeviceUp] SCULPT_EDIT, toolIndex=', smgr.getToolIndex(), 'MASKING=', Enums.Tools.MASKING, 'mesh=', !!this._mesh, 'wasClick=', data ? data.wasClick : false);
+      console.log('[onDeviceUp] SCULPT_EDIT, toolIndex=', smgr.getToolIndex(), 'MASKING=', Enums.Tools.MASKING, 'mesh=', !!this._mesh, 'wasClick=', wasClick);
       if (smgr.getToolIndex() === Enums.Tools.MASKING && this._mesh) {
-        var wasClickSculpt = data ? data.wasClick : false;
-        if (wasClickSculpt) {
+        if (wasClick) {
           var maskingToolSculpt = smgr.getTool(Enums.Tools.MASKING);
           maskingToolSculpt.clickAction(this._mouseX, this._mouseY, true, ctrlKey, altKey);
         }
@@ -599,20 +569,14 @@ class SculptSP extends Scene {
     this._isAltDown = data.altKey;
     this._isCtrlDown = data.ctrlKey;
 
-    if (data.x !== undefined) {
-      // Input from InputManager — correct for split viewport
-      var rawX = data.x;
-      this._updateActiveViewport(rawX);
-      this._mouseX = (this._activeViewport === 1 && this._splitMode)
-        ? rawX - Math.floor(this._canvasWidth / 2)
-        : rawX;
-      this._mouseY = data.y;
-    } else {
-      this.setMousePosition(data);
-    }
+    this.setMousePosition(data);
 
-    var rawMouseX = data.x !== undefined ? data.x : this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
-    var rawMouseY = data.y !== undefined ? data.y : this._pixelRatio * (data.pageY - this._canvasOffsetTop);
+    this._downX = this._mouseX;
+    this._downY = this._mouseY;
+    this._isDragged = false;
+
+    var rawMouseX = this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
+    var rawMouseY = this._pixelRatio * (data.pageY - this._canvasOffsetTop);
 
     var camera = this.getCamera();
     var button = data.which;
@@ -778,20 +742,19 @@ class SculptSP extends Scene {
     this._isAltDown = data.altKey;
     this._isCtrlDown = data.ctrlKey;
 
-    if (data.x !== undefined) {
-      // Input from InputManager — correct for split viewport
-      var rawX = data.x;
-      this._updateActiveViewport(rawX);
-      this._mouseX = (this._activeViewport === 1 && this._splitMode)
-        ? rawX - Math.floor(this._canvasWidth / 2)
-        : rawX;
-      this._mouseY = data.y;
-    } else {
-      this.setMousePosition(data);
+    this.setMousePosition(data);
+
+    if (!this._isDragged) {
+      var dx = this._mouseX - this._downX;
+      var dy = this._mouseY - this._downY;
+      var threshold = 8 * this._pixelRatio;
+      if (dx * dx + dy * dy > threshold * threshold) {
+        this._isDragged = true;
+      }
     }
 
-    var rawMouseX = data.x !== undefined ? data.x : this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
-    var rawMouseY = data.y !== undefined ? data.y : this._pixelRatio * (data.pageY - this._canvasOffsetTop);
+    var rawMouseX = this._pixelRatio * (data.pageX - this._canvasOffsetLeft);
+    var rawMouseY = this._pixelRatio * (data.pageY - this._canvasOffsetTop);
 
     var camera = this.getCamera();
 
@@ -867,7 +830,7 @@ class SculptSP extends Scene {
       this.render();
 
     } else if (action === Enums.Action.CAMERA_ROTATE) {
-      if (this._isLeftMouseDown && data.pointerType === 'pen') {
+      if (this._isLeftMouseDown && (data.pointerType === 'pen' || this._lastPointerType === 'pen')) {
         var canEdit = this._sculptManager.start(data.shiftKey);
         if (canEdit) {
           action = this._action = Enums.Action.SCULPT_EDIT;
