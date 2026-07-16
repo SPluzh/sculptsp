@@ -91,7 +91,7 @@ class Scene {
     this._focusGui = false; // if the gui is being focused
     this._gui = new Gui(this);
 
-    this._fpsRenderTimes = [];
+    this._fpsTimes = [];
     this._fpsLastUpdate = 0;
 
     this._preventRender = false; // prevent multiple render per frame
@@ -134,6 +134,33 @@ class Scene {
     var modelURL = getOptionsURL().modelurl;
     if (modelURL) this.addModelURL(modelURL);
     else this.addSphere();
+
+    this._startFpsTicker();
+  }
+
+  _startFpsTicker() {
+    var self = this;
+    var tick = function(now) {
+      // Keep a sliding window of the last 60 frame timestamps
+      var times = self._fpsTimes;
+      times.push(now);
+      if (times.length > 60) times.shift();
+
+      // Update display at most once per 500 ms to keep it readable
+      if (times.length >= 2 && now - self._fpsLastUpdate > 500) {
+        var duration = now - times[0];
+        if (duration > 0) {
+          var fps = Math.round(((times.length - 1) * 1000) / duration);
+          if (self._gui && self._gui._ctrlMesh) {
+            self._gui._ctrlMesh.updateFPS(fps);
+          }
+          self._fpsLastUpdate = now;
+        }
+      }
+
+      window.requestAnimationFrame(tick);
+    };
+    window.requestAnimationFrame(tick);
   }
 
   addModelURL(url) {
@@ -357,30 +384,6 @@ class Scene {
     this._preventRender = false;
     var gl = this._gl;
     if (!gl) return;
-
-    var now = performance.now();
-    if (!this._fpsRenderTimes) {
-      this._fpsRenderTimes = [];
-    }
-    if (this._fpsRenderTimes.length > 0 && (now - this._fpsRenderTimes[this._fpsRenderTimes.length - 1] > 500)) {
-      this._fpsRenderTimes = [];
-    }
-    this._fpsRenderTimes.push(now);
-    if (this._fpsRenderTimes.length > 30) {
-      this._fpsRenderTimes.shift();
-    }
-    if (this._fpsRenderTimes.length >= 2) {
-      var duration = now - this._fpsRenderTimes[0];
-      if (duration > 0) {
-        var fps = Math.round(((this._fpsRenderTimes.length - 1) * 1000) / duration);
-        if (!this._fpsLastUpdate || now - this._fpsLastUpdate > 200) {
-          if (this._gui && this._gui._ctrlMesh) {
-            this._gui._ctrlMesh.updateFPS(fps);
-          }
-          this._fpsLastUpdate = now;
-        }
-      }
-    }
 
     if (this._splitMode) {
       this._applyRenderSplit();
