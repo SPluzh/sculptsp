@@ -957,6 +957,7 @@ class Scene {
     gl.polygonOffset(-1.0, -1.0);
 
     for (var i = 0, l = vp.meshes.length; i < l; ++i) {
+      if (!vp.meshes[i].isVisible(this._currentViewportIndex)) continue;
       shader.draw(vp.meshes[i], vp.step);
     }
 
@@ -1000,6 +1001,10 @@ class Scene {
   replaceMesh(mesh, newMesh) {
     var index = this.getIndexMesh(mesh);
     if (index >= 0) this._meshes[index] = newMesh;
+    if (mesh && newMesh) {
+      newMesh.setVisible(mesh.isVisible(0), 0);
+      newMesh.setVisible(mesh.isVisible(1), 1);
+    }
     if (this._mesh === mesh) this.setMesh(newMesh);
   }
 

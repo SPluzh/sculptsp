@@ -2159,6 +2159,8 @@ class Mesh {
     this.setTexture0(mesh.getTexture0());
     this.setCurvature(mesh.getCurvature());
     this.setOpacity(mesh.getOpacity());
+    this._isVisible = mesh._isVisible;
+    this._isVisibleViewport2 = mesh._isVisibleViewport2;
   }
 
   copyTransformData(mesh) {

@@ -25,6 +25,8 @@ class Multimesh extends Mesh {
     this.setID(mesh.getID());
     this.setRenderData(mesh.getRenderData());
     this.setTransformData(mesh.getTransformData());
+    this._isVisible = mesh._isVisible;
+    this._isVisibleViewport2 = mesh._isVisibleViewport2;
 
     this._meshes = [new MeshResolution(mesh, true)];
     this.setSelection(0);

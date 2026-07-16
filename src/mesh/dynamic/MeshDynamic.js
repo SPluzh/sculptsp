@@ -24,6 +24,8 @@ class MeshDynamic extends Mesh {
     this._meshData = createMeshData();
     this.setRenderData(mesh.getRenderData());
     this.setTransformData(mesh.getTransformData());
+    this._isVisible = mesh._isVisible;
+    this._isVisibleViewport2 = mesh._isVisibleViewport2;
 
     this._facesStateFlags = null; // state flags (<= Utils.STATE_FLAG) (Int32Array)
     this._wireframe = null; // Uint32Array

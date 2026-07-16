@@ -214,6 +214,15 @@ class GuiMultiresolution {
         self._showRemeshProgress(message, percent);
       });
 
+      var isVisibleV1 = false;
+      var isVisibleV2 = false;
+      for (var j = 0; j < selMeshes.length; ++j) {
+        if (selMeshes[j].isVisible(0)) isVisibleV1 = true;
+        if (selMeshes[j].isVisible(1)) isVisibleV2 = true;
+      }
+      newMesh.setVisible(isVisibleV1, 0);
+      newMesh.setVisible(isVisibleV2, 1);
+
       if (wasDynamic) newMesh = new MeshDynamic(newMesh);
       main.getStateManager().pushStateAddRemove(newMesh, main.getSelectedMeshes().slice());
       main.getMeshes().push(newMesh);
@@ -254,6 +263,8 @@ class GuiMultiresolution {
 
     newMesh.setRenderData(mesh.getRenderData());
     newMesh.initRender();
+    newMesh.setVisible(mesh.isVisible(0), 0);
+    newMesh.setVisible(mesh.isVisible(1), 1);
     return newMesh;
   }
 
