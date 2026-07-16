@@ -139,6 +139,96 @@ Import.importSGL = function (buffer, gl, main) {
       mesh.initTexCoordsDataFromOBJData(uv, fuv);
   }
 
+  if (version >= 6) {
+    var readAnchor = function() {
+      var type = u32a[off++];
+      if (type === 0) {
+        var meshIdx = u32a[off++];
+        var vertIdx = u32a[off++];
+        off++; // skip unused
+        return {
+          type: 'vertex',
+          meshIndex: meshIdx,
+          vertIdx: vertIdx
+        };
+      } else {
+        var wx = f32a[off++];
+        var wy = f32a[off++];
+        var wz = f32a[off++];
+        var worldPos = new Float32Array([wx, wy, wz]);
+        return {
+          type: 'free',
+          worldPos: worldPos
+        };
+      }
+    };
+
+    // Measure tool restore
+    var isMeasureVisibleV1 = u32a[off++] !== 0;
+    var isMeasureVisibleV2 = u32a[off++] !== 0;
+    var nbMeasureSegments = u32a[off++];
+    var measureSegments = [];
+    for (var s = 0; s < nbMeasureSegments; ++s) {
+      var vertA = readAnchor();
+      var vertB = readAnchor();
+      var isReference = u32a[off++] !== 0;
+      measureSegments.push({
+        vertA: vertA,
+        vertB: vertB,
+        isReference: isReference
+      });
+    }
+
+    var measureTool = main._measureTool;
+    if (measureTool) {
+      measureTool._segments = measureSegments;
+      measureTool._isVisible = isMeasureVisibleV1;
+      measureTool._isVisibleViewport2 = isMeasureVisibleV2;
+    }
+
+    // Divider tool restore
+    var isDividerVisibleV1 = u32a[off++] !== 0;
+    var isDividerVisibleV2 = u32a[off++] !== 0;
+    var dividerDivisions = u32a[off++];
+    var nbDividerSegments = u32a[off++];
+    var dividerSegments = [];
+    for (var s = 0; s < nbDividerSegments; ++s) {
+      var vertA = readAnchor();
+      var vertB = readAnchor();
+      dividerSegments.push({
+        vertA: vertA,
+        vertB: vertB
+      });
+    }
+
+    var dividerTool = main._dividerTool;
+    if (dividerTool) {
+      dividerTool._segments = dividerSegments;
+      dividerTool._isVisible = isDividerVisibleV1;
+      dividerTool._isVisibleViewport2 = isDividerVisibleV2;
+      dividerTool.setDivisions(dividerDivisions);
+    }
+
+  } else {
+    var measureTool = main._measureTool;
+    if (measureTool) {
+      measureTool._segments = [];
+      measureTool._isVisible = true;
+      measureTool._isVisibleViewport2 = true;
+    }
+    var dividerTool = main._dividerTool;
+    if (dividerTool) {
+      dividerTool._segments = [];
+      dividerTool._isVisible = true;
+      dividerTool._isVisibleViewport2 = true;
+      dividerTool.setDivisions(3);
+    }
+  }
+
+  if (main.getGui() && main.getGui().updateMesh) {
+    main.getGui().updateMesh();
+  }
+
   return meshes;
 };
 

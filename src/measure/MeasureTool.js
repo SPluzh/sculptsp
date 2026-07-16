@@ -13,6 +13,8 @@ class MeasureTool extends SculptBase {
     this._hoveredSegment = null; // Segment currently hovered
     this._hoveredVertexKey = ''; // 'vertA' or 'vertB'
     this._useDistanceThickness = true; // Thickness scales with camera distance
+    this._isVisible = true;
+    this._isVisibleViewport2 = true;
   }
 
   isActive() {
@@ -46,6 +48,9 @@ class MeasureTool extends SculptBase {
     this._hoveredSegment = null;
     this._hoveredVertexKey = '';
     this._main.render();
+    if (this._main.getGui() && this._main.getGui().updateMesh) {
+      this._main.getGui().updateMesh();
+    }
   }
 
   getSegments() {
@@ -280,21 +285,28 @@ class MeasureTool extends SculptBase {
   }
 
   end() {
+    var changed = false;
     if (this._draggedSegment) {
+      var oldLen = this._segments.length;
       // Clean up segments where both endpoints were dragged to the same vertex (allows deletion by overlapping endpoints)
       this._segments = this._segments.filter(seg => {
         var posA = this._getAnchorWorldPos(seg.vertA);
         var posB = this._getAnchorWorldPos(seg.vertB);
         return vec3.dist(posA, posB) > 1e-4;
       });
+      if (this._segments.length !== oldLen) changed = true;
       // If reference segment was deleted, make the first remaining one the new reference
       var hasReference = this._segments.some(seg => seg.isReference);
       if (!hasReference && this._segments.length > 0) {
         this._segments[0].isReference = true;
+        changed = true;
       }
       this._draggedSegment = null;
       this._draggedVertexKey = '';
       this._main.render();
+      if (changed && this._main.getGui() && this._main.getGui().updateMesh) {
+        this._main.getGui().updateMesh();
+      }
       return;
     }
 
@@ -308,11 +320,15 @@ class MeasureTool extends SculptBase {
           vertB: this._pendingB,
           isReference: !hasReference
         });
+        changed = true;
       }
     }
     this._pendingA = null;
     this._pendingB = null;
     this._main.render();
+    if (changed && this._main.getGui() && this._main.getGui().updateMesh) {
+      this._main.getGui().updateMesh();
+    }
   }
 
   getPendingA() {
@@ -321,6 +337,23 @@ class MeasureTool extends SculptBase {
 
   getPendingB() {
     return this._pendingB;
+  }
+
+  isVisible(viewportIndex) {
+    if (viewportIndex === 0) return this._isVisible;
+    if (viewportIndex === 1) return this._isVisibleViewport2;
+    return this._isVisible || this._isVisibleViewport2;
+  }
+
+  setVisible(bool, viewportIndex) {
+    if (viewportIndex === 0) {
+      this._isVisible = bool;
+    } else if (viewportIndex === 1) {
+      this._isVisibleViewport2 = bool;
+    } else {
+      this._isVisible = bool;
+      this._isVisibleViewport2 = bool;
+    }
   }
 
   postRender(selection) {

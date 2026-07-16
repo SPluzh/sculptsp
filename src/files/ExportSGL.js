@@ -8,7 +8,8 @@ var Export = {};
 // 3 faces u32 instead of i32
 // 4 + visibility (v1, v2)
 // 5 + vertex visibility (vertVisible u8 array)
-Export.VERSION = 5;
+// 6 + measure & segment divider tools states and segments
+Export.VERSION = 6;
 
 // current version 5
 //
@@ -78,6 +79,27 @@ Export.exportSGL = function (meshes, main) {
       nbBytes += mesh.getNbFaces() * 4 * 4;
     }
   }
+
+  // Version 6 extra data
+  var extraWords = 0;
+  var measureTool = main._measureTool;
+  var measureSegments = measureTool ? measureTool.getSegments() : [];
+  var isMeasureVisibleV1 = measureTool ? (measureTool._isVisible ? 1 : 0) : 1;
+  var isMeasureVisibleV2 = measureTool ? (measureTool._isVisibleViewport2 ? 1 : 0) : 1;
+
+  extraWords += 3;
+  extraWords += measureSegments.length * 9;
+
+  var dividerTool = main._dividerTool;
+  var dividerSegments = dividerTool ? dividerTool.getSegments() : [];
+  var isDividerVisibleV1 = dividerTool ? (dividerTool._isVisible ? 1 : 0) : 1;
+  var isDividerVisibleV2 = dividerTool ? (dividerTool._isVisibleViewport2 ? 1 : 0) : 1;
+  var dividerDivisions = dividerTool ? dividerTool.getDivisions() : 3;
+
+  extraWords += 4;
+  extraWords += dividerSegments.length * 8;
+
+  nbBytes += extraWords * 4;
 
   var buffer = new ArrayBuffer(nbBytes);
   var f32a = new Float32Array(buffer);
@@ -174,6 +196,50 @@ Export.exportSGL = function (meshes, main) {
       u32a.set(mesh.getFacesTexCoord().subarray(0, nbFaces * 4), off);
       off += nbFaces * 4;
     }
+  }
+
+  var writeAnchor = function(anchor) {
+    if (!anchor) {
+      u32a[off++] = 1; // free type
+      f32a[off++] = 0;
+      f32a[off++] = 0;
+      f32a[off++] = 0;
+      return;
+    }
+    if (anchor.type === 'vertex') {
+      u32a[off++] = 0; // vertex type
+      var meshIdx = meshes.indexOf(anchor.mesh);
+      u32a[off++] = meshIdx !== -1 ? meshIdx : 0;
+      u32a[off++] = anchor.vertIdx;
+      u32a[off++] = 0; // unused
+    } else {
+      u32a[off++] = 1; // free type
+      f32a[off++] = anchor.worldPos[0];
+      f32a[off++] = anchor.worldPos[1];
+      f32a[off++] = anchor.worldPos[2];
+    }
+  };
+
+  // Write Measure Tool header and segments
+  u32a[off++] = isMeasureVisibleV1;
+  u32a[off++] = isMeasureVisibleV2;
+  u32a[off++] = measureSegments.length;
+  for (var s = 0; s < measureSegments.length; ++s) {
+    var seg = measureSegments[s];
+    writeAnchor(seg.vertA);
+    writeAnchor(seg.vertB);
+    u32a[off++] = seg.isReference ? 1 : 0;
+  }
+
+  // Write Divider Tool header and segments
+  u32a[off++] = isDividerVisibleV1;
+  u32a[off++] = isDividerVisibleV2;
+  u32a[off++] = dividerDivisions;
+  u32a[off++] = dividerSegments.length;
+  for (var s = 0; s < dividerSegments.length; ++s) {
+    var seg = dividerSegments[s];
+    writeAnchor(seg.vertA);
+    writeAnchor(seg.vertB);
   }
 
   var data = new DataView(buffer, 0, off * 4);

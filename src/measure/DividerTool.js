@@ -14,6 +14,8 @@ class DividerTool extends SculptBase {
     this._hoveredVertexKey = ''; // 'vertA' or 'vertB'
     this._useDistanceThickness = true; // Thickness scales with camera distance
     this._divisions = 3;        // Number of parts to divide segment (2 to 6)
+    this._isVisible = true;
+    this._isVisibleViewport2 = true;
   }
 
   isActive() {
@@ -47,6 +49,9 @@ class DividerTool extends SculptBase {
     this._hoveredSegment = null;
     this._hoveredVertexKey = '';
     this._main.render();
+    if (this._main.getGui() && this._main.getGui().updateMesh) {
+      this._main.getGui().updateMesh();
+    }
   }
 
   getSegments() {
@@ -274,15 +279,21 @@ class DividerTool extends SculptBase {
   }
 
   end() {
+    var changed = false;
     if (this._draggedSegment) {
+      var oldLen = this._segments.length;
       this._segments = this._segments.filter(seg => {
         var posA = this._getAnchorWorldPos(seg.vertA);
         var posB = this._getAnchorWorldPos(seg.vertB);
         return vec3.dist(posA, posB) > 1e-4;
       });
+      if (this._segments.length !== oldLen) changed = true;
       this._draggedSegment = null;
       this._draggedVertexKey = '';
       this._main.render();
+      if (changed && this._main.getGui() && this._main.getGui().updateMesh) {
+        this._main.getGui().updateMesh();
+      }
       return;
     }
 
@@ -294,11 +305,15 @@ class DividerTool extends SculptBase {
           vertA: this._pendingA,
           vertB: this._pendingB
         });
+        changed = true;
       }
     }
     this._pendingA = null;
     this._pendingB = null;
     this._main.render();
+    if (changed && this._main.getGui() && this._main.getGui().updateMesh) {
+      this._main.getGui().updateMesh();
+    }
   }
 
   getPendingA() {
@@ -307,6 +322,23 @@ class DividerTool extends SculptBase {
 
   getPendingB() {
     return this._pendingB;
+  }
+
+  isVisible(viewportIndex) {
+    if (viewportIndex === 0) return this._isVisible;
+    if (viewportIndex === 1) return this._isVisibleViewport2;
+    return this._isVisible || this._isVisibleViewport2;
+  }
+
+  setVisible(bool, viewportIndex) {
+    if (viewportIndex === 0) {
+      this._isVisible = bool;
+    } else if (viewportIndex === 1) {
+      this._isVisibleViewport2 = bool;
+    } else {
+      this._isVisible = bool;
+      this._isVisibleViewport2 = bool;
+    }
   }
 
   postRender(selection) {

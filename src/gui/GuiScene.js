@@ -223,6 +223,8 @@ class GuiScene {
 
     var mesh = this._main.getMesh();
     this._ctrlOffSym.setValue(mesh ? mesh.getSymmetryOffset() : 0);
+
+    this.refreshOutliner();
   }
 
   merge() {
@@ -355,7 +357,7 @@ class GuiScene {
         var row = e.target.closest('.sp-outliner-row');
         if (row) {
           var meshIdAttr = row.getAttribute('data-mesh-id');
-          var meshId = meshIdAttr === 'zsphere' ? 'zsphere' : parseInt(meshIdAttr);
+          var meshId = (meshIdAttr === 'zsphere' || meshIdAttr === 'measure' || meshIdAttr === 'divider') ? meshIdAttr : parseInt(meshIdAttr);
           this._selectMesh(meshId, e.ctrlKey || e.metaKey);
         }
         return;
@@ -363,7 +365,7 @@ class GuiScene {
 
       var action = btn.getAttribute('data-action');
       var idAttr = btn.getAttribute('data-mesh-id');
-      var id = idAttr === 'zsphere' ? 'zsphere' : (idAttr ? parseInt(idAttr) : null);
+      var id = (idAttr === 'zsphere' || idAttr === 'measure' || idAttr === 'divider') ? idAttr : (idAttr ? parseInt(idAttr) : null);
 
       switch (action) {
         case 'toggle-vis-v1':
@@ -402,7 +404,7 @@ class GuiScene {
       var row = e.target.closest('.sp-outliner-row');
       if (row) {
         var meshIdAttr = row.getAttribute('data-mesh-id');
-        if (meshIdAttr === 'zsphere') return;
+        if (meshIdAttr === 'zsphere' || meshIdAttr === 'measure' || meshIdAttr === 'divider') return;
         var meshId = parseInt(meshIdAttr);
         var nameSpan = row.querySelector('.sp-mesh-name');
         if (nameSpan) {
@@ -425,8 +427,33 @@ class GuiScene {
       return;
     }
 
+    if (id === 'measure') {
+      var gui = this._main.getGui();
+      if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
+        gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.MEASURE);
+      } else {
+        this._main.getSculptManager().setToolIndex(Enums.Tools.MEASURE);
+      }
+      this._main.render();
+      this.refreshOutliner();
+      return;
+    }
+
+    if (id === 'divider') {
+      var gui = this._main.getGui();
+      if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
+        gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.DIVIDER);
+      } else {
+        this._main.getSculptManager().setToolIndex(Enums.Tools.DIVIDER);
+      }
+      this._main.render();
+      this.refreshOutliner();
+      return;
+    }
+
     var sculptMgr = this._main.getSculptManager();
-    if (sculptMgr.getToolIndex() === Enums.Tools.ZSPHERE) {
+    var currentTool = sculptMgr.getToolIndex();
+    if (currentTool === Enums.Tools.ZSPHERE || currentTool === Enums.Tools.MEASURE || currentTool === Enums.Tools.DIVIDER) {
       var gui = this._main.getGui();
       if (gui && gui._ctrlSculpting && gui._ctrlSculpting._ctrlSculpt) {
         gui._ctrlSculpting._ctrlSculpt.setValue(Enums.Tools.BRUSH);
@@ -447,6 +474,26 @@ class GuiScene {
       var zsphereTool = this._main.getSculptManager().getTool(Enums.Tools.ZSPHERE);
       if (zsphereTool && zsphereTool._drawable) {
         zsphereTool._drawable.setVisible(!zsphereTool._drawable.isVisible(vpIdx), vpIdx);
+        this._main.render();
+        this.refreshOutliner();
+      }
+      return;
+    }
+
+    if (id === 'measure') {
+      var measureTool = this._main.getSculptManager().getTool(Enums.Tools.MEASURE);
+      if (measureTool) {
+        measureTool.setVisible(!measureTool.isVisible(vpIdx), vpIdx);
+        this._main.render();
+        this.refreshOutliner();
+      }
+      return;
+    }
+
+    if (id === 'divider') {
+      var dividerTool = this._main.getSculptManager().getTool(Enums.Tools.DIVIDER);
+      if (dividerTool) {
+        dividerTool.setVisible(!dividerTool.isVisible(vpIdx), vpIdx);
         this._main.render();
         this.refreshOutliner();
       }
@@ -505,7 +552,9 @@ class GuiScene {
     
     var currentTool = this._main.getSculptManager().getToolIndex();
     var isZSphereActive = (currentTool === Enums.Tools.ZSPHERE);
-    var selSet = isZSphereActive ? new Set() : new Set(selected.map(m => m.getID()));
+    var isMeasureActive = (currentTool === Enums.Tools.MEASURE);
+    var isDividerActive = (currentTool === Enums.Tools.DIVIDER);
+    var selSet = (isZSphereActive || isMeasureActive || isDividerActive) ? new Set() : new Set(selected.map(m => m.getID()));
 
     var html = '';
     for (var i = 0; i < meshes.length; i++) {
@@ -593,13 +642,102 @@ class GuiScene {
       `;
     }
 
+    var measureTool = this._main.getSculptManager().getTool(Enums.Tools.MEASURE);
+    var measureSegments = measureTool ? measureTool.getSegments() : [];
+    if (isMeasureActive || measureSegments.length > 0) {
+      var isMeasureVisibleV1 = measureTool ? measureTool.isVisible(0) : true;
+      var isMeasureVisibleV2 = measureTool ? measureTool.isVisible(1) : true;
+      var mSelCls = isMeasureActive ? ' sp-row--selected' : '';
+      var mHideCls = (isMeasureVisibleV1 || isMeasureVisibleV2) ? '' : ' sp-row--hidden';
+      var mMetaStr = measureSegments.length + ' ' + (measureSegments.length === 1 ? 'segment' : 'segments');
+
+      var mEyeSvgV1 = isMeasureVisibleV1 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var mEyeSvgV2 = isMeasureVisibleV2 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var mv1HiddenCls = isMeasureVisibleV1 ? '' : ' sp-vis--hidden';
+      var mv2HiddenCls = isMeasureVisibleV2 ? '' : ' sp-vis--hidden';
+
+      html += `
+        <div class="sp-outliner-row${mSelCls}${mHideCls}" data-mesh-id="measure">
+          <div class="sp-vis-group">
+            <button class="sp-vis-btn sp-vis-v1${mv1HiddenCls}" data-action="toggle-vis-v1" data-mesh-id="measure" title="${isMeasureVisibleV1 ? 'Hide in Viewport 1' : 'Show in Viewport 1'}">
+              ${mEyeSvgV1}
+              <span class="sp-vis-badge">1</span>
+            </button>
+            <button class="sp-vis-btn sp-vis-v2${mv2HiddenCls}" data-action="toggle-vis-v2" data-mesh-id="measure" title="${isMeasureVisibleV2 ? 'Hide in Viewport 2' : 'Show in Viewport 2'}">
+              ${mEyeSvgV2}
+              <span class="sp-vis-badge">2</span>
+            </button>
+          </div>
+          <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="measure">
+            <span class="sp-mesh-name">${this.escapeHtml(TR('measureTitle'))}</span>
+            <span class="sp-mesh-meta">${mMetaStr}</span>
+          </div>
+        </div>
+      `;
+    }
+
+    var dividerTool = this._main.getSculptManager().getTool(Enums.Tools.DIVIDER);
+    var dividerSegments = dividerTool ? dividerTool.getSegments() : [];
+    if (isDividerActive || dividerSegments.length > 0) {
+      var isDividerVisibleV1 = dividerTool ? dividerTool.isVisible(0) : true;
+      var isDividerVisibleV2 = dividerTool ? dividerTool.isVisible(1) : true;
+      var dSelCls = isDividerActive ? ' sp-row--selected' : '';
+      var dHideCls = (isDividerVisibleV1 || isDividerVisibleV2) ? '' : ' sp-row--hidden';
+      var dMetaStr = dividerSegments.length + ' ' + (dividerSegments.length === 1 ? 'segment' : 'segments');
+
+      var dEyeSvgV1 = isDividerVisibleV1 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var dEyeSvgV2 = isDividerVisibleV2 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var dv1HiddenCls = isDividerVisibleV1 ? '' : ' sp-vis--hidden';
+      var dv2HiddenCls = isDividerVisibleV2 ? '' : ' sp-vis--hidden';
+
+      html += `
+        <div class="sp-outliner-row${dSelCls}${dHideCls}" data-mesh-id="divider">
+          <div class="sp-vis-group">
+            <button class="sp-vis-btn sp-vis-v1${dv1HiddenCls}" data-action="toggle-vis-v1" data-mesh-id="divider" title="${isDividerVisibleV1 ? 'Hide in Viewport 1' : 'Show in Viewport 1'}">
+              ${dEyeSvgV1}
+              <span class="sp-vis-badge">1</span>
+            </button>
+            <button class="sp-vis-btn sp-vis-v2${dv2HiddenCls}" data-action="toggle-vis-v2" data-mesh-id="divider" title="${isDividerVisibleV2 ? 'Hide in Viewport 2' : 'Show in Viewport 2'}">
+              ${dEyeSvgV2}
+              <span class="sp-vis-badge">2</span>
+            </button>
+          </div>
+          <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="divider">
+            <span class="sp-mesh-name">${this.escapeHtml(TR('dividerTitle'))}</span>
+            <span class="sp-mesh-meta">${dMetaStr}</span>
+          </div>
+        </div>
+      `;
+    }
+
     this._outlinerEl.innerHTML = html || '<div class="sp-outliner-empty">No objects in scene</div>';
 
+    var btnDuplicate = this._outlinerContainer.querySelector('[data-action="duplicate"]');
+    var btnDelete = this._outlinerContainer.querySelector('[data-action="delete"]');
+    if (btnDuplicate) {
+      btnDuplicate.disabled = (selected.length === 0) || isZSphereActive || isMeasureActive || isDividerActive;
+    }
+    if (btnDelete) {
+      btnDelete.disabled = (selected.length === 0) || isZSphereActive || isMeasureActive || isDividerActive;
+    }
+
     if (this._btnMerge) {
-      this._btnMerge.disabled = (selected.length < 2);
+      this._btnMerge.disabled = (selected.length < 2) || isZSphereActive || isMeasureActive || isDividerActive;
     }
     if (this._btnRename) {
-      this._btnRename.disabled = (selected.length !== 1);
+      this._btnRename.disabled = (selected.length !== 1) || isZSphereActive || isMeasureActive || isDividerActive;
     }
   }
 

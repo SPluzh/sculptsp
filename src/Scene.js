@@ -437,37 +437,71 @@ class Scene {
       this._sculptManager.postRender(camera, vpX); // draw sculpting gizmo stuffs
 
       if (this._measureTool && this._measureRenderer) {
-        this._measureRenderer.render(
-          this._measureTool.getSegments(),
-          this._measureTool.getReferenceLength(),
-          this._measureTool.getPendingA(),
-          this._measureTool.getPendingB(),
-          camera,
-          this._pixelRatio,
-          this._mouseX,
-          this._mouseY,
-          this._measureTool.getHoveredSegment(),
-          this._measureTool.getHoveredVertexKey(),
-          this._measureTool._useDistanceThickness,
-          vpX
-        );
+        if (this._measureTool.isVisible(this._currentViewportIndex)) {
+          this._measureRenderer.render(
+            this._measureTool.getSegments(),
+            this._measureTool.getReferenceLength(),
+            this._measureTool.getPendingA(),
+            this._measureTool.getPendingB(),
+            camera,
+            this._pixelRatio,
+            this._mouseX,
+            this._mouseY,
+            this._measureTool.getHoveredSegment(),
+            this._measureTool.getHoveredVertexKey(),
+            this._measureTool._useDistanceThickness,
+            vpX
+          );
+        } else {
+          this._measureRenderer.render(
+            [],
+            null,
+            null,
+            null,
+            camera,
+            this._pixelRatio,
+            this._mouseX,
+            this._mouseY,
+            null,
+            '',
+            this._measureTool._useDistanceThickness,
+            vpX
+          );
+        }
       }
 
       if (this._dividerTool && this._dividerRenderer) {
-        this._dividerRenderer.render(
-          this._dividerTool.getSegments(),
-          this._dividerTool.getPendingA(),
-          this._dividerTool.getPendingB(),
-          camera,
-          this._pixelRatio,
-          this._mouseX,
-          this._mouseY,
-          this._dividerTool.getHoveredSegment(),
-          this._dividerTool.getHoveredVertexKey(),
-          this._dividerTool.getDivisions(),
-          this._dividerTool._useDistanceThickness,
-          vpX
-        );
+        if (this._dividerTool.isVisible(this._currentViewportIndex)) {
+          this._dividerRenderer.render(
+            this._dividerTool.getSegments(),
+            this._dividerTool.getPendingA(),
+            this._dividerTool.getPendingB(),
+            camera,
+            this._pixelRatio,
+            this._mouseX,
+            this._mouseY,
+            this._dividerTool.getHoveredSegment(),
+            this._dividerTool.getHoveredVertexKey(),
+            this._dividerTool.getDivisions(),
+            this._dividerTool._useDistanceThickness,
+            vpX
+          );
+        } else {
+          this._dividerRenderer.render(
+            [],
+            null,
+            null,
+            camera,
+            this._pixelRatio,
+            this._mouseX,
+            this._mouseY,
+            null,
+            '',
+            this._dividerTool.getDivisions(),
+            this._dividerTool._useDistanceThickness,
+            vpX
+          );
+        }
       }
     }
 
@@ -913,6 +947,25 @@ class Scene {
     this._stateManager.pushStateAdd(newMeshes);
     this.setMesh(meshes[meshes.length - 1]);
     this.resetCameraMeshes(newMeshes);
+
+    var resolveToolAnchors = (tool, newWrappedMeshes) => {
+      if (!tool || !tool.getSegments) return;
+      var segments = tool.getSegments();
+      for (var s = 0; s < segments.length; ++s) {
+        var seg = segments[s];
+        if (seg.vertA && seg.vertA.type === 'vertex' && seg.vertA.meshIndex !== undefined) {
+          seg.vertA.mesh = newWrappedMeshes[seg.vertA.meshIndex];
+          delete seg.vertA.meshIndex;
+        }
+        if (seg.vertB && seg.vertB.type === 'vertex' && seg.vertB.meshIndex !== undefined) {
+          seg.vertB.mesh = newWrappedMeshes[seg.vertB.meshIndex];
+          delete seg.vertB.meshIndex;
+        }
+      }
+    };
+    resolveToolAnchors(this._measureTool, newMeshes);
+    resolveToolAnchors(this._dividerTool, newMeshes);
+
     return newMeshes;
   }
 
