@@ -193,7 +193,7 @@ var TR = {
   sculptAccumulate: 'Наращивать без ограничений',
   sculptSpacing: 'Интервал',
   sculptColorGlobal: 'Глобальный',
-  sculptPickColor: 'Пипетка материал',
+  sculptPickColor: 'Пипетка материал (-I)',
   sculptTangentialSmoothing: 'Сглаживание по касательной',
   sculptTopologicalCheck: 'Проверка топологии',
   sculptMoveAlongNormal: 'Перемещать вдоль нормали',

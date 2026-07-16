@@ -193,7 +193,7 @@ var TR = {
   sculptAccumulate: 'Accumulate (no limit per stroke)',
   sculptSpacing: 'Spacing',
   sculptColorGlobal: 'Global',
-  sculptPickColor: 'Material / Color picker',
+  sculptPickColor: 'Material / Color picker (-I)',
   sculptTangentialSmoothing: 'Relax only',
   sculptTopologicalCheck: 'Topological check',
   sculptMoveAlongNormal: 'Move along normal (N or -Alt)',

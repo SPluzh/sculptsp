@@ -316,7 +316,7 @@ class GuiScene {
     if (!this._main._focusGui)
       event.preventDefault();
 
-    if (event.which === 73 || event.which === 67) { // I or C
+    if (event.which === 67) { // C
       this.toggleShowHide();
       event.handled = true;
     } else if (event.which === 68 && event.ctrlKey) { // D
