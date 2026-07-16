@@ -13,7 +13,7 @@ class SculptManager {
     // symmetry stuffs
     this._symmetry = true; // if symmetric sculpting is enabled  
 
-    this._dynamicBrushSize = false; // dynamic brush size
+    this._dynamicBrushSize = true; // dynamic brush size
 
     // continuous stuffs
     this._continuous = false; // continuous sculpting
