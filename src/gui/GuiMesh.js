@@ -30,6 +30,12 @@ class GuiMesh {
     guiParent.appendChild(this.domUl);
   }
 
+  _formatCount(n) {
+    if (n >= 1000000) return (n / 1000000).toFixed(1) + 'M';
+    if (n >= 1000)    return (n / 1000).toFixed(1) + 'K';
+    return String(n);
+  }
+
   updateMeshInfo() {
     var mesh = this._main.getMesh();
     var activePoints = mesh ? mesh.getNbVertices() : 0;
@@ -40,8 +46,8 @@ class GuiMesh {
       totalPoints += meshes[i].getNbVertices();
     }
 
-    this.domVerts.innerHTML = TR('meshNbVertices') + activePoints;
-    this.domFaces.innerHTML = TR('meshNbFaces') + totalPoints;
+    this.domVerts.innerHTML = TR('meshNbVertices') + this._formatCount(activePoints);
+    this.domFaces.innerHTML = TR('meshNbFaces') + this._formatCount(totalPoints);
   }
 
   updateFPS(fps) {
