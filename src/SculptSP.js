@@ -519,7 +519,6 @@ class SculptSP extends Scene {
       maskingTool.destroyLassoOverlay();
     } else if (this._action === Enums.Action.SCULPT_EDIT) {
       var smgr = this.getSculptManager();
-      console.log('[onDeviceUp] SCULPT_EDIT, toolIndex=', smgr.getToolIndex(), 'MASKING=', Enums.Tools.MASKING, 'mesh=', !!this._mesh, 'wasClick=', data ? data.wasClick : false);
       if (smgr.getToolIndex() === Enums.Tools.MASKING && this._mesh) {
         var wasClickSculpt = data ? data.wasClick : false;
         if (wasClickSculpt) {
@@ -662,9 +661,7 @@ class SculptSP extends Scene {
         return;
       }
 
-      console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
       canEdit = this._sculptManager.start(data.shiftKey);
-      console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
 
       if (!canEdit && camera.getRefDragEnabled()) {
         var vpX = 0;

@@ -55,13 +55,11 @@ class ZSphereTool extends SculptBase {
   }
 
   onActivate() {
-    console.log('ZSphereTool activated');
     window.addEventListener('keydown', this._onKeyDown, false);
     window.addEventListener('keyup', this._onKeyUp, false);
 
     // Auto-create a root ZSphere at camera center if graph is empty
     if (this._graph.getNodes().length === 0) {
-      console.log('Graph is empty. Creating root ZSphere at camera center');
       var camera = this._main.getCamera();
       var origin = vec3.create();
       if (camera && camera._center) {
@@ -80,7 +78,6 @@ class ZSphereTool extends SculptBase {
   }
 
   onDeactivate() {
-    console.log('ZSphereTool deactivated');
     window.removeEventListener('keydown', this._onKeyDown, false);
     window.removeEventListener('keyup', this._onKeyUp, false);
     this._isCtrlDown = false;

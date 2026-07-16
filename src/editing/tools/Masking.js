@@ -169,13 +169,11 @@ class Masking extends SculptBase {
     }
 
     var mesh = this.getMesh();
-    console.log('[Masking.clickAction] mouseX=', mouseX, 'mouseY=', mouseY, 'mesh=', mesh ? mesh.getID() : 'null', 'undoStroke=', undoStroke, 'ctrlKey=', ctrlKey, 'altKey=', altKey);
     if (!mesh) return;
 
     var picking = main.getPicking();
     // Ray-cast at the click position across all meshes
     var hit = picking.intersectionMouseMeshes(main.getMeshes(), mouseX, mouseY);
-    console.log('[Masking.clickAction] hit=', hit);
     if (!hit) {
       // Clicked on empty space — invert mask (original behaviour)
       this.invert();
@@ -213,8 +211,6 @@ class Masking extends SculptBase {
         bestMask = mAr[v3 + 2];
       }
     }
-
-    console.log('[Masking.clickAction] bestMask=', bestMask, 'ctrlKey=', ctrlKey, 'altKey=', altKey, '→', (bestMask < 1.0 && !(ctrlKey && altKey)) ? 'blur' : 'sharpen');
 
     // mask value < 1.0 means the vertex is (at least partially) masked
     if (bestMask < 1.0) {

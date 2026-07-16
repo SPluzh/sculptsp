@@ -112,7 +112,6 @@ var floodFill = function (voxels) {
   }
 
   for (var id = 0; id < datalen; ++id) {
-    if (distField[id] === 0) console.log('hit');
     if (tagCell[id] === 0)
       distField[id] = -distField[id];
   }
@@ -444,7 +443,6 @@ Remesh.remesh = function (meshes, baseMesh, manifold) {
   }
 
   console.timeEnd('remesh total');
-  console.log('\n');
   return nmesh;
 };
 
@@ -530,7 +528,6 @@ Remesh.remeshAsync = async function (meshes, baseMesh, manifold, progressCallbac
   }
 
   console.timeEnd('remesh total');
-  console.log('\n');
   return nmesh;
 };
 

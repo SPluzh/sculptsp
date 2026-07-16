@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Performance**: Removed high-frequency debug log statements from hot paths, including spline overlay drawing in `CurveDeformTool`, click actions in `Masking`, tool activation in `ZSphereTool`, brush startup in `SculptManager`, and voxel processing in `Remesh` and `SculptSP`.
+- **Performance**: Capped the maximum spacing steps computed in a single stroke event to 8 in the base sculpting logic, preventing interface freezes and lag during fast brush strokes at large sizes.
+- **Performance**: Shifted synchronous viewport render calls to an asynchronous requestAnimationFrame queue in base brush stroke and tool alignment routines to prevent heavy draw operations from blocking mouse input events.
 - **UI**: Added a real-time FPS counter to the mesh statistics HUD in the bottom-right corner of the viewport, enabling users to monitor performance during active sculpting and brush interactions.
 - **Performance**: Optimized the inner loops of 9 sculpting tools (Flatten, Inflate, Pinch, Crease, Local Scale, Masking, Drag, Move, and Paint) by evaluating squared distances first to skip calculations for out-of-bounds vertices, avoiding redundant square root calculations.
 - **Performance**: Eliminated dynamic matrix allocations on every sculpting stroke update by reusing a preallocated, shared inverse matrix in mouse intersection computations and drag/move direction updates.

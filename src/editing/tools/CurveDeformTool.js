@@ -759,7 +759,6 @@ class CurveDeformTool extends SculptBase {
     this._svg.setAttribute('height', height);
 
     var debugCPS = this._curveData.getControlPoints();
-    console.log('[CurveDeformTool] drawOverlay: mode =', this._mode, 'isDragging =', this._isDragging, 'cps count =', debugCPS.length, 'action =', main._action);
 
     while (this._svg.firstChild) {
       this._svg.removeChild(this._svg.firstChild);
@@ -797,11 +796,6 @@ class CurveDeformTool extends SculptBase {
             y: screenPos[1] / pixelRatio
           };
         });
-
-        if (screenPoints.length > 0) {
-          vec3.transformMat4(tempWorld, cps[0].localPos, meshMatrix);
-          console.log('[CurveDeformTool] first screenPoint =', screenPoints[0].x, screenPoints[0].y, 'worldPos =', vec3.str(tempWorld));
-        }
 
         var pathData = 'M ' + screenPoints[0].x + ' ' + screenPoints[0].y;
         for (var i = 1; i < screenPoints.length; i++) {

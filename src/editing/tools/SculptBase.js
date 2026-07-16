@@ -161,7 +161,7 @@ class SculptBase {
     this.makeStroke(this._lastMouseX + offx * 1e-3, this._lastMouseY + offy * 1e-3, picking, pickingSyms);
     this._radius = origRad;
 
-    this.updateRender();
+    this.scheduleRender();
     main.setCanvasCursor('default');
   }
 
@@ -192,20 +192,25 @@ class SculptBase {
       return;
     }
 
-    var step = 1.0 / Math.floor(dist / minSpacing);
+    var numSteps = Math.floor(dist / minSpacing);
+    var maxSteps = 8;
+    if (numSteps > maxSteps) {
+      numSteps = maxSteps;
+    }
+    var step = 1.0 / numSteps;
     dx *= step;
     dy *= step;
     var mouseX = this._lastMouseX + dx;
     var mouseY = this._lastMouseY + dy;
 
-    for (var i = step; i <= 1.0; i += step) {
+    for (var i = 0; i < numSteps; i++) {
       if (!this.makeStroke(mouseX, mouseY, picking, pickingSyms))
         break;
       mouseX += dx;
       mouseY += dy;
     }
 
-    this.updateRender();
+    this.scheduleRender();
 
     this._lastMouseX = main._mouseX;
     this._lastMouseY = main._mouseY;
