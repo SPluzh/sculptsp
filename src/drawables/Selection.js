@@ -246,12 +246,17 @@ class Selection {
     if (pickedMesh) this._updateMatricesMesh(camera, main);
     else this._updateMatricesBackground(camera, main);
 
-    var drawCircle = main._action === Enums.Action.NOTHING;
     var toolIndex = main.getSculptManager().getToolIndex();
+    var isTopology = toolIndex === Enums.Tools.TOPOLOGY;
+    // For Topology tool always show rings, for others only when not actively sculpting
+    var drawCircle = isTopology || main._action === Enums.Action.NOTHING;
     if (toolIndex === Enums.Tools.SMOOTH) {
       vec3.set(this._color, 0.0, drawCircle && pickedMesh ? 0.4 : 0.6, 0.8);
     } else if (toolIndex === Enums.Tools.MASKING) {
       vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.8 : 0.9, 0.0);
+    } else if (isTopology) {
+      // Purple cursor for Topology tool
+      vec3.set(this._color, 0.6, drawCircle && pickedMesh ? 0.0 : 0.2, 0.9);
     } else {
       vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.0 : 0.4, 0.0);
     }
