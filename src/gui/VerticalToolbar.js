@@ -117,6 +117,7 @@ class VerticalToolbar {
     var btn = document.createElement('div');
     btn.className = 'vtb-btn vtb-btn--active-tool';
     btn.setAttribute('data-tooltip', 'Active Tool');
+    btn.setAttribute('data-active-text', this._main.getSculptManager().getDynamicBrushSize() ? 'Dynamic' : 'Active');
     btn.innerHTML = '<i data-lucide="brush"></i>';
     btn.addEventListener('click', () => {
       this._toggle(id, null);
@@ -132,6 +133,13 @@ class VerticalToolbar {
     this._dom.insertBefore(sep, btn.nextSibling);
     
     return btn;
+  }
+
+  updateActiveToolText() {
+    if (this._activeToolBtn) {
+      var isDynamic = this._main.getSculptManager().getDynamicBrushSize();
+      this._activeToolBtn.setAttribute('data-active-text', isDynamic ? 'Dynamic' : 'Active');
+    }
   }
 
   addSymmetryButton(tooltip, onToggleFn, initialValue) {

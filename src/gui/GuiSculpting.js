@@ -116,6 +116,9 @@ class GuiSculpting {
       this._sculptManager.setDynamicBrushSize(val);
       this._main.getPicking().updateLocalAndWorldRadius2();
       this._main.renderSelectOverRtt();
+      if (this._ctrlGui._toolbar) {
+        this._ctrlGui._toolbar.updateActiveToolText();
+      }
     });
 
     // symmetry
@@ -281,6 +284,7 @@ class GuiSculpting {
     if (this._ctrlSymmetryZ) this._ctrlSymmetryZ.setVisibility(showSym && symActive);
     if (this._ctrlGui._toolbar) {
       this._ctrlGui._toolbar.setSymmetryVisibility(showSym);
+      this._ctrlGui._toolbar.updateActiveToolText();
     }
 
     this._ctrlTitleCommon.setVisibility(showContinuous || showSym);

@@ -1003,7 +1003,7 @@ body {
   color: #fff;
 }
 .vtb-btn--active-tool::after {
-  content: 'Active';
+  content: attr(data-active-text);
   position: absolute;
   bottom: 1px;
   font-size: 6.5px;
