@@ -137,8 +137,12 @@ class Topology extends SculptBase {
       picking.intersectionMouseMeshes();
 
     var mesh = picking.getMesh();
-    if (mesh && mesh.isDynamic && main.getSculptManager().getSymmetry())
-      main.getPickingSymmetry().intersectionMouseMesh(mesh);
+    if (mesh && main.getSculptManager().getSymmetry()) {
+      var syms = main.getPickingSymmetries();
+      for (var i = 0; i < syms.length; ++i) {
+        syms[i].intersectionMouseMesh(mesh);
+      }
+    }
   }
 }
 
