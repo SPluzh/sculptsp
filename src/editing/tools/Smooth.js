@@ -45,13 +45,14 @@ class Smooth extends SculptBase {
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);
-    var cx, cy, cz, radius;
+    var cx, cy, cz, radius, radius2;
     if (useFalloff) {
       var center = picking.getIntersectionPoint();
       cx = center[0];
       cy = center[1];
       cz = center[2];
       radius = picking.getLocalRadius();
+      radius2 = radius * radius;
     }
 
     for (var i = 0; i < nbVerts; ++i) {
@@ -65,8 +66,13 @@ class Smooth extends SculptBase {
         var dx = vx - cx;
         var dy = vy - cy;
         var dz = vz - cz;
-        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
-        mIntensity *= this.getFallOff(dist);
+        var dist2 = dx * dx + dy * dy + dz * dz;
+        if (dist2 >= radius2) {
+          mIntensity = 0.0;
+        } else {
+          var dist = Math.sqrt(dist2) / radius;
+          mIntensity *= this.getFallOff(dist);
+        }
       }
       if (picking)
         mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
@@ -89,13 +95,14 @@ class Smooth extends SculptBase {
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);
-    var cx, cy, cz, radius;
+    var cx, cy, cz, radius, radius2;
     if (useFalloff) {
       var center = picking.getIntersectionPoint();
       cx = center[0];
       cy = center[1];
       cz = center[2];
       radius = picking.getLocalRadius();
+      radius2 = radius * radius;
     }
 
     for (var i = 0; i < nbVerts; ++i) {
@@ -123,8 +130,13 @@ class Smooth extends SculptBase {
         var dx = vx - cx;
         var dy = vy - cy;
         var dz = vz - cz;
-        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
-        mIntensity *= this.getFallOff(dist);
+        var dist2 = dx * dx + dy * dy + dz * dz;
+        if (dist2 >= radius2) {
+          mIntensity = 0.0;
+        } else {
+          var dist = Math.sqrt(dist2) / radius;
+          mIntensity *= this.getFallOff(dist);
+        }
       }
       if (picking)
         mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
@@ -146,13 +158,14 @@ class Smooth extends SculptBase {
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);
-    var cx, cy, cz, radius;
+    var cx, cy, cz, radius, radius2;
     if (useFalloff) {
       var center = picking.getIntersectionPoint();
       cx = center[0];
       cy = center[1];
       cz = center[2];
       radius = picking.getLocalRadius();
+      radius2 = radius * radius;
     }
 
     for (var i = 0; i < nbVerts; ++i) {
@@ -171,8 +184,13 @@ class Smooth extends SculptBase {
         var dx = vx - cx;
         var dy = vy - cy;
         var dz = vz - cz;
-        var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
-        mIntensity *= this.getFallOff(dist);
+        var dist2 = dx * dx + dy * dy + dz * dz;
+        if (dist2 >= radius2) {
+          mIntensity = 0.0;
+        } else {
+          var dist = Math.sqrt(dist2) / radius;
+          mIntensity *= this.getFallOff(dist);
+        }
       }
       if (picking)
         mIntensity *= picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);

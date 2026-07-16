@@ -22,6 +22,8 @@ class SculptBase {
     this._focalShift = 0.0;
     this._focalShiftFalloff = true;
     this._dynTopoInfluence = false;
+    this._strokeInProgress = false;  // guard against event accumulation
+    this._renderScheduled = false;   // rAF render dedup flag
   }
 
   getDynTopoInfluence() {
@@ -52,9 +54,7 @@ class SculptBase {
     var main = this._main;
     var picking = main.getPicking();
 
-    console.log('[SculptBase] start: calling intersectionMouseMeshes()');
     var hit = picking.intersectionMouseMeshes();
-    console.log('[SculptBase] start: intersectionMouseMeshes returned', hit);
     if (!hit)
       return false;
 
@@ -135,6 +135,7 @@ class SculptBase {
   }
 
   update(continuous) {
+    if (this._strokeInProgress) return;
     if (this._lockPosition === true)
       return this.updateSculptLock(continuous);
     this.sculptStroke();
@@ -165,6 +166,7 @@ class SculptBase {
   }
 
   sculptStroke() {
+    this._strokeInProgress = true;
     var main = this._main;
     var picking = main.getPicking();
     var pickingSyms = main.getSculptManager().getSymmetry() ? main.getPickingSymmetries() : [];
@@ -181,11 +183,14 @@ class SculptBase {
       this.updateRender();
       this._lastMouseX = main._mouseX;
       this._lastMouseY = main._mouseY;
+      this._strokeInProgress = false;
       return;
     }
 
-    if (dist <= minSpacing)
+    if (dist <= minSpacing) {
+      this._strokeInProgress = false;
       return;
+    }
 
     var step = 1.0 / Math.floor(dist / minSpacing);
     dx *= step;
@@ -204,11 +209,23 @@ class SculptBase {
 
     this._lastMouseX = main._mouseX;
     this._lastMouseY = main._mouseY;
+    this._strokeInProgress = false;
   }
 
   updateRender() {
     this.updateMeshBuffers();
     this._main.render();
+  }
+
+  /** Schedule a render via requestAnimationFrame — deduplicated per frame */
+  scheduleRender() {
+    if (this._renderScheduled) return;
+    this._renderScheduled = true;
+    var self = this;
+    requestAnimationFrame(function () {
+      self._renderScheduled = false;
+      self.updateRender();
+    });
   }
 
   makeStroke(mouseX, mouseY, picking, pickingSyms) {
@@ -260,7 +277,7 @@ class SculptBase {
     var picking = main.getPicking();
     var pickingSyms = main.getSculptManager().getSymmetry() ? main.getPickingSymmetries() : [];
     this.makeStroke(main._mouseX, main._mouseY, picking, pickingSyms);
-    this.updateRender();
+    this.scheduleRender();
   }
 
   /** Return the vertices that point toward the camera */

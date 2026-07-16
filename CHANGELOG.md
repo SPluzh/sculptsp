@@ -3,6 +3,11 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Performance**: Removed high-frequency console log messages from the mouse input, raycasting, and picking paths to eliminate interface stuttering and lag during fast brush strokes.
+- **Performance**: Optimized the inner loop of sculpting brushes (Brush, Clay Buildup, and Smooth tools) by checking squared distances first to filter out vertices, avoiding expensive square root operations on out-of-bounds vertices.
+- **Performance**: Hoisted radius calculations outside of smooth brush computation loops to reduce redundant arithmetic operations.
+- **Performance**: Implemented a frame-rate-throttled rendering scheduler using `requestAnimationFrame` to prevent duplicate redraws and ensure smoother rendering updates.
+- **Performance**: Added a stroke update guard to prevent event accumulation and latency spikes when making large brush strokes.
 - **Shortcuts**: Mapped the **F** key to frame the camera. Pressing **F** or clicking the **Frame Selection** button in the Camera menu translates and zooms the camera so that the active object (or all objects if no selection exists) fully fits within the viewport bounds from the current camera angle.
 - **Camera/UI**: Added a **Frame Selection** (Вписать объект) button in the Camera settings menu. Removed the obsolete **F** hotkey indicator from the **Front** camera button.
 - **Sculpting/Dynamic Topology**: Added an "Affect dynamic topology" (Влияние на дин. топол.) checkbox option (disabled by default) to the UI settings of all sculpting brushes except the Topology brush. When disabled, the brush will not perform any subdivision or decimation (recalculation of dynamic topology) and will only deform/paint on existing vertices.
