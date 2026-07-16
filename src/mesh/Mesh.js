@@ -482,9 +482,11 @@ class Mesh {
     this._meshData._vertTagFlags = new Int32Array(nbVertices);
     this._meshData._vertSculptFlags = new Int32Array(nbVertices);
     this._meshData._vertStateFlags = new Int32Array(nbVertices);
-    this._meshData._vertVisible = new Uint8Array(nbVertices);
-    for (var iVis = 0; iVis < nbVertices; ++iVis) {
-      this._meshData._vertVisible[iVis] = 1;
+    if (!this._meshData._vertVisible || this._meshData._vertVisible.length !== nbVertices) {
+      this._meshData._vertVisible = new Uint8Array(nbVertices);
+      for (var iVis = 0; iVis < nbVertices; ++iVis) {
+        this._meshData._vertVisible[iVis] = 1;
+      }
     }
     this._meshData._vertProxy = new Float32Array(nbVertices * 3);
 

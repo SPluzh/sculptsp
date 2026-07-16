@@ -79,6 +79,22 @@ Import.importSGL = function (buffer, gl, main) {
     mesh.setVertices(f32a.subarray(off, off + nbElts * 3));
     off += nbElts * 3;
 
+    var nbVertices = nbElts;
+    if (version >= 5) {
+      var u8a = new Uint8Array(buffer);
+      var byteOff = off * 4;
+      var vertVis = new Uint8Array(nbVertices);
+      vertVis.set(u8a.subarray(byteOff, byteOff + nbVertices));
+      mesh._meshData._vertVisible = vertVis;
+      off += Math.ceil(nbVertices / 4);
+    } else {
+      var vertVis = new Uint8Array(nbVertices);
+      for (var k = 0; k < nbVertices; ++k) {
+        vertVis[k] = 1;
+      }
+      mesh._meshData._vertVisible = vertVis;
+    }
+
     // colors
     nbElts = u32a[off++];
     if (nbElts > 0)

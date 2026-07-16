@@ -7,9 +7,10 @@ var Export = {};
 // 2 + camera,shader, matcap, wire, alpha, flat 
 // 3 faces u32 instead of i32
 // 4 + visibility (v1, v2)
-Export.VERSION = 4;
+// 5 + vertex visibility (vertVisible u8 array)
+Export.VERSION = 5;
 
-// current version 4
+// current version 5
 //
 // Version (u32)
 
@@ -66,6 +67,7 @@ Export.exportSGL = function (meshes, main) {
   for (i = 0; i < nbMeshes; ++i) {
     mesh = meshes[i];
     nbBytes += mesh.getNbVertices() * 4 * 3;
+    nbBytes += Math.ceil(mesh.getNbVertices() / 4) * 4;
     if (mesh.getColors())
       nbBytes += mesh.getNbVertices() * 4 * 3;
     if (mesh.getMaterials())
@@ -123,6 +125,19 @@ Export.exportSGL = function (meshes, main) {
     u32a[off++] = nbVertices;
     f32a.set(mesh.getVertices().subarray(0, nbVertices * 3), off);
     off += nbVertices * 3;
+
+    // vertex visibility (v5)
+    var u8a = new Uint8Array(buffer);
+    var byteOff = off * 4;
+    var vertVis = mesh._meshData._vertVisible;
+    if (vertVis) {
+      u8a.set(vertVis, byteOff);
+    } else {
+      for (var k = 0; k < nbVertices; ++k) {
+        u8a[byteOff + k] = 1;
+      }
+    }
+    off += Math.ceil(nbVertices / 4);
 
     // colors
     var nbColors = mesh.getColors() ? nbVertices : 0;
