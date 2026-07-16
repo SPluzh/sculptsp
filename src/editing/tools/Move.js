@@ -2,6 +2,8 @@ import { vec3, mat4 } from 'gl-matrix';
 import Geometry from '../../math3d/Geometry.js';
 import SculptBase from './SculptBase.js';
 
+var _TMP_INV = mat4.create();
+
 class Move extends SculptBase {
 
   constructor(main) {
@@ -141,7 +143,10 @@ class Move extends SculptBase {
       var dx = vx - cx;
       var dy = vy - cy;
       var dz = vz - cz;
-      var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+      var dist2 = dx * dx + dy * dy + dz * dz;
+      if (dist2 >= radiusSquared)
+        continue;
+      var dist = Math.sqrt(dist2) / radius;
       var fallOff = this.getFallOff(dist);
       fallOff *= mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] += dirx * fallOff;
@@ -154,10 +159,9 @@ class Move extends SculptBase {
     var mesh = this.getMesh();
     var vNear = picking.unproject(mouseX, mouseY, 0.0);
     var vFar = picking.unproject(mouseX, mouseY, 0.1);
-    var matInverse = mat4.create();
-    mat4.invert(matInverse, mesh.getMatrix());
-    vec3.transformMat4(vNear, vNear, matInverse);
-    vec3.transformMat4(vFar, vFar, matInverse);
+    mat4.invert(_TMP_INV, mesh.getMatrix());
+    vec3.transformMat4(vNear, vNear, _TMP_INV);
+    vec3.transformMat4(vFar, vFar, _TMP_INV);
 
     var moveData = useSymmetry ? this._moveDataSym : this._moveData;
     if (useSymmetry) {

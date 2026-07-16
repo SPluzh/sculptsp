@@ -66,9 +66,10 @@ class Crease extends SculptBase {
       var dx = cx - vProxy[ind];
       var dy = cy - vProxy[ind + 1];
       var dz = cz - vProxy[ind + 2];
-      var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
-      if (dist >= 1.0)
+      var dist2 = dx * dx + dy * dy + dz * dz;
+      if (dist2 >= radiusSquared)
         continue;
+      var dist = Math.sqrt(dist2) / radius;
       var vx = vAr[ind];
       var vy = vAr[ind + 1];
       var vz = vAr[ind + 2];

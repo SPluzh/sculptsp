@@ -75,7 +75,10 @@ class LocalScale extends SculptBase {
       var dx = vx - cx;
       var dy = vy - cy;
       var dz = vz - cz;
-      var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+      var dist2 = dx * dx + dy * dy + dz * dz;
+      if (dist2 >= radiusSquared)
+        continue;
+      var dist = Math.sqrt(dist2) / radius;
       var fallOff = this.getFallOff(dist);
       fallOff *= deltaScale * mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] = vx + dx * fallOff;

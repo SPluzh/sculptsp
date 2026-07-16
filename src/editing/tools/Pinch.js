@@ -53,7 +53,10 @@ class Pinch extends SculptBase {
       var dx = cx - vx;
       var dy = cy - vy;
       var dz = cz - vz;
-      var dist = Math.sqrt(dx * dx + dy * dy + dz * dz) / radius;
+      var dist2 = dx * dx + dy * dy + dz * dz;
+      if (dist2 >= radiusSquared)
+        continue;
+      var dist = Math.sqrt(dist2) / radius;
       var fallOff = this.getFallOff(dist);
       fallOff *= deformIntensity * mAr[ind + 2] * picking.getAlpha(vx, vy, vz, this._focalShiftFalloff ? this._focalShift : 0);
       vAr[ind] = vx + dx * fallOff;

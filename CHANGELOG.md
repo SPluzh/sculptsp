@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Performance**: Optimized the inner loops of 9 sculpting tools (Flatten, Inflate, Pinch, Crease, Local Scale, Masking, Drag, Move, and Paint) by evaluating squared distances first to skip calculations for out-of-bounds vertices, avoiding redundant square root calculations.
+- **Performance**: Eliminated dynamic matrix allocations on every sculpting stroke update by reusing a preallocated, shared inverse matrix in mouse intersection computations and drag/move direction updates.
 - **Performance**: Removed high-frequency console log messages from the mouse input, raycasting, and picking paths to eliminate interface stuttering and lag during fast brush strokes.
 - **Performance**: Optimized the inner loop of sculpting brushes (Brush, Clay Buildup, and Smooth tools) by checking squared distances first to filter out vertices, avoiding expensive square root operations on out-of-bounds vertices.
 - **Performance**: Hoisted radius calculations outside of smooth brush computation loops to reduce redundant arithmetic operations.
