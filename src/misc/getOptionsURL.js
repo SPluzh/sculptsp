@@ -56,7 +56,6 @@ var readShortcuts = function (str) {
   shortcuts['S'.charCodeAt(0)] = keyAction.RADIUS;
   shortcuts['D'.charCodeAt(0)] = keyAction.FOCAL_SHIFT;
   shortcuts['N'.charCodeAt(0)] = keyAction.NEGATIVE;
-  shortcuts['C'.charCodeAt(0)] = keyAction.PICKER;
   shortcuts['X'.charCodeAt(0)] = keyAction.REMESH_RESOLUTION;
   shortcuts['Z'.charCodeAt(0)] = keyAction.TOPOLOGY_DETAIL;
   shortcuts[46] = keyAction.DELETE; // DEL

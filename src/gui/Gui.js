@@ -37,7 +37,8 @@ import {
   Sparkles,
   Square,
   Grid,
-  FlipHorizontal2
+  FlipHorizontal2,
+  Eye
 } from 'lucide';
 
 class Gui {
@@ -182,6 +183,14 @@ class Gui {
     );
     this._toolbar.setSymmetryVisibility(showSym);
 
+    this._toolbar.addSoloButton(
+      TR('renderingIsolate'),
+      () => {
+        this._ctrlScene.toggleShowHide();
+      },
+      this._ctrlScene._isolateState
+    );
+
     this.updateMesh();
     this.setVisibility(true);
 
@@ -194,7 +203,8 @@ class Gui {
         Camera,
         Image,
         Settings,
-        FlipHorizontal2
+        FlipHorizontal2,
+        Eye
       },
       root: this._toolbar._dom
     });

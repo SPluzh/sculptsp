@@ -107,6 +107,10 @@ class GuiScene {
       setValue: (val, ignore) => {
         this._isolateState = val;
         if (!ignore) this.showHide(val);
+        var gui = this._main.getGui();
+        if (gui && gui._toolbar) {
+          gui._toolbar.setSoloActive(this._isolateState);
+        }
       },
       getValue: () => this._isolateState,
       setVisibility: () => {}
@@ -254,10 +258,6 @@ class GuiScene {
     var main = this._main;
     var selMeshes = main.getSelectedMeshes();
     var meshes = main.getMeshes();
-    if (meshes.length === selMeshes.length || meshes.length < 2) {
-      this._ctrlIsolate.setValue(false, true);
-      return;
-    }
 
     var hideMeshes = [];
     for (var i = 0; i < meshes.length; ++i) {
@@ -265,7 +265,9 @@ class GuiScene {
       if (id < 0) hideMeshes.push(meshes[i]);
     }
 
-    this.pushSetMeshesVisible(hideMeshes, false);
+    if (hideMeshes.length > 0) {
+      this.pushSetMeshesVisible(hideMeshes, false);
+    }
 
     main.render();
   }
@@ -279,7 +281,9 @@ class GuiScene {
       if (!meshes[i].isVisible()) hideMeshes.push(meshes[i]);
     }
 
-    this.pushSetMeshesVisible(hideMeshes, true);
+    if (hideMeshes.length > 0) {
+      this.pushSetMeshesVisible(hideMeshes, true);
+    }
 
     main.render();
   }
@@ -312,7 +316,7 @@ class GuiScene {
     if (!this._main._focusGui)
       event.preventDefault();
 
-    if (event.which === 73) { // I
+    if (event.which === 73 || event.which === 67) { // I or C
       this.toggleShowHide();
       event.handled = true;
     } else if (event.which === 68 && event.ctrlKey) { // D

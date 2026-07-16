@@ -297,6 +297,41 @@ class VerticalToolbar {
     }
   }
 
+  addSoloButton(tooltip, onToggleFn, initialValue) {
+    var btn = document.createElement('div');
+    btn.className = 'vtb-btn';
+    if (initialValue) {
+      btn.classList.add('active');
+    }
+    btn.setAttribute('data-tooltip', tooltip);
+    btn.innerHTML = '<i data-lucide="eye"></i>';
+    btn.addEventListener('click', () => {
+      onToggleFn();
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._soloBtn = btn;
+
+    if (this._symmetryBtn && this._symmetryBtn.parentNode) {
+      var symGroup = this._symmetryBtn.parentNode;
+      this._dom.insertBefore(btn, symGroup.nextSibling);
+    } else {
+      this._dom.appendChild(btn);
+    }
+    return btn;
+  }
+
+  setSoloActive(active) {
+    if (this._soloBtn) {
+      if (active) {
+        this._soloBtn.classList.add('active');
+      } else {
+        this._soloBtn.classList.remove('active');
+      }
+    }
+  }
+
   setVisibility(bool) {
     this._dom.style.display = bool ? 'flex' : 'none';
     if (!bool) this._closeActive();

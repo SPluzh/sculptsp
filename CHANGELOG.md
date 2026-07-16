@@ -3,6 +3,9 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **UI**: Added a dedicated **Solo/Isolate** (Изолировать / Показать) button to the left vertical toolbar directly under the symmetry settings button, allowing users to toggle isolation mode for the active object with a single click. Toggling isolation mode works even when only one object exists (or when all objects are selected), acting as a toggle switch where the single object remains visible.
+- **Shortcuts**: Mapped the **C** key to toggle soloing (isolating) the active object in the viewport, and removed the key binding from the material/color picker tool to prevent conflicts.
+- **UI/Translations**: Updated English and Russian translations and tooltips to reflect the new **C** hotkey for isolation and the removed hotkey from the color picker.
 - **Symmetry**: Added a **Mirror Object** (Симметрировать объект) section to the Symmetry settings panel. Users can choose the mirroring axis (**X**, **Y**, **Z**), select the direction of the mirror operation (**Left to Right (- to +)** or **Right to Left (+ to -)**), and click the Mirror Object button to slice the mesh along the symmetry plane and mirror the selected half to the other side.
 - **Symmetry/Undo**: Fully integrated the Mirror Object operation with the undo/redo history, and supported mirroring multiple selected meshes, dynamic meshes, and multiresolution meshes.
 - **Symmetry**: Added a **Flip Object** (Отразить объект) section to the Symmetry settings panel with **X**, **Y**, and **Z** buttons. Clicking an axis mirrors the selected mesh(es) in-place along that axis in local space.
