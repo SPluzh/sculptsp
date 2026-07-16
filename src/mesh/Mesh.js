@@ -31,6 +31,7 @@ class Mesh {
     this._transformData = null;
     this._renderData = null;
     this._isVisible = true;
+    this._isVisibleViewport2 = true;
   }
 
   static sortFunction(meshA, meshB) {
@@ -46,12 +47,21 @@ class Mesh {
     this._id = id;
   }
 
-  isVisible() {
-    return this._isVisible;
+  isVisible(viewportIndex) {
+    if (viewportIndex === 0) return this._isVisible;
+    if (viewportIndex === 1) return this._isVisibleViewport2;
+    return this._isVisible || this._isVisibleViewport2;
   }
 
-  setVisible(bool) {
-    this._isVisible = bool;
+  setVisible(bool, viewportIndex) {
+    if (viewportIndex === 0) {
+      this._isVisible = bool;
+    } else if (viewportIndex === 1) {
+      this._isVisibleViewport2 = bool;
+    } else {
+      this._isVisible = bool;
+      this._isVisibleViewport2 = bool;
+    }
   }
 
   setVertices(vAr) {
@@ -2015,17 +2025,20 @@ class Mesh {
   // RENDER
   /////////
   render(main) {
-    if (!this.isVisible()) return;
+    var vpIdx = (main && main._currentViewportIndex !== undefined) ? main._currentViewportIndex : 0;
+    if (!this.isVisible(vpIdx)) return;
     Shader[this.getShaderType()].getOrCreate(this.getGL()).draw(this, main);
   }
 
   renderWireframe(main) {
-    if (!this.isVisible()) return;
+    var vpIdx = (main && main._currentViewportIndex !== undefined) ? main._currentViewportIndex : 0;
+    if (!this.isVisible(vpIdx)) return;
     Shader[Enums.Shader.WIREFRAME].getOrCreate(this.getGL()).draw(this, main);
   }
 
   renderFlatColor(main) {
-    if (!this.isVisible()) return;
+    var vpIdx = (main && main._currentViewportIndex !== undefined) ? main._currentViewportIndex : 0;
+    if (!this.isVisible(vpIdx)) return;
     Shader[Enums.Shader.FLAT].getOrCreate(this.getGL()).draw(this, main);
   }
 

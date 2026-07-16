@@ -366,8 +366,11 @@ class GuiScene {
       var id = idAttr === 'zsphere' ? 'zsphere' : (idAttr ? parseInt(idAttr) : null);
 
       switch (action) {
-        case 'toggle-vis':
-          this._toggleVisibility(id);
+        case 'toggle-vis-v1':
+          this._toggleVisibility(id, 0);
+          break;
+        case 'toggle-vis-v2':
+          this._toggleVisibility(id, 1);
           break;
         case 'rename':
           var selectedMeshes = this._main.getSelectedMeshes();
@@ -439,11 +442,11 @@ class GuiScene {
     }
   }
 
-  _toggleVisibility(id) {
+  _toggleVisibility(id, vpIdx) {
     if (id === 'zsphere') {
       var zsphereTool = this._main.getSculptManager().getTool(Enums.Tools.ZSPHERE);
       if (zsphereTool && zsphereTool._drawable) {
-        zsphereTool._drawable.setVisible(!zsphereTool._drawable.isVisible());
+        zsphereTool._drawable.setVisible(!zsphereTool._drawable.isVisible(vpIdx), vpIdx);
         this._main.render();
         this.refreshOutliner();
       }
@@ -453,7 +456,7 @@ class GuiScene {
     var meshes = this._main.getMeshes();
     var target = meshes.find(m => m.getID() === id);
     if (target) {
-      target.setVisible(!target.isVisible());
+      target.setVisible(!target.isVisible(vpIdx), vpIdx);
       this._main.render();
       this.refreshOutliner();
     }
@@ -509,24 +512,39 @@ class GuiScene {
       var m = meshes[i];
       var id = m.getID();
       var isSelected = selSet.has(id);
-      var isVisible = m.isVisible();
+      var isVisibleV1 = m.isVisible(0);
+      var isVisibleV2 = m.isVisible(1);
       var name = m._outlinerName || ('Mesh ' + id);
 
       var selCls = isSelected ? ' sp-row--selected' : '';
-      var hideCls = isVisible ? '' : ' sp-row--hidden';
+      var hideCls = (isVisibleV1 || isVisibleV2) ? '' : ' sp-row--hidden';
 
       var vertCount = m.getNbVertices ? m.getNbVertices() : 0;
       var metaStr = vertCount.toLocaleString() + ' pts';
 
-      var eyeSvg = isVisible 
+      var eyeSvgV1 = isVisibleV1 
         ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
         : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
+      var eyeSvgV2 = isVisibleV2 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var v1HiddenCls = isVisibleV1 ? '' : ' sp-vis--hidden';
+      var v2HiddenCls = isVisibleV2 ? '' : ' sp-vis--hidden';
+
       html += `
         <div class="sp-outliner-row${selCls}${hideCls}" data-mesh-id="${id}">
-          <button class="sp-vis-btn" data-action="toggle-vis" data-mesh-id="${id}" title="${isVisible ? 'Hide' : 'Show'}">
-            ${eyeSvg}
-          </button>
+          <div class="sp-vis-group">
+            <button class="sp-vis-btn sp-vis-v1${v1HiddenCls}" data-action="toggle-vis-v1" data-mesh-id="${id}" title="${isVisibleV1 ? 'Hide in Viewport 1' : 'Show in Viewport 1'}">
+              ${eyeSvgV1}
+              <span class="sp-vis-badge">1</span>
+            </button>
+            <button class="sp-vis-btn sp-vis-v2${v2HiddenCls}" data-action="toggle-vis-v2" data-mesh-id="${id}" title="${isVisibleV2 ? 'Hide in Viewport 2' : 'Show in Viewport 2'}">
+              ${eyeSvgV2}
+              <span class="sp-vis-badge">2</span>
+            </button>
+          </div>
           <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="${id}">
             <span class="sp-mesh-name" title="Double click to rename">${this.escapeHtml(name)}</span>
             <span class="sp-mesh-meta">${metaStr}</span>
@@ -538,19 +556,35 @@ class GuiScene {
     var zsphereTool = this._main.getSculptManager().getTool(Enums.Tools.ZSPHERE);
     var zsphereNodes = zsphereTool ? zsphereTool._graph.getNodes() : [];
     if (isZSphereActive || zsphereNodes.length > 0) {
-      var isZSphereVisible = zsphereTool._drawable ? zsphereTool._drawable.isVisible() : true;
+      var isZSphereVisibleV1 = zsphereTool._drawable ? zsphereTool._drawable.isVisible(0) : true;
+      var isZSphereVisibleV2 = zsphereTool._drawable ? zsphereTool._drawable.isVisible(1) : true;
       var zSelCls = isZSphereActive ? ' sp-row--selected' : '';
-      var zHideCls = isZSphereVisible ? '' : ' sp-row--hidden';
+      var zHideCls = (isZSphereVisibleV1 || isZSphereVisibleV2) ? '' : ' sp-row--hidden';
       var zMetaStr = zsphereNodes.length + ' spheres';
-      var zEyeSvg = isZSphereVisible 
+
+      var zEyeSvgV1 = isZSphereVisibleV1 
         ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
         : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
 
+      var zEyeSvgV2 = isZSphereVisibleV2 
+        ? `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path><circle cx="12" cy="12" r="3"></circle></svg>`
+        : `<svg viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path><line x1="1" y1="1" x2="23" y2="23"></line></svg>`;
+
+      var zv1HiddenCls = isZSphereVisibleV1 ? '' : ' sp-vis--hidden';
+      var zv2HiddenCls = isZSphereVisibleV2 ? '' : ' sp-vis--hidden';
+
       html += `
         <div class="sp-outliner-row${zSelCls}${zHideCls}" data-mesh-id="zsphere">
-          <button class="sp-vis-btn" data-action="toggle-vis" data-mesh-id="zsphere" title="${isZSphereVisible ? 'Hide' : 'Show'}">
-            ${zEyeSvg}
-          </button>
+          <div class="sp-vis-group">
+            <button class="sp-vis-btn sp-vis-v1${zv1HiddenCls}" data-action="toggle-vis-v1" data-mesh-id="zsphere" title="${isZSphereVisibleV1 ? 'Hide in Viewport 1' : 'Show in Viewport 1'}">
+              ${zEyeSvgV1}
+              <span class="sp-vis-badge">1</span>
+            </button>
+            <button class="sp-vis-btn sp-vis-v2${zv2HiddenCls}" data-action="toggle-vis-v2" data-mesh-id="zsphere" title="${isZSphereVisibleV2 ? 'Hide in Viewport 2' : 'Show in Viewport 2'}">
+              ${zEyeSvgV2}
+              <span class="sp-vis-badge">2</span>
+            </button>
+          </div>
           <div class="sp-mesh-info-wrapper" data-action="select" data-mesh-id="zsphere">
             <span class="sp-mesh-name">ZSphere Armature</span>
             <span class="sp-mesh-meta">${zMetaStr}</span>
@@ -641,6 +675,12 @@ class GuiScene {
       .sp-outliner-row.sp-row--hidden {
         opacity: 0.4;
       }
+      .sp-vis-group {
+        display: flex;
+        gap: 6px;
+        align-items: center;
+        flex-shrink: 0;
+      }
       .sp-vis-btn {
         background: none;
         border: none;
@@ -652,8 +692,31 @@ class GuiScene {
         align-items: center;
         justify-content: center;
         transition: color 0.15s ease, transform 0.15s ease;
-        width: 18px;
-        height: 18px;
+        width: 20px;
+        height: 20px;
+        position: relative;
+      }
+      .sp-vis-badge {
+        position: absolute;
+        bottom: -3px;
+        right: -3px;
+        font-size: 7px;
+        background: rgba(0, 0, 0, 0.7);
+        color: #aaa;
+        border-radius: 50%;
+        width: 10px;
+        height: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: bold;
+        pointer-events: none;
+      }
+      .sp-vis-btn:hover .sp-vis-badge {
+        color: #fff;
+      }
+      .sp-vis--hidden {
+        opacity: 0.35;
       }
       .sp-vis-btn:hover {
         color: #fff;

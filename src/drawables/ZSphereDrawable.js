@@ -59,6 +59,7 @@ class ZSphereDrawable {
     this._n = mat3.create();
     this._modelMatrix = mat4.create();
     this._visible = true;
+    this._visibleViewport2 = true;
   }
 
   _getSymmetricPosition(pos, mesh) {
@@ -86,12 +87,21 @@ class ZSphereDrawable {
     return vec3.dist(pos, symPos) * 0.5;
   }
 
-  isVisible() {
-    return this._visible;
+  isVisible(viewportIndex) {
+    if (viewportIndex === 0) return this._visible;
+    if (viewportIndex === 1) return this._visibleViewport2;
+    return this._visible || this._visibleViewport2;
   }
 
-  setVisible(bool) {
-    this._visible = bool;
+  setVisible(bool, viewportIndex) {
+    if (viewportIndex === 0) {
+      this._visible = bool;
+    } else if (viewportIndex === 1) {
+      this._visibleViewport2 = bool;
+    } else {
+      this._visible = bool;
+      this._visibleViewport2 = bool;
+    }
   }
 
   isTransparent() {
@@ -127,7 +137,8 @@ class ZSphereDrawable {
   }
 
   render(main) {
-    if (!this._visible) return;
+    var vpIdx = (main && main._currentViewportIndex !== undefined) ? main._currentViewportIndex : 0;
+    if (!this.isVisible(vpIdx)) return;
     var gl = this._gl;
     var nodes = this._graph.getNodes();
     if (nodes.length === 0) return;

@@ -189,8 +189,9 @@ class Picking {
 
     for (var i = 0, nbMeshes = meshes.length; i < nbMeshes; ++i) {
       var mesh = meshes[i];
-      if (!mesh.isVisible()) {
-        console.log('[Picking] intersectionMouseMeshes: mesh', mesh.getID(), 'is not visible');
+      var activeVp = (this._main && this._main._activeViewport !== undefined) ? this._main._activeViewport : 0;
+      if (!mesh.isVisible(activeVp)) {
+        console.log('[Picking] intersectionMouseMeshes: mesh', mesh.getID(), 'is not visible in viewport', activeVp);
         continue;
       }
 

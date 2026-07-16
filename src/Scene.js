@@ -363,6 +363,7 @@ class Scene {
   }
 
   _applyRenderSingle(camera, vpX, vpW, vpH) {
+    this._currentViewportIndex = (vpX === 0 ? 0 : 1);
     this.updateMatricesAndSort(camera);
 
     var isSplit = this._splitMode && vpW < this._canvasWidth;
