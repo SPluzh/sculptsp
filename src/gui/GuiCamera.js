@@ -65,6 +65,7 @@ class GuiCamera {
     menu.addTitle(TR('cameraReset'));
     menu.addDualButton(TR('cameraCenter'), TR('cameraFront'), this.resetCamera.bind(this), this.resetFront.bind(this));
     menu.addDualButton(TR('cameraLeft'), TR('cameraTop'), this.resetLeft.bind(this), this.resetTop.bind(this));
+    menu.addButton(TR('cameraFrame'), this, 'frameCamera');
 
     // camera type
     this._ctrlProjectionTitle = menu.addTitle(TR('cameraProjection'));
@@ -282,6 +283,9 @@ class GuiCamera {
         this._main._gui.refreshForCamera(camera);
       }
       break;
+    case Enums.KeyAction.CAMERA_FRAME:
+      this.frameCamera();
+      break;
     case Enums.KeyAction.CAMERA_FRONT:
       this.resetFront();
       break;
@@ -323,6 +327,16 @@ class GuiCamera {
   resetCamera() {
     this._camera.resetView();
     this._main.render();
+  }
+
+  frameCamera() {
+    var main = this._main;
+    var mesh = main.getMesh();
+    if (mesh) {
+      main.resetCameraMeshes([mesh]);
+    } else {
+      main.resetCameraMeshes();
+    }
   }
 
   resetFront() {

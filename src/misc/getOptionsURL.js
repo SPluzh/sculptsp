@@ -63,7 +63,7 @@ var readShortcuts = function (str) {
   // camera
   shortcuts['G'.charCodeAt(0)] = keyAction.CAMERA_FOV;
   shortcuts['P'.charCodeAt(0)] = keyAction.CAMERA_PROJECTION;
-  shortcuts['F'.charCodeAt(0)] = keyAction.CAMERA_FRONT;
+  shortcuts['F'.charCodeAt(0)] = keyAction.CAMERA_FRAME;
   shortcuts['T'.charCodeAt(0)] = keyAction.TOPOLOGY;
   shortcuts['L'.charCodeAt(0)] = keyAction.CAMERA_LEFT;
   shortcuts[32] = keyAction.CAMERA_RESET; // SPACE

@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Shortcuts**: Mapped the **F** key to frame the camera. Pressing **F** or clicking the **Frame Selection** button in the Camera menu translates and zooms the camera so that the active object (or all objects if no selection exists) fully fits within the viewport bounds from the current camera angle.
+- **Camera/UI**: Added a **Frame Selection** (Вписать объект) button in the Camera settings menu. Removed the obsolete **F** hotkey indicator from the **Front** camera button.
 - **Sculpting/Dynamic Topology**: Added an "Affect dynamic topology" (Влияние на дин. топол.) checkbox option (disabled by default) to the UI settings of all sculpting brushes except the Topology brush. When disabled, the brush will not perform any subdivision or decimation (recalculation of dynamic topology) and will only deform/paint on existing vertices.
 - **Performance**: Optimized dynamic topology mesh updates by skipping index buffer and wireframe buffer rebuilds when no actual topological changes (subdivision/decimation) occurred during the stroke, matching the performance of static mesh sculpting.
 - **Shortcuts**: Mapped the **T** key to select the Topology brush. Pressing **T** or clicking the Topology shelf button while the brush is already active will toggle it off, restoring the previously selected sculpting tool.

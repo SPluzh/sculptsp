@@ -100,6 +100,7 @@ Enums.KeyAction = Utils.extend({
   CAMERA_RESET: acc++,
   CAMERA_FOV: acc++,
   CAMERA_PROJECTION: acc++,
+  CAMERA_FRAME: acc++,
   STRIFE_LEFT: acc++,
   STRIFE_RIGHT: acc++,
   STRIFE_UP: acc++,
