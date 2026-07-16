@@ -216,7 +216,7 @@ class GuiSculpting {
 
     this._sculptManager.setToolIndex(newValue);
 
-    if ((newValue === Enums.Tools.SMOOTH || newValue === Enums.Tools.MASKING) && oldRadius !== null) {
+    if ((newValue === Enums.Tools.SMOOTH || newValue === Enums.Tools.MASKING || newValue === Enums.Tools.TOPOLOGY) && oldRadius !== null) {
       var targetTool = this._sculptManager.getTool(newValue);
       targetTool._radius = oldRadius;
       var targetGui = GuiSculptingTools.tools[newValue];
