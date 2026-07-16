@@ -431,6 +431,16 @@ class Picking {
   }
 
   computeWorldRadius2(ignorePressure) {
+    if (this._main.getSculptManager().getDynamicBrushSize()) {
+      var mesh = this._mesh;
+      if (!mesh) return 0.0;
+      var tool = this._main.getSculptManager().getCurrentTool();
+      var localRadius = tool._radius * mesh.computeLocalRadius() * 0.002;
+      if (!ignorePressure) {
+        localRadius *= Tablet.getPressureRadius();
+      }
+      return localRadius * localRadius * mesh.getScale2();
+    }
 
     vec3.transformMat4(_TMP_INTER, this.getIntersectionPoint(), this._mesh.getMatrix());
 

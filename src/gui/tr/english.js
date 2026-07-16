@@ -170,6 +170,7 @@ var TR = {
   sculptSymmetryLocal: 'Local',
   sculptSymmetryWorld: 'World',
   sculptContinuous: 'Continuous',
+  sculptDynamicBrushSize: 'Dynamic brush size',
   sculptRadius: 'Radius (-S)',
   sculptIntensity: 'Intensity (-A)',
   sculptFocalShift: 'Focal Shift',

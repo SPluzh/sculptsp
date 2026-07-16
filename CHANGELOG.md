@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Sculpting**: Added a **Dynamic brush size** option (Динамический размер кисти) under the Common sculpting settings. When enabled, the brush radius remains constant in world space (relative to the model), causing the selection circle to automatically scale on screen when zooming the camera in or out, while maintaining a consistent sculpting impact size on the model.
 - **Import/Export**: Fixed a bug where loaded vertex-snapped Measure and Segment Divider anchors shifted their 3D locations upon reopening a `.sgl` file, caused by pre-transform mesh vertex reordering during initialization. The vertex indices are now correctly remapped using the optimized vertex index lookup table.
 - **Import/Export**: Fixed a bug where loading a `.sgl` file filtered out Measure Tool and Segment Divider anchors before they could be resolved to the newly loaded meshes, causing them to disappear from both the viewport and the outliner.
 - **Import/Export**: Added save and restore support for the Measure Tool and Segment Divider configurations (including viewport visibility and segment lines) in the native `.sgl` format, incrementing the file version to 6.

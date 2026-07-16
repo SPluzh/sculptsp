@@ -13,6 +13,8 @@ class SculptManager {
     // symmetry stuffs
     this._symmetry = true; // if symmetric sculpting is enabled  
 
+    this._dynamicBrushSize = false; // dynamic brush size
+
     // continuous stuffs
     this._continuous = false; // continuous sculpting
     this._sculptTimer = -1; // continuous interval timer
@@ -51,6 +53,14 @@ class SculptManager {
 
   getToolIndex() {
     return this._toolIndex;
+  }
+
+  getDynamicBrushSize() {
+    return this._dynamicBrushSize;
+  }
+
+  setDynamicBrushSize(val) {
+    this._dynamicBrushSize = val;
   }
 
   getCurrentTool() {

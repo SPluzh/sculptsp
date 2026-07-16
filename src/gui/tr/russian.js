@@ -170,6 +170,7 @@ var TR = {
   sculptSymmetryLocal: 'Локальные',
   sculptSymmetryWorld: 'Мировые',
   sculptContinuous: 'Спрей',
+  sculptDynamicBrushSize: 'Динамический размер кисти',
   sculptRadius: 'Размер (-S)',
   sculptIntensity: 'Сила (-A)',
   sculptFocalShift: 'Фокус (Focal Shift)',

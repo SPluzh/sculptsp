@@ -122,6 +122,23 @@ class Selection {
 
     var tool = main.getSculptManager().getCurrentTool();
     var screenRadius = tool.getScreenRadius();
+    if (main.getSculptManager().getDynamicBrushSize()) {
+      var mesh = main.getMesh();
+      if (mesh) {
+        var worldRadius = tool._radius * (mesh.computeLocalRadius() * mesh.getScale()) * 0.002;
+        var right = [camera._view[0], camera._view[4], camera._view[8]];
+        vec3.normalize(right, right);
+        var offsetPoint = [
+          camera._center[0] + right[0] * worldRadius,
+          camera._center[1] + right[1] * worldRadius,
+          camera._center[2] + right[2] * worldRadius
+        ];
+        var pCenter = camera.project(camera._center);
+        var pOffset = camera.project(offsetPoint);
+        screenRadius = vec3.dist(pCenter, pOffset);
+      }
+    }
+
     var focalShift = tool._focalShift !== undefined ? tool._focalShift : 0.0;
     var innerRatio = (1.0 - focalShift) / 2.0;
     var innerScreenRadius = screenRadius * innerRatio;
@@ -152,13 +169,23 @@ class Selection {
     var pickingSyms = main.getPickingSymmetries();
     var worldRadius = Math.sqrt(picking.computeWorldRadius2(true));
     var screenRadius = main.getSculptManager().getCurrentTool().getScreenRadius();
+    var mesh = picking.getMesh();
+
+    if (main.getSculptManager().getDynamicBrushSize()) {
+      var worldInter = vec3.transformMat4(_TMP_VEC, picking.getIntersectionPoint(), mesh.getMatrix());
+      var screenInter = camera.project(worldInter);
+      var right = [camera._view[0], camera._view[4], camera._view[8]];
+      vec3.normalize(right, right);
+      var offsetWorld = vec3.scaleAndAdd(vec3.create(), worldInter, right, worldRadius);
+      var screenOffset = camera.project(offsetWorld);
+      screenRadius = vec3.dist(screenInter, screenOffset);
+    }
 
     var tool = main.getSculptManager().getCurrentTool();
     var focalShift = tool._focalShift !== undefined ? tool._focalShift : 0.0;
     var innerRatio = (1.0 - focalShift) / 2.0;
     var innerWorldRadius = worldRadius * innerRatio;
 
-    var mesh = picking.getMesh();
     var constRadius = DOT_RADIUS * (worldRadius / screenRadius);
 
     picking.polyLerp(mesh.getNormals(), _TMP_AXIS);

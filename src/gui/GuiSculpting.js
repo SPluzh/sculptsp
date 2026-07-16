@@ -111,6 +111,13 @@ class GuiSculpting {
     // continuous
     this._ctrlContinuous = menu.addCheckbox(TR('sculptContinuous'), this._sculptManager, '_continuous');
 
+    // dynamic brush size
+    this._ctrlDynamicBrush = menu.addCheckbox(TR('sculptDynamicBrushSize'), this._sculptManager.getDynamicBrushSize(), (val) => {
+      this._sculptManager.setDynamicBrushSize(val);
+      this._main.getPicking().updateLocalAndWorldRadius2();
+      this._main.renderSelectOverRtt();
+    });
+
     // symmetry
     this._ctrlSymmetry = menu.addCheckbox(TR('sculptSymmetry'), this._sculptManager.getSymmetry(), this.onSymmetryChange.bind(this));
 
@@ -259,6 +266,9 @@ class GuiSculpting {
 
     var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
     var symActive = this._sculptManager.getSymmetry();
+    if (this._ctrlDynamicBrush) {
+      this._ctrlDynamicBrush.setVisibility(showSym);
+    }
     if (this._ctrlSymmetry) {
       this._ctrlSymmetry.setVisibility(showSym);
     }
