@@ -9,7 +9,7 @@ All notable changes to this project will be documented in this file.
 - **Topology**: Automatically enable wireframe mode when selecting the Topology brush (either via key **T** or the shelf button) and restore the previous wireframe state when switching away.
 - **UI**: Added a low-profile (half-height) quick-access button (represented by a **disc** icon) to select/toggle the Topology brush directly underneath the Dynamic Topology shelf toggle button, with active state highlighting.
 - **Topology**: Updated default values for Dynamic Topology subdivision and decimation factors to 100.
-- **UI**: Added a dedicated Dynamic Topology toggle button (represented by a network icon) to the left vertical toolbar (shelf) to easily toggle dynamic topology on and off, synchronized with the checkbox in the Topology settings panel.
+- **UI**: Added a dedicated Dynamic Topology toggle button (represented by a network icon) to the left vertical toolbar (shelf) to easily toggle dynamic topology on and off, synchronized with the checkbox in the Topology settings panel. Mapped the **Ctrl+T** hotkey to toggle dynamic topology.
 - **UI**: Removed drop shadow (box-shadow) from the left vertical toolbar (shelf) for a cleaner appearance.
 - **UI**: Positioned HUD elements (viewport stats and hotkey guide) closer to the viewport edges (3px instead of 20px).
 - **UI**: Decreased vertical spacing (gap) between buttons to 3px and top/bottom edge padding to 3px on the left vertical toolbar (shelf) to optimize screen space.

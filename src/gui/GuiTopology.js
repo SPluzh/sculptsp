@@ -443,6 +443,15 @@ class GuiMultiresolution {
     if (event.handled === true)
       return;
 
+    var key = event.which;
+    if ((event.ctrlKey || event.metaKey) && (event.key === 't' || event.key === 'T' || key === 84)) {
+      event.preventDefault();
+      event.stopPropagation();
+      event.handled = true;
+      this.dynamicToggleActivate();
+      return;
+    }
+
     var shk = getOptionsURL.getShortKey(event.which);
     if (shk === Enums.KeyAction.REMESH_RESOLUTION) {
       event.preventDefault();
