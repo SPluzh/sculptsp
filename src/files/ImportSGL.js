@@ -60,6 +60,13 @@ Import.importSGL = function (buffer, gl, main) {
       render._alpha = f32a[off++];
     }
 
+    if (version >= 4) {
+      var isVisibleV1 = u32a[off++] !== 0;
+      var isVisibleV2 = u32a[off++] !== 0;
+      mesh.setVisible(isVisibleV1, 0);
+      mesh.setVisible(isVisibleV2, 1);
+    }
+
     // center matrix and scale
     mesh.getCenter().set(f32a.subarray(off, off + 3));
     off += 3;

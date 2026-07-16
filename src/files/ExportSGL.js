@@ -6,9 +6,10 @@ var Export = {};
 // 1 initial
 // 2 + camera,shader, matcap, wire, alpha, flat 
 // 3 faces u32 instead of i32
-Export.VERSION = 3;
+// 4 + visibility (v1, v2)
+Export.VERSION = 4;
 
-// current version 3
+// current version 4
 //
 // Version (u32)
 
@@ -28,11 +29,13 @@ Export.VERSION = 3;
 // ShowWireframe (u32) .v2;
 // FlatShading (u32) .v2;
 // Alpha (f32) .v2
+// VisibilityV1 (u32) .v4
+// VisibilityV2 (u32) .v4
 
 // Center (f32 * 3)
 // Matrix (f32 * 16)
 // Scale (f32)
-
+//
 // NbVertices (u32)
 // vertices (f32 * 3 * nbVertices)
 
@@ -56,7 +59,7 @@ Export.VERSION = 3;
 Export.exportSGL = function (meshes, main) {
   var nbMeshes = meshes.length;
 
-  var bytePerMesh = 3 + 16 + 1 + 6 + 5;
+  var bytePerMesh = 3 + 16 + 1 + 6 + 5 + 2;
   var nbBytes = 4 * (1 + 3 + 4 + 1 + nbMeshes * bytePerMesh);
   var i = 0;
   var mesh;
@@ -103,6 +106,10 @@ Export.exportSGL = function (meshes, main) {
     u32a[off++] = mesh.getShowWireframe();
     u32a[off++] = mesh.getFlatShading();
     f32a[off++] = mesh.getOpacity();
+
+    // visibility
+    u32a[off++] = mesh.isVisible(0) ? 1 : 0;
+    u32a[off++] = mesh.isVisible(1) ? 1 : 0;
 
     // center + matrix + scale
     f32a.set(mesh.getCenter(), off);
