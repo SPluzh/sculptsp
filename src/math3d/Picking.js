@@ -317,7 +317,10 @@ class Picking {
     var nbVerts = iVerts.length;
 
     var sculptFlag = ++Utils.SCULPT_FLAG;
-    var pickedVertices = new Uint32Array(Utils.getMemory(4 * nbVerts), 0, nbVerts);
+    if (!this._pickedVerticesBuffer || this._pickedVerticesBuffer.length < nbVerts) {
+      this._pickedVerticesBuffer = new Uint32Array(nbVerts * 2);
+    }
+    var pickedVertices = this._pickedVerticesBuffer;
     var acc = 0;
     var itx = inter[0];
     var ity = inter[1];
@@ -338,7 +341,7 @@ class Picking {
       }
     }
 
-    this._pickedVertices = new Uint32Array(pickedVertices.subarray(0, acc));
+    this._pickedVertices = pickedVertices.subarray(0, acc);
     return this._pickedVertices;
   }
 
@@ -370,7 +373,10 @@ class Picking {
     var ity = inter[1];
     var itz = inter[2];
 
-    var pickedVertices = new Uint32Array(Utils.getMemory(4 * nbVertices), 0, nbVertices);
+    if (!this._pickedVerticesBuffer || this._pickedVerticesBuffer.length < nbVertices) {
+      this._pickedVerticesBuffer = new Uint32Array(nbVertices * 2);
+    }
+    var pickedVertices = this._pickedVerticesBuffer;
     var idf = this.getPickedFace() * 4;
     var acc = 1;
 
@@ -418,7 +424,7 @@ class Picking {
       }
     }
 
-    this._pickedVertices = new Uint32Array(pickedVertices.subarray(0, acc));
+    this._pickedVertices = pickedVertices.subarray(0, acc);
     return this._pickedVertices;
   }
 

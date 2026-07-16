@@ -101,7 +101,10 @@ class Masking extends SculptBase {
 
     var mAr = mesh.getMaterials();
     var nbVerts = iVerts.length;
-    var smoothVerts = new Float32Array(nbVerts * 3);
+    if (!this._smoothVerts || this._smoothVerts.length < nbVerts * 3) {
+      this._smoothVerts = new Float32Array(nbVerts * 3 * 2);
+    }
+    var smoothVerts = this._smoothVerts.subarray(0, nbVerts * 3);
     for (var iter = 0; iter < numIterations; ++iter) {
       this.laplacianSmooth(iVerts, smoothVerts, mAr);
       for (var i = 0; i < nbVerts; ++i)
@@ -125,13 +128,19 @@ class Masking extends SculptBase {
     var nbVerts = iVerts.length;
 
     // 1. Сохраняем исходные значения маски
-    var originalMask = new Float32Array(nbVerts);
+    if (!this._originalMask || this._originalMask.length < nbVerts) {
+      this._originalMask = new Float32Array(nbVerts * 2);
+    }
+    var originalMask = this._originalMask.subarray(0, nbVerts);
     for (var i = 0; i < nbVerts; ++i) {
       originalMask[i] = mAr[iVerts[i] * 3 + 2];
     }
 
     // 2. Делаем точно такое же размытие маски (в mAr)
-    var smoothVerts = new Float32Array(nbVerts * 3);
+    if (!this._smoothVerts || this._smoothVerts.length < nbVerts * 3) {
+      this._smoothVerts = new Float32Array(nbVerts * 3 * 2);
+    }
+    var smoothVerts = this._smoothVerts.subarray(0, nbVerts * 3);
     for (var iter = 0; iter < numIterations; ++iter) {
       this.laplacianSmooth(iVerts, smoothVerts, mAr);
       for (var j = 0; j < nbVerts; ++j) {

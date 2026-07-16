@@ -41,7 +41,10 @@ class Smooth extends SculptBase {
     var mAr = mesh.getMaterials();
     var nbVerts = iVerts.length;
 
-    var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
+    if (!this._smoothVerts || this._smoothVerts.length < nbVerts * 3) {
+      this._smoothVerts = new Float32Array(nbVerts * 3 * 2);
+    }
+    var smoothVerts = this._smoothVerts.subarray(0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);
@@ -91,7 +94,10 @@ class Smooth extends SculptBase {
     var nAr = mesh.getNormals();
     var nbVerts = iVerts.length;
 
-    var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
+    if (!this._smoothVerts || this._smoothVerts.length < nbVerts * 3) {
+      this._smoothVerts = new Float32Array(nbVerts * 3 * 2);
+    }
+    var smoothVerts = this._smoothVerts.subarray(0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);
@@ -154,7 +160,10 @@ class Smooth extends SculptBase {
     var nAr = mesh.getNormals();
     var nbVerts = iVerts.length;
 
-    var smoothVerts = new Float32Array(Utils.getMemory(nbVerts * 4 * 3), 0, nbVerts * 3);
+    if (!this._smoothVerts || this._smoothVerts.length < nbVerts * 3) {
+      this._smoothVerts = new Float32Array(nbVerts * 3 * 2);
+    }
+    var smoothVerts = this._smoothVerts.subarray(0, nbVerts * 3);
     this.laplacianSmooth(iVerts, smoothVerts);
 
     var useFalloff = picking && (this._focalShift !== undefined);

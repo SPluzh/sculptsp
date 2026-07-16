@@ -334,7 +334,10 @@ class SculptBase {
   /** Return the vertices that point toward the camera */
   getFrontVertices(iVertsInRadius, eyeDir) {
     var nbVertsSelected = iVertsInRadius.length;
-    var iVertsFront = new Uint32Array(Utils.getMemory(4 * nbVertsSelected), 0, nbVertsSelected);
+    if (!this._frontVerticesBuffer || this._frontVerticesBuffer.length < nbVertsSelected) {
+      this._frontVerticesBuffer = new Uint32Array(nbVertsSelected * 2);
+    }
+    var iVertsFront = this._frontVerticesBuffer;
     var acc = 0;
     var nAr = this.getMesh().getNormals();
     var eyeX = eyeDir[0];
@@ -346,7 +349,7 @@ class SculptBase {
       if ((nAr[j] * eyeX + nAr[j + 1] * eyeY + nAr[j + 2] * eyeZ) <= 0.0)
         iVertsFront[acc++] = id;
     }
-    return new Uint32Array(iVertsFront.subarray(0, acc));
+    return iVertsFront.subarray(0, acc);
   }
 
   /** Compute average normal of a group of vertices with culling */
@@ -522,7 +525,10 @@ class SculptBase {
     var nbVerts = iVerts.length;
     var sculptFlag = Utils.SCULPT_FLAG;
     var vscf = mesh.getVerticesSculptFlags();
-    var iVertsInRadius = new Uint32Array(Utils.getMemory(nbVerts * 4), 0, nbVerts);
+    if (!this._iVertsInRadiusBuffer || this._iVertsInRadiusBuffer.length < nbVerts) {
+      this._iVertsInRadiusBuffer = new Uint32Array(nbVerts * 2);
+    }
+    var iVertsInRadius = this._iVertsInRadiusBuffer;
     var acc = 0;
     for (var i = 0; i < nbVerts; ++i) {
       var iVert = iVerts[i];
@@ -530,7 +536,7 @@ class SculptBase {
         iVertsInRadius[acc++] = iVert;
     }
 
-    iVertsInRadius = new Uint32Array(iVertsInRadius.subarray(0, acc));
+    iVertsInRadius = iVertsInRadius.subarray(0, acc);
     mesh.updateTopology(iFaces, iVerts);
     mesh.updateGeometry(iFaces, iVerts);
 
