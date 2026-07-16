@@ -7,6 +7,7 @@ class GuiMesh {
 
     this.domVerts = null; // ctrl nb vertices
     this.domFaces = null; // ctrl nb faces
+    this.domFPS = null; // ctrl FPS
     this.domUl = null;
     this.init(guiParent);
   }
@@ -18,10 +19,14 @@ class GuiMesh {
     this.domFaces = document.createElement('div');
     this.domFaces.innerHTML = TR('meshNbFaces');
 
+    this.domFPS = document.createElement('div');
+    this.domFPS.innerHTML = TR('meshFPS') + '--';
+
     this.domUl = document.createElement('div');
     this.domUl.className = 'viewport-hud-mesh';
     this.domUl.appendChild(this.domVerts);
     this.domUl.appendChild(this.domFaces);
+    this.domUl.appendChild(this.domFPS);
     guiParent.appendChild(this.domUl);
   }
 
@@ -37,6 +42,10 @@ class GuiMesh {
 
     this.domVerts.innerHTML = TR('meshNbVertices') + activePoints;
     this.domFaces.innerHTML = TR('meshNbFaces') + totalPoints;
+  }
+
+  updateFPS(fps) {
+    this.domFPS.innerHTML = TR('meshFPS') + fps;
   }
 }
 

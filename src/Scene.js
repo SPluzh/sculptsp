@@ -91,6 +91,9 @@ class Scene {
     this._focusGui = false; // if the gui is being focused
     this._gui = new Gui(this);
 
+    this._fpsRenderTimes = [];
+    this._fpsLastUpdate = 0;
+
     this._preventRender = false; // prevent multiple render per frame
     this._drawFullScene = false; // render everything on the rtt
     this._autoMatrix = opts.scalecenter; // scale and center the imported meshes
@@ -354,6 +357,30 @@ class Scene {
     this._preventRender = false;
     var gl = this._gl;
     if (!gl) return;
+
+    var now = performance.now();
+    if (!this._fpsRenderTimes) {
+      this._fpsRenderTimes = [];
+    }
+    if (this._fpsRenderTimes.length > 0 && (now - this._fpsRenderTimes[this._fpsRenderTimes.length - 1] > 500)) {
+      this._fpsRenderTimes = [];
+    }
+    this._fpsRenderTimes.push(now);
+    if (this._fpsRenderTimes.length > 30) {
+      this._fpsRenderTimes.shift();
+    }
+    if (this._fpsRenderTimes.length >= 2) {
+      var duration = now - this._fpsRenderTimes[0];
+      if (duration > 0) {
+        var fps = Math.round(((this._fpsRenderTimes.length - 1) * 1000) / duration);
+        if (!this._fpsLastUpdate || now - this._fpsLastUpdate > 200) {
+          if (this._gui && this._gui._ctrlMesh) {
+            this._gui._ctrlMesh.updateFPS(fps);
+          }
+          this._fpsLastUpdate = now;
+        }
+      }
+    }
 
     if (this._splitMode) {
       this._applyRenderSplit();
