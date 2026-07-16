@@ -34,6 +34,7 @@ class Mesh {
     this._isVisibleViewport2 = true;
     this.isDynamic = false;
     this.topologyChanged = false;
+    this._localRadius = undefined;
   }
 
   static sortFunction(meshA, meshB) {
@@ -719,6 +720,7 @@ class Mesh {
   }
 
   updateGeometry(iFaces, iVerts) {
+    this._localRadius = undefined;
     this.updateFacesAabbAndNormal(iFaces);
     this.updateVerticesNormal(iVerts);
     this.updateOctree(iFaces);
@@ -1895,8 +1897,14 @@ class Mesh {
   }
 
   computeLocalRadius() {
-    var box = this.getLocalBound();
-    return 0.5 * vec3.dist([box[0], box[1], box[2]], [box[3], box[4], box[5]]);
+    if (this._localRadius === undefined) {
+      var box = this.getLocalBound();
+      var dx = box[3] - box[0];
+      var dy = box[4] - box[1];
+      var dz = box[5] - box[2];
+      this._localRadius = 0.5 * Math.sqrt(dx * dx + dy * dy + dz * dz);
+    }
+    return this._localRadius;
   }
 
   normalizeSize() {
