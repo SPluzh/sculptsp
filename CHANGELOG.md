@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Camera**: Added a dedicated perspective projection toggle button (represented by a 3D box icon) to the left vertical toolbar (shelf) and mapped the **P** hotkey to switch between perspective and orthographic camera views.
+- **UI**: Added a perspective toggle command button to the command shelf layout configuration.
 - **UI**: Added a dedicated **Solo/Isolate** (Изолировать / Показать) button to the left vertical toolbar directly under the symmetry settings button, allowing users to toggle isolation mode for the active object with a single click. Toggling isolation mode works even when only one object exists (or when all objects are selected), acting as a toggle switch where the single object remains visible.
 - **Shortcuts**: Mapped the **C** key to toggle soloing (isolating) the active object in the viewport, and removed the key binding from the material/color picker tool to prevent conflicts.
 - **UI/Translations**: Updated English and Russian translations and tooltips to reflect the new **C** hotkey for isolation and the removed hotkey from the color picker.

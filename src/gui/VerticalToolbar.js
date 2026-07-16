@@ -2,7 +2,7 @@ import PanelContainer from './PanelContainer.js';
 import Mesh from '../mesh/Mesh.js';
 import {
   createIcons,
-  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye
+  Brush, Wind, RotateCw, Waves, ChevronsDownUp, Shrink, PenLine, Move, Paintbrush, Hand, Shield, Expand, Grid, Layers, CircleDot, Network, Ruler, Activity, Spline, Scissors, Eye, Box
 } from 'lucide';
 
 const toolIcons = {
@@ -328,6 +328,43 @@ class VerticalToolbar {
         this._soloBtn.classList.add('active');
       } else {
         this._soloBtn.classList.remove('active');
+      }
+    }
+  }
+
+  addPerspectiveButton(tooltip, onToggleFn, initialValue) {
+    var btn = document.createElement('div');
+    btn.className = 'vtb-btn';
+    if (initialValue) {
+      btn.classList.add('active');
+    }
+    btn.setAttribute('data-tooltip', tooltip);
+    btn.innerHTML = '<i data-lucide="box"></i>';
+    btn.addEventListener('click', () => {
+      onToggleFn();
+      btn.blur();
+      if (document.activeElement && document.activeElement !== document.body)
+        document.activeElement.blur();
+    });
+    this._perspectiveBtn = btn;
+
+    if (this._soloBtn) {
+      this._dom.insertBefore(btn, this._soloBtn.nextSibling);
+    } else if (this._symmetryBtn && this._symmetryBtn.parentNode) {
+      var symGroup = this._symmetryBtn.parentNode;
+      this._dom.insertBefore(btn, symGroup.nextSibling);
+    } else {
+      this._dom.appendChild(btn);
+    }
+    return btn;
+  }
+
+  setPerspectiveActive(active) {
+    if (this._perspectiveBtn) {
+      if (active) {
+        this._perspectiveBtn.classList.add('active');
+      } else {
+        this._perspectiveBtn.classList.remove('active');
       }
     }
   }

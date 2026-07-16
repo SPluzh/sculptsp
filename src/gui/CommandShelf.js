@@ -1,4 +1,5 @@
-import { createIcons, Undo2, Redo2, ChevronsUpDown, Sparkles, Square, Grid } from 'lucide';
+import { createIcons, Undo2, Redo2, ChevronsUpDown, Sparkles, Square, Grid, Box } from 'lucide';
+import Enums from '../misc/Enums.js';
 
 /**
  * CommandShelf — горизонтальная панель избранных команд.
@@ -58,6 +59,18 @@ class CommandRegistry {
         rendering._ctrlWireframe.setValue(newVal);
       }
     },
+    'camera.togglePerspective': (main) => {
+      var camera = main.getCamera();
+      var current = camera.getProjectionType();
+      var target = (current === Enums.Projection.PERSPECTIVE) ? Enums.Projection.ORTHOGRAPHIC : Enums.Projection.PERSPECTIVE;
+      var gui = main.getCtrlGui && main.getCtrlGui();
+      if (gui && gui._ctrlCamera) {
+        gui._ctrlCamera.onCameraTypeChange(target);
+      } else {
+        camera.setProjectionType(target);
+        main.render();
+      }
+    },
   };
 
   static execute(id, main) {
@@ -86,6 +99,7 @@ var DEFAULT_SHELF = [
   { id: 'remesh',    label: 'Remesh',  icon: 'sparkles',          action: 'topology.remesh' },
   { id: 'flat',      label: 'Flat',    icon: 'square',            action: 'rendering.toggleFlat' },
   { id: 'wire',      label: 'Wire',    icon: 'grid',              action: 'rendering.toggleWireframe' },
+  { id: 'persp',     label: 'Persp',   icon: 'box',               action: 'camera.togglePerspective' },
 ];
 
 var STORAGE_KEY = 'sculptsp.shelf';
@@ -143,7 +157,8 @@ class CommandShelf {
         ChevronsUpDown,
         Sparkles,
         Square,
-        Grid
+        Grid,
+        Box
       },
       root: shelf
     });
@@ -161,7 +176,8 @@ class CommandShelf {
       'subdivide': 'chevrons-up-down',
       'remesh': 'sparkles',
       'flat': 'square',
-      'wire': 'grid'
+      'wire': 'grid',
+      'persp': 'box'
     };
     var iconName = iconMap[item.id] || 'help-circle';
 

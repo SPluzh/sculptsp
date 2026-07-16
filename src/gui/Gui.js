@@ -38,7 +38,8 @@ import {
   Square,
   Grid,
   FlipHorizontal2,
-  Eye
+  Eye,
+  Box
 } from 'lucide';
 
 class Gui {
@@ -191,6 +192,18 @@ class Gui {
       this._ctrlScene._isolateState
     );
 
+    this._toolbar.addPerspectiveButton(
+      TR('cameraPerspective') + ' (P)',
+      () => {
+        var camera = this._main.getCamera();
+        var current = camera.getProjectionType();
+        var target = (current === Enums.Projection.PERSPECTIVE) ? Enums.Projection.ORTHOGRAPHIC : Enums.Projection.PERSPECTIVE;
+        this._ctrlCamera.onCameraTypeChange(target);
+        this._toolbar.setPerspectiveActive(target === Enums.Projection.PERSPECTIVE);
+      },
+      this._main.getCamera().getProjectionType() === Enums.Projection.PERSPECTIVE
+    );
+
     this.updateMesh();
     this.setVisibility(true);
 
@@ -204,7 +217,8 @@ class Gui {
         Image,
         Settings,
         FlipHorizontal2,
-        Eye
+        Eye,
+        Box
       },
       root: this._toolbar._dom
     });
@@ -444,6 +458,9 @@ class Gui {
   refreshForCamera(camera) {
     if (this._ctrlCamera && this._ctrlCamera.refreshForCamera) {
       this._ctrlCamera.refreshForCamera(camera);
+    }
+    if (this._toolbar) {
+      this._toolbar.setPerspectiveActive(camera.getProjectionType() === Enums.Projection.PERSPECTIVE);
     }
   }
 }

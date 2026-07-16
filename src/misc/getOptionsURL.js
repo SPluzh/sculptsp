@@ -62,6 +62,7 @@ var readShortcuts = function (str) {
   shortcuts[46] = keyAction.DELETE; // DEL
   // camera
   shortcuts['G'.charCodeAt(0)] = keyAction.CAMERA_FOV;
+  shortcuts['P'.charCodeAt(0)] = keyAction.CAMERA_PROJECTION;
   shortcuts['F'.charCodeAt(0)] = keyAction.CAMERA_FRONT;
   shortcuts['T'.charCodeAt(0)] = keyAction.CAMERA_TOP;
   shortcuts['L'.charCodeAt(0)] = keyAction.CAMERA_LEFT;

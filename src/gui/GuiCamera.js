@@ -274,6 +274,14 @@ class GuiCamera {
     case Enums.KeyAction.CAMERA_RESET:
       this.resetCamera();
       break;
+    case Enums.KeyAction.CAMERA_PROJECTION:
+      var current = camera.getProjectionType();
+      var target = (current === Enums.Projection.PERSPECTIVE) ? Enums.Projection.ORTHOGRAPHIC : Enums.Projection.PERSPECTIVE;
+      this.onCameraTypeChange(target);
+      if (this._main._gui) {
+        this._main._gui.refreshForCamera(camera);
+      }
+      break;
     case Enums.KeyAction.CAMERA_FRONT:
       this.resetFront();
       break;
