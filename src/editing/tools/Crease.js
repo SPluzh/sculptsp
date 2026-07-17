@@ -17,6 +17,9 @@ class Crease extends SculptBase {
 
 
   getFallOff(dist) {
+    if (this._main.getSculptManager().getAccuCurve()) {
+      return this._main.getSculptManager().getAccuCurveWeight(dist);
+    }
     if (dist >= 1.0) return 0.0;
     var focalShift = this._focalShift;
     var base = 1.0 - dist;

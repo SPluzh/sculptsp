@@ -29,6 +29,9 @@ class SculptBase {
   }
 
   getFallOff(dist) {
+    if (this._main.getSculptManager().getAccuCurve()) {
+      return this._main.getSculptManager().getAccuCurveWeight(dist);
+    }
     var focalShift = this._focalShift;
     var p = (1.0 - focalShift) / 2.0;
     if (dist < p) return 1.0;

@@ -118,6 +118,11 @@ class GuiSculpting {
       }
     });
 
+    // AccuCurve global toggle
+    this._ctrlAccuCurve = menu.addCheckbox(TR('sculptAccuCurve'), this._sculptManager.getAccuCurve(), (val) => {
+      this._sculptManager.setAccuCurve(val);
+    });
+
     GuiSculptingTools.show(this._sculptManager.getToolIndex());
     this.addEvents();
     this.onChangeTool(this._sculptManager.getToolIndex());
@@ -233,6 +238,9 @@ class GuiSculpting {
     var showSym = newValue !== Enums.Tools.TRANSFORM && newValue !== Enums.Tools.MEASURE && newValue !== Enums.Tools.DIVIDER;
     if (this._ctrlDynamicBrush) {
       this._ctrlDynamicBrush.setVisibility(showSym);
+    }
+    if (this._ctrlAccuCurve) {
+      this._ctrlAccuCurve.setVisibility(showSym);
     }
     if (this._ctrlGui._ctrlSymmetry) {
       this._ctrlGui._ctrlSymmetry.updateSymmetryVisibility(newValue);

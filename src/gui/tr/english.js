@@ -201,6 +201,7 @@ var TR = {
   sculptTangentialSmoothing: 'Relax only',
   sculptTopologicalCheck: 'Topological check',
   sculptMoveAlongNormal: 'Move along normal (N or -Alt)',
+  sculptAccuCurve: 'AccuCurve (1:1 ZBrush Curve)',
   sculptMaskingClear: 'Clear (-Ctrl + Drag)',
   sculptMaskingInvert: 'Invert (-Ctrl + Click)',
   sculptMaskingBlur: 'Blur',

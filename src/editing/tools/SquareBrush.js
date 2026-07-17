@@ -17,6 +17,9 @@ class SquareBrush extends SculptBase {
   }
 
   getFallOff(dist) {
+    if (this._main.getSculptManager().getAccuCurve()) {
+      return this._main.getSculptManager().getAccuCurveWeight(dist);
+    }
     var focalShift = this._focalShiftFalloff ? this._focalShift : 0.0;
     var p = (1.0 - focalShift) / 2.0;
     if (dist < p) return 1.0;

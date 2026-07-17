@@ -201,6 +201,7 @@ var TR = {
   sculptTangentialSmoothing: 'Сглаживание по касательной',
   sculptTopologicalCheck: 'Проверка топологии',
   sculptMoveAlongNormal: 'Перемещать вдоль нормали',
+  sculptAccuCurve: 'AccuCurve (1:1 спад ZBrush)',
   sculptMaskingClear: 'Очистить (-Ctrl + Drag)',
   sculptMaskingInvert: 'Инверсия (-Ctrl + Click)',
   sculptMaskingBlur: 'Сгладить',
