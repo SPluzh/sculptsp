@@ -55,7 +55,7 @@ ShaderBase.strings.fragColorFunction = [
   'vec4 encodeFragColor(const in vec3 frag, const in float alpha) {',
   '  vec3 col = computeCurvature(vVertex, vNormal, frag, uCurvature, uFov);',
   '  if(uDarken == 1) col *= 0.3;',
-  '  col *= (0.3 + 0.7 * vMasking);',
+  '  col *= (0.15 + 0.85 * vMasking);',
   '  if(uSym == 1 && abs(dot(uPlaneN, vVertex - uPlaneO)) < 0.15)',
   '      col = min(col * 1.5, 1.0);',
   '  return alpha != 1.0 ? vec4(col * alpha, alpha) : encodeRGBM(col);',
