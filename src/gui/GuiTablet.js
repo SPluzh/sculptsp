@@ -3,7 +3,8 @@ import Tablet from '../misc/Tablet.js';
 
 class GuiTablet {
 
-  constructor(guiParent) {
+  constructor(guiParent, ctrlGui) {
+    this._main = ctrlGui._main;
     this._menu = null; // ui menu
     this._liveTitle = null; // diagnostic status title
     this.init(guiParent);
@@ -12,6 +13,8 @@ class GuiTablet {
   init(guiParent) {
     // Pen tablet ui stuffs
     var menu = this._menu = guiParent.addMenu(TR('pressureTitle'));
+
+    menu.addCheckbox(TR('cameraTabletMode'), this._main._tabletControls, this.onTabletControlsChange.bind(this));
 
     var isElectron = (typeof process !== 'undefined') &&
                      process.versions &&
@@ -64,6 +67,13 @@ class GuiTablet {
     }
     if (typeof Tablet.applyApi === 'function') {
       Tablet.applyApi();
+    }
+  }
+
+  onTabletControlsChange(value) {
+    this._main._tabletControls = value;
+    if (typeof localStorage !== 'undefined') {
+      localStorage.setItem('tabletControls', value ? 'true' : 'false');
     }
   }
 }

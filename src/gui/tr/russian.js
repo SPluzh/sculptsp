@@ -225,6 +225,7 @@ var TR = {
 
   // pressure
   pressureTitle: 'Планшет pressure',
+  cameraTabletMode: 'Управление для планшета',
   pressureRadius: 'Нажим-размер',
   pressureIntensity: 'Нажим-жесткость',
   pressureInput: 'API планшета',

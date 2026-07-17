@@ -3,6 +3,10 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Camera/UI**: Added a **Tablet Controls** (Управление для планшета) toggle under the Tablet settings panel. When enabled, a 1-finger touch gesture rotates the camera rather than sculpting, allowing seamless drawing with a stylus (such as Apple Pencil) and navigation with touch.
+- **Navigation**: Restored smooth camera rotation, panning, and zooming on iPad/tablet devices by calling `preventDefault()` on canvas touch pointer events, preventing iOS Safari from scrolling the page.
+- **Navigation**: Enabled camera rotation by left-clicking or touching the empty canvas space (background) only when the "RMB only navigation" option is disabled, or during touch events with "Tablet controls" active, ensuring correct mouse and tablet workflows.
+- **Navigation**: Enabled camera panning when middle-clicking or performing a 2-finger drag on touch screens, regardless of the "RMB only navigation" option, restoring full tablet navigation capability.
 - **Stylus / Pen**: Restored Windows Ink stylus and drawing tablet support in the browser, enabling precise pressure-sensitive sculpting and smooth cursor tracking with pen inputs.
 - **Sculpting**: Changed the default setting of **Dynamic brush size** (Динамический размер кисти) to disabled (off) across all brushes, while allowing users to still enable it manually from the settings menu.
 - **Masking**: Darkened the mask shading in the viewport shader to make the masked areas more visible (сделан более темный цвет маски для улучшения ее видимости).

@@ -225,6 +225,7 @@ var TR = {
 
   // pressure
   pressureTitle: 'Tablet pressure',
+  cameraTabletMode: 'Tablet controls',
   pressureRadius: 'Pressure radius',
   pressureIntensity: 'Pressure intensity',
   pressureInput: 'Tablet API',

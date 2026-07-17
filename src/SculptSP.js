@@ -58,6 +58,11 @@ class SculptSP extends Scene {
     this._refImageDragActive = false;
     this._refImageDragLastX = 0;
     this._refImageDragLastY = 0;
+
+    this._tabletControls = false;
+    if (typeof localStorage !== 'undefined') {
+      this._tabletControls = localStorage.getItem('tabletControls') === 'true';
+    }
   }
 
   addEvents() {
@@ -241,18 +246,22 @@ class SculptSP extends Scene {
     if (e.pointerType === 'mouse' || e.pointerType === 'pen')
       return;
     this._focusGui = false;
+    this._lastPointerType = 'touch';
     var evProxy = this._eventProxy;
     evProxy.pageX = e.center.x;
     evProxy.pageY = e.center.y;
+    evProxy.pointerType = 'touch';
     this.onPanUpdateNbPointers(Math.min(3, e.pointers.length));
   }
 
   onPanMove(e) {
     if (e.pointerType === 'mouse' || e.pointerType === 'pen')
       return;
+    this._lastPointerType = 'touch';
     var evProxy = this._eventProxy;
     evProxy.pageX = e.center.x;
     evProxy.pageY = e.center.y;
+    evProxy.pointerType = 'touch';
 
     var nbPointers = Math.min(3, e.pointers.length);
     if (nbPointers !== this._lastNbPointers) {
@@ -377,7 +386,10 @@ class SculptSP extends Scene {
   // POINTER EVENTS
   ////////////////
   onPointerDown(event) {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      return;
+    }
     event.stopPropagation();
     event.preventDefault();
 
@@ -391,7 +403,10 @@ class SculptSP extends Scene {
   }
 
   onPointerMove(event) {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      return;
+    }
     event.stopPropagation();
     event.preventDefault();
 
@@ -401,7 +416,10 @@ class SculptSP extends Scene {
   }
 
   onPointerUp(event) {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      return;
+    }
     event.preventDefault();
 
     try {
@@ -414,7 +432,10 @@ class SculptSP extends Scene {
   }
 
   onPointerLeave(event) {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      return;
+    }
     this._focusGui = true;
     this._gui.callFunc('onMouseOut', event);
     if (!this._isLeftMouseDown) {
@@ -423,7 +444,10 @@ class SculptSP extends Scene {
   }
 
   onPointerEnter(event) {
-    if (event.pointerType === 'touch') return;
+    if (event.pointerType === 'touch') {
+      event.preventDefault();
+      return;
+    }
     this._focusGui = false;
     this._gui.callFunc('onMouseOver', event);
   }
@@ -642,7 +666,12 @@ class SculptSP extends Scene {
       }
 
       console.log('[SculptSP] onDeviceDown: Left click at (' + mouseX + ', ' + mouseY + '). active tool index: ' + this._sculptManager.getToolIndex());
-      canEdit = this._sculptManager.start(data.shiftKey);
+      var isTouch = (data.pointerType === 'touch' || this._lastPointerType === 'touch');
+      if (this._tabletControls && isTouch) {
+        canEdit = false;
+      } else {
+        canEdit = this._sculptManager.start(data.shiftKey);
+      }
       console.log('[SculptSP] onDeviceDown: canEdit result: ' + canEdit);
 
       if (!canEdit && camera.getRefDragEnabled()) {
@@ -695,6 +724,8 @@ class SculptSP extends Scene {
           this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
         else
           this._action = Enums.Action.CAMERA_ROTATE;
+      } else if (button === MOUSE_MIDDLE) {
+        this._action = Enums.Action.CAMERA_PAN;
       } else if (button === MOUSE_LEFT && data.ctrlKey) {
         var maskingTool = this.getSculptManager().getTool(Enums.Tools.MASKING);
         if (maskingTool._useLasso || !canEdit) {
@@ -707,6 +738,8 @@ class SculptSP extends Scene {
         }
       } else if (button === MOUSE_LEFT && canEdit) {
         this._action = Enums.Action.SCULPT_EDIT;
+      } else if (button === MOUSE_LEFT && !canEdit && (this._tabletControls && isTouch)) {
+        this._action = Enums.Action.CAMERA_ROTATE;
       } else {
         this._action = Enums.Action.NOTHING;
       }
@@ -729,7 +762,7 @@ class SculptSP extends Scene {
         }
       } else if ((!canEdit || button === MOUSE_RIGHT) && data.altKey)
         this._action = Enums.Action.CAMERA_PAN_ZOOM_ALT;
-      else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit && !this._cameraRmbOnly))
+      else if (button === MOUSE_RIGHT || (button === MOUSE_LEFT && !canEdit))
         this._action = Enums.Action.CAMERA_ROTATE;
       else
         this._action = Enums.Action.SCULPT_EDIT;
