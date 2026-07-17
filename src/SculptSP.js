@@ -64,20 +64,17 @@ class SculptSP extends Scene {
     var canvas = this._canvas;
 
     var cbMouseWheel = this.onMouseWheel.bind(this);
-    var cbOnPointer = this.onPointer.bind(this);
+    var cbOnPointerMove = Utils.throttle(this.onPointerMove.bind(this), 16.66);
 
-    // pointer events for pressure (when wintab is disabled/not active)
-    window.addEventListener('pointerdown', cbOnPointer, false);
-    window.addEventListener('pointermove', cbOnPointer, false);
-    window.addEventListener('pointerup', cbOnPointer, false);
-    window.addEventListener('pointercancel', cbOnPointer, false);
+    // Direct canvas pointer events for mouse/stylus inputs (Windows Ink)
+    canvas.addEventListener('pointerdown', this.onPointerDown.bind(this), false);
+    canvas.addEventListener('pointerup', this.onPointerUp.bind(this), false);
+    canvas.addEventListener('pointercancel', this.onPointerUp.bind(this), false);
+    canvas.addEventListener('pointerleave', this.onPointerLeave.bind(this), false);
+    canvas.addEventListener('pointerenter', this.onPointerEnter.bind(this), false);
+    canvas.addEventListener('pointermove', cbOnPointerMove, false);
 
-    // mouse
-    canvas.addEventListener('mousedown', this.onMouseDown.bind(this), false);
-    canvas.addEventListener('mouseup', this.onMouseUp.bind(this), false);
-    canvas.addEventListener('mouseout', this.onMouseOut.bind(this), false);
-    canvas.addEventListener('mouseover', this.onMouseOver.bind(this), false);
-    canvas.addEventListener('mousemove', Utils.throttle(this.onMouseMove.bind(this), 16.66), false);
+    // mouse wheel (not covered by pointer events)
     canvas.addEventListener('mousewheel', cbMouseWheel, false);
     canvas.addEventListener('DOMMouseScroll', cbMouseWheel, false);
 
@@ -103,7 +100,7 @@ class SculptSP extends Scene {
     }, true);
   }
 
-  onPointer(event) {
+  updatePressure(event) {
     this._lastPointerType = event.pointerType;
     if (!(Tablet.isWintabActive && Tablet.useWintab)) {
       if (event.type === 'pointerup' || event.type === 'pointercancel') {
@@ -377,40 +374,58 @@ class SculptSP extends Scene {
   }
 
   ////////////////
-  // MOUSE EVENTS
+  // POINTER EVENTS
   ////////////////
-  onMouseDown(event) {
+  onPointerDown(event) {
+    if (event.pointerType === 'touch') return;
     event.stopPropagation();
     event.preventDefault();
 
+    try {
+      this._canvas.setPointerCapture(event.pointerId);
+    } catch (err) {}
+
+    this.updatePressure(event);
     this._gui.callFunc('onMouseDown', event);
     this.onDeviceDown(event);
   }
 
-  onMouseMove(event) {
+  onPointerMove(event) {
+    if (event.pointerType === 'touch') return;
     event.stopPropagation();
     event.preventDefault();
 
+    this.updatePressure(event);
     this._gui.callFunc('onMouseMove', event);
     this.onDeviceMove(event);
   }
 
-  onMouseOver(event) {
-    this._focusGui = false;
-    this._gui.callFunc('onMouseOver', event);
-  }
-
-  onMouseOut(event) {
-    this._focusGui = true;
-    this._gui.callFunc('onMouseOut', event);
-    this.onMouseUp(event);
-  }
-
-  onMouseUp(event) {
+  onPointerUp(event) {
+    if (event.pointerType === 'touch') return;
     event.preventDefault();
 
+    try {
+      this._canvas.releasePointerCapture(event.pointerId);
+    } catch (err) {}
+
+    this.updatePressure(event);
     this._gui.callFunc('onMouseUp', event);
     this.onDeviceUp(event);
+  }
+
+  onPointerLeave(event) {
+    if (event.pointerType === 'touch') return;
+    this._focusGui = true;
+    this._gui.callFunc('onMouseOut', event);
+    if (!this._isLeftMouseDown) {
+      this.onPointerUp(event);
+    }
+  }
+
+  onPointerEnter(event) {
+    if (event.pointerType === 'touch') return;
+    this._focusGui = false;
+    this._gui.callFunc('onMouseOver', event);
   }
 
   onMouseWheel(event) {

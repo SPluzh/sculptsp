@@ -3,6 +3,7 @@
 All notable changes to this project will be documented in this file.
 
 ## [0.9.11]
+- **Stylus / Pen**: Restored Windows Ink stylus and drawing tablet support in the browser, enabling precise pressure-sensitive sculpting and smooth cursor tracking with pen inputs.
 - **Sculpting**: Changed the default setting of **Dynamic brush size** (Динамический размер кисти) to disabled (off) across all brushes, while allowing users to still enable it manually from the settings menu.
 - **Masking**: Darkened the mask shading in the viewport shader to make the masked areas more visible (сделан более темный цвет маски для улучшения ее видимости).
 - **Masking**: Added a **Gradient Mask Blur** tool (Градиентный блюр маски) that allows users to draw a line in the screen plane to interactively blend and smooth the mask transition between the start and end of the line, with real-time viewport updates and support for draggable handles, adjustable smoothing iterations, symmetry mirroring, and full undo/redo history.
