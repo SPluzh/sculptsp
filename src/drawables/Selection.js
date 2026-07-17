@@ -18,6 +18,8 @@ class Selection {
 
     this._circleBuffer = new Buffer(gl, gl.ARRAY_BUFFER, gl.STATIC_DRAW);
     this._dotBuffer = new Buffer(gl, gl.ARRAY_BUFFER, gl.STATIC_DRAW);
+    this._squareBuffer = new Buffer(gl, gl.ARRAY_BUFFER, gl.STATIC_DRAW);
+    this._squareDotBuffer = new Buffer(gl, gl.ARRAY_BUFFER, gl.STATIC_DRAW);
 
     this._cacheDotMVP = mat4.create();
     this._cacheDotSymMVP = mat4.create();
@@ -41,8 +43,16 @@ class Selection {
     return this._circleBuffer;
   }
 
+  getSquareBuffer() {
+    return this._squareBuffer;
+  }
+
   getDotBuffer() {
     return this._dotBuffer;
+  }
+
+  getSquareDotBuffer() {
+    return this._squareDotBuffer;
   }
 
   getCircleMVP() {
@@ -92,11 +102,34 @@ class Selection {
   init() {
     this.getCircleBuffer().update(this._getCircleVertices(1.0));
     this.getDotBuffer().update(this._getDotVertices(0.05, 10));
+
+    var s = Math.SQRT1_2;
+    this.getSquareBuffer().update(new Float32Array([
+      -s, -s, 0.0,
+       s, -s, 0.0,
+       s,  s, 0.0,
+      -s,  s, 0.0
+    ]));
+    this.getSquareDotBuffer().update(this._getSquareDotVertices(0.05));
   }
 
   release() {
     this.getCircleBuffer().release();
     this.getDotBuffer().release();
+    this.getSquareBuffer().release();
+    this.getSquareDotBuffer().release();
+  }
+
+  _getSquareDotVertices(r) {
+    var s = r * Math.SQRT1_2;
+    return new Float32Array([
+       0.0,  0.0, 0.0,
+        -s,   -s, 0.0,
+         s,   -s, 0.0,
+         s,    s, 0.0,
+        -s,    s, 0.0,
+        -s,   -s, 0.0
+    ]);
   }
 
   _getCircleVertices(radius = 1.0, nbVertices = 50, full = false) {
@@ -260,6 +293,7 @@ class Selection {
     } else {
       vec3.set(this._color, 0.8, drawCircle && pickedMesh ? 0.0 : 0.4, 0.0);
     }
+    this._isSquare = toolIndex === Enums.Tools.SQUARE_BRUSH;
     ShaderLib[Enums.Shader.SELECTION].getOrCreate(this._gl).draw(this, drawCircle, main.getSculptManager().getSymmetry(), !isTopology);
 
     this._isEditMode = false;

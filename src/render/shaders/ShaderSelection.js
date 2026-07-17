@@ -46,24 +46,26 @@ ShaderSelection.draw = function (geom, drawCircle, drawSym, drawInner = true) {
   }
 
   if (drawCircle) {
+    var circleBuf = geom._isSquare ? geom.getSquareBuffer() : geom.getCircleBuffer();
     gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getCircleMVP());
-    ShaderSelection.attributes.aVertex.bindToBuffer(geom.getCircleBuffer());
-    gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
+    ShaderSelection.attributes.aVertex.bindToBuffer(circleBuf);
+    gl.drawArrays(gl.LINE_LOOP, 0, circleBuf._size / 3);
 
     if (drawInner) {
       gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getInnerCircleMVP());
-      gl.drawArrays(gl.LINE_LOOP, 0, geom.getCircleBuffer()._size / 3);
+      gl.drawArrays(gl.LINE_LOOP, 0, circleBuf._size / 3);
     }
   }
 
+  var dotBuf = geom._isSquare ? geom.getSquareDotBuffer() : geom.getDotBuffer();
   gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom.getDotMVP());
-  ShaderSelection.attributes.aVertex.bindToBuffer(geom.getDotBuffer());
-  gl.drawArrays(gl.TRIANGLE_FAN, 0, geom.getDotBuffer()._size / 3);
+  ShaderSelection.attributes.aVertex.bindToBuffer(dotBuf);
+  gl.drawArrays(gl.TRIANGLE_FAN, 0, dotBuf._size / 3);
 
   if (drawSym && geom._cacheDotSymMVPs) {
     for (var i = 0; i < geom._cacheDotSymMVPs.length; ++i) {
       gl.uniformMatrix4fv(this.uniforms.uMVP, false, geom._cacheDotSymMVPs[i]);
-      gl.drawArrays(gl.TRIANGLE_FAN, 0, geom.getDotBuffer()._size / 3);
+      gl.drawArrays(gl.TRIANGLE_FAN, 0, dotBuf._size / 3);
     }
   }
 };

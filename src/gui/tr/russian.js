@@ -144,6 +144,7 @@ var TR = {
   // sculpt
   sculptTitle: 'Лепить и красить',
   sculptBrush: '3D Кисть',
+  sculptSquareBrush: '3D Квадратная кисть',
   sculptInflate: '3D Надуть',
   sculptTwist: '3D Закручивание',
   sculptSmooth: '3D Сгладить (-Shift)',

@@ -144,6 +144,7 @@ var TR = {
   // sculpt
   sculptTitle: 'Sculpting & Painting',
   sculptBrush: 'Brush',
+  sculptSquareBrush: 'Square Brush',
   sculptInflate: 'Inflate',
   sculptTwist: 'Twist',
   sculptSmooth: 'Smooth (-Shift)',

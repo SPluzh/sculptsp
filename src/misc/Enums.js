@@ -40,7 +40,8 @@ Enums.Tools = {
   CURVE_DEFORM: 18,
   DIVIDER: 19,
   VISIBILITY: 20,
-  MASK_GRADIENT_BLUR: 21
+  MASK_GRADIENT_BLUR: 21,
+  SQUARE_BRUSH: 22
 };
 
 // display shader type

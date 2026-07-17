@@ -117,6 +117,22 @@ GuiTools[Enums.Tools.BRUSH] = {
   }
 };
 
+GuiTools[Enums.Tools.SQUARE_BRUSH] = {
+  _ctrls: [],
+  init: function (tool, fold, main) {
+    this._ctrls.push(addCtrlRadius(tool, fold, this, main));
+    this._ctrls.push(addCtrlIntensity(tool, fold, this));
+    this._ctrls.push(addCtrlFocalShift(tool, fold, this, main));
+    this._ctrls.push(addCtrlFocalShiftFalloff(tool, fold));
+    this._ctrls.push(addCtrlNegative(tool, fold, this));
+    this._ctrls.push(fold.addCheckbox(TR('sculptClay'), tool, '_clay'));
+    this._ctrls.push(fold.addCheckbox(TR('sculptAccumulate'), tool, '_accumulate'));
+    this._ctrls.push(addCtrlCulling(tool, fold));
+    this._ctrls.push(addCtrlSpacing(tool, fold));
+    this._ctrls.push(addCtrlDynTopoInfluence(tool, fold));
+  }
+};
+
 GuiTools[Enums.Tools.CREASE] = {
   _ctrls: [],
   init: function (tool, fold, main) {
