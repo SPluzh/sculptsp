@@ -16,6 +16,12 @@ class MaskGradientBlur extends SculptBase {
     this._svgLine = null;
     this._svgCircleA = null;
     this._svgCircleB = null;
+
+    this._sharpenBlurIterations = 24;
+    this._blurMaskedOnly = true;
+    this._origMasks = null;
+    this._blurredMasks = null;
+    this._activeVerts = null;
   }
 
   pushState() {
@@ -35,6 +41,8 @@ class MaskGradientBlur extends SculptBase {
     this.createOverlay();
     this.updateOverlay();
 
+    this.precomputeMasks(true);
+
     this._onResizeBound = this.updateOverlay.bind(this);
     window.addEventListener('resize', this._onResizeBound);
   }
@@ -43,6 +51,9 @@ class MaskGradientBlur extends SculptBase {
     this.destroyOverlay();
     this._activePoint = null;
     this._isDrawingLine = false;
+    this._origMasks = null;
+    this._blurredMasks = null;
+    this._activeVerts = null;
 
     this._main.setCanvasCursor('default');
 
@@ -219,6 +230,7 @@ class MaskGradientBlur extends SculptBase {
     this._pointB = [mouseX, mouseY];
     this._activePoint = 'B';
     this._isDrawingLine = true;
+    this.precomputeMasks(true);
     this.pushState();
 
     this.updateOverlay();
@@ -239,6 +251,78 @@ class MaskGradientBlur extends SculptBase {
     }
 
     this.updateOverlay();
+    this.applyGradientMask();
+  }
+
+  precomputeMasks(forceReadFromMesh) {
+    var mesh = this.getMesh();
+    if (!mesh) return;
+
+    var nbVertices = mesh.getNbVertices();
+    var mAr = mesh.getMaterials();
+
+    if (forceReadFromMesh || !this._origMasks || this._origMasks.length !== nbVertices) {
+      this._origMasks = new Float32Array(nbVertices);
+      for (var i = 0; i < nbVertices; ++i) {
+        this._origMasks[i] = mAr[i * 3 + 2];
+      }
+    }
+
+    var iVerts = this.getMaskedVerticesFromOrig();
+    if (iVerts.length === 0) {
+      this._blurredMasks = new Float32Array(this._origMasks);
+      this._activeVerts = new Uint32Array(0);
+      return;
+    }
+
+    var numIterations = this._sharpenBlurIterations;
+    iVerts = mesh.expandsVertices(iVerts, numIterations);
+
+    var tempMAr = new Float32Array(mAr.length);
+    tempMAr.set(mAr);
+    for (var i = 0; i < nbVertices; ++i) {
+      tempMAr[i * 3 + 2] = this._origMasks[i];
+    }
+
+    var nbVerts = iVerts.length;
+    var smoothVerts = new Float32Array(nbVerts * 3);
+
+    for (var iter = 0; iter < numIterations; ++iter) {
+      this.laplacianSmooth(iVerts, smoothVerts, tempMAr);
+      for (var k = 0; k < nbVerts; ++k) {
+        tempMAr[iVerts[k] * 3 + 2] = smoothVerts[k * 3 + 2];
+      }
+    }
+
+    this._blurredMasks = new Float32Array(nbVertices);
+    for (var i = 0; i < nbVertices; ++i) {
+      this._blurredMasks[i] = tempMAr[i * 3 + 2];
+    }
+
+    var activeVerts = [];
+    for (var i = 0; i < nbVertices; ++i) {
+      if (this._origMasks[i] < 1.0 || this._blurredMasks[i] < 1.0) {
+        activeVerts.push(i);
+      }
+    }
+    this._activeVerts = new Uint32Array(activeVerts);
+  }
+
+  getMaskedVerticesFromOrig() {
+    if (!this._origMasks) return new Uint32Array(0);
+    var nbVertices = this._origMasks.length;
+    var cleaned = new Uint32Array(Utils.getMemory(4 * nbVertices), 0, nbVertices);
+    var acc = 0;
+    for (var i = 0; i < nbVertices; ++i) {
+      var mask = this._origMasks[i];
+      if (mask < 1.0) {
+        cleaned[acc++] = i;
+      }
+    }
+    return new Uint32Array(cleaned.subarray(0, acc));
+  }
+
+  applyGradientBlur() {
     this.applyGradientMask();
   }
 
@@ -279,35 +363,79 @@ class MaskGradientBlur extends SculptBase {
 
     var nbVerts = mesh.getNbVertices();
 
-    for (var i = 0; i < nbVerts; ++i) {
-      var ind = i * 3;
-      var vx = vAr[ind];
-      var vy = vAr[ind + 1];
-      var vz = vAr[ind + 2];
+    if (!this._origMasks || this._origMasks.length !== nbVerts) {
+      this.precomputeMasks(true);
+    }
 
-      // Project vertex to screen (local coordinates to active viewport space)
-      var w = m3 * vx + m7 * vy + m11 * vz + m15;
-      w = w || 1.0;
-      var sx = (m0 * vx + m4 * vy + m8 * vz + m12) / w;
-      var sy = height - (m1 * vx + m5 * vy + m9 * vz + m13) / w;
+    if (this._blurMaskedOnly) {
+      var activeVerts = this._activeVerts;
+      var nbActive = activeVerts.length;
+      for (var k = 0; k < nbActive; ++k) {
+        var i = activeVerts[k];
+        var ind = i * 3;
+        var vx = vAr[ind];
+        var vy = vAr[ind + 1];
+        var vz = vAr[ind + 2];
 
-      // Project onto segment AB
-      var t = ((sx - ax) * vx_line + (sy - ay) * vy_line) / len2;
+        // Project vertex to screen (local coordinates to active viewport space)
+        var w = m3 * vx + m7 * vy + m11 * vz + m15;
+        w = w || 1.0;
+        var sx = (m0 * vx + m4 * vy + m8 * vz + m12) / w;
+        var sy = height - (m1 * vx + m5 * vy + m9 * vz + m13) / w;
 
-      if (symmetry) {
-        var symV = [vx, vy, vz];
-        Geometry.mirrorPoint(symV, ptPlane, nPlane);
-        var svx = symV[0], svy = symV[1], svz = symV[2];
-        var sw = m3 * svx + m7 * svy + m11 * svz + m15;
-        sw = sw || 1.0;
-        var ssx = (m0 * svx + m4 * svy + m8 * svz + m12) / sw;
-        var ssy = height - (m1 * svx + m5 * svy + m9 * svz + m13) / sw;
-        var t_sym = ((ssx - ax) * vx_line + (ssy - ay) * vy_line) / len2;
-        t = Math.min(t, t_sym);
+        // Project onto segment AB
+        var t = ((sx - ax) * vx_line + (sy - ay) * vy_line) / len2;
+
+        if (symmetry) {
+          var symV = [vx, vy, vz];
+          Geometry.mirrorPoint(symV, ptPlane, nPlane);
+          var svx = symV[0], svy = symV[1], svz = symV[2];
+          var sw = m3 * svx + m7 * svy + m11 * svz + m15;
+          sw = sw || 1.0;
+          var ssx = (m0 * svx + m4 * svy + m8 * svz + m12) / sw;
+          var ssy = height - (m1 * svx + m5 * svy + m9 * vz + m13) / sw;
+          var t_sym = ((ssx - ax) * vx_line + (ssy - ay) * vy_line) / len2;
+          t = Math.min(t, t_sym);
+        }
+
+        t = Math.min(Math.max(t, 0.0), 1.0);
+
+        var origVal = this._origMasks[i];
+        var blurredVal = this._blurredMasks[i];
+        var blendVal = (1.0 - t) * blurredVal + t * origVal;
+        mAr[ind + 2] = (1.0 - t) * 1.0 + t * blendVal;
       }
+    } else {
+      for (var i = 0; i < nbVerts; ++i) {
+        var ind = i * 3;
+        var vx = vAr[ind];
+        var vy = vAr[ind + 1];
+        var vz = vAr[ind + 2];
 
-      t = Math.min(Math.max(t, 0.0), 1.0);
-      mAr[ind + 2] = t;
+        // Project vertex to screen (local coordinates to active viewport space)
+        var w = m3 * vx + m7 * vy + m11 * vz + m15;
+        w = w || 1.0;
+        var sx = (m0 * vx + m4 * vy + m8 * vz + m12) / w;
+        var sy = height - (m1 * vx + m5 * vy + m9 * vz + m13) / w;
+
+        // Project onto segment AB
+        var t = ((sx - ax) * vx_line + (sy - ay) * vy_line) / len2;
+
+        if (symmetry) {
+          var symV = [vx, vy, vz];
+          Geometry.mirrorPoint(symV, ptPlane, nPlane);
+          var svx = symV[0], svy = symV[1], svz = symV[2];
+          var sw = m3 * svx + m7 * svy + m11 * svz + m15;
+          sw = sw || 1.0;
+          var ssx = (m0 * svx + m4 * svy + m8 * svz + m12) / sw;
+          var ssy = height - (m1 * svx + m5 * svy + m9 * vz + m13) / sw;
+          var t_sym = ((ssx - ax) * vx_line + (ssy - ay) * vy_line) / len2;
+          t = Math.min(t, t_sym);
+        }
+
+        t = Math.min(Math.max(t, 0.0), 1.0);
+        mAr[ind + 2] = t;
+      }
     }
 
     // Upload to GPU

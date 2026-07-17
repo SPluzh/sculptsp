@@ -311,6 +311,7 @@ var TR = {
   sculptDivider: 'Divider',
   sculptVisibility: 'Visibility',
   sculptMaskGradientBlur: 'Gradient Mask Blur',
+  sculptMaskGradientBlurOnlyMasked: 'Only on masked area',
 
   alphaNone: 'None',
   alphaSquare: 'Square',

@@ -311,6 +311,7 @@ var TR = {
   sculptDivider: 'Делитель отрезков',
   sculptVisibility: 'Видимость',
   sculptMaskGradientBlur: 'Градиентный блюр маски',
+  sculptMaskGradientBlurOnlyMasked: 'Только на замаскированной области',
 
   alphaNone: 'Нет',
   alphaSquare: 'Квадрат',

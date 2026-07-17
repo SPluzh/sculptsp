@@ -481,6 +481,24 @@ GuiTools[Enums.Tools.MASK_GRADIENT_BLUR] = {
         tool.applyGradientBlur();
       }
     }, 1, 100, 1));
+    this._ctrls.push(fold.addCheckbox(TR('sculptMaskGradientBlurOnlyMasked'), tool._blurMaskedOnly, function (val) {
+      tool._blurMaskedOnly = val;
+      if (tool._pointA && tool._pointB) {
+        if (val) {
+          var mesh = tool.getMesh();
+          if (mesh) {
+            var mAr = mesh.getMaterials();
+            var nbVerts = mesh.getNbVertices();
+            if (tool._origMasks && tool._origMasks.length === nbVerts) {
+              for (var i = 0; i < nbVerts; ++i) {
+                mAr[i * 3 + 2] = tool._origMasks[i];
+              }
+            }
+          }
+        }
+        tool.applyGradientBlur();
+      }
+    }));
   }
 };
 
